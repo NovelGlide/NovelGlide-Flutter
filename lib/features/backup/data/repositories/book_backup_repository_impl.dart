@@ -49,16 +49,15 @@ class BookBackupRepositoryImpl implements BookBackupRepository {
     final String libraryFolder = await _pathProvider.libraryPath;
 
     // Create the zip file
-    final File zipFile = await _fileSystemRepository
-        .createFile(join(tempDirectoryPath, await archiveName));
+    final String path = join(tempDirectoryPath, await archiveName);
 
     // Start archiving books
     await ZipFile.createFromDirectory(
       sourceDir: Directory(libraryFolder),
-      zipFile: zipFile,
+      zipFile: File(path),
       onZipping: (String fileName, bool isDirectory, double progress) {
         // Call callback for sending the progress.
-        onZipping?.call(progress / 100);
+        onZipping?.call((progress / 100).clamp(0, 1));
 
         // Only check the extension is acceptable.
         final String ext = extension(fileName);
@@ -68,7 +67,7 @@ class BookBackupRepositoryImpl implements BookBackupRepository {
       },
     );
 
-    return zipFile.path;
+    return path;
   }
 
   @override
