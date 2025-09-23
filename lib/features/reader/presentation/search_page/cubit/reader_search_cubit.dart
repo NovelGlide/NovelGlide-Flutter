@@ -5,57 +5,40 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../enum/loading_state_code.dart';
 import '../../../domain/entities/reader_search_result_data.dart';
-import '../../../domain/use_cases/reader_observe_search_list_use_case.dart';
-import '../../../domain/use_cases/reader_send_goto_use_case.dart';
-import '../../../domain/use_cases/reader_send_search_in_current_chapter_use_case.dart';
-import '../../../domain/use_cases/reader_send_search_in_whole_book_use_case.dart';
+import '../../../domain/use_cases/reader_goto_use_case.dart';
+import '../../../domain/use_cases/search_use_cases/reader_observe_search_list_use_case.dart';
+import '../../../domain/use_cases/search_use_cases/reader_search_in_current_chapter_use_case.dart';
+import '../../../domain/use_cases/search_use_cases/reader_search_in_whole_book_use_case.dart';
 
 part 'reader_search_range_code.dart';
 part 'reader_search_state.dart';
 
 class ReaderSearchCubit extends Cubit<ReaderSearchState> {
-  factory ReaderSearchCubit(
-    ReaderSendSearchInCurrentChapterUseCase sendSearchInCurrentChapterUseCase,
-    ReaderSendSearchInWholeBookUseCase sendSearchInWholeBookUseCase,
-    ReaderSendGotoUseCase sendGotoUseCase,
-    ReaderObserveSearchListUseCase observeSearchListUseCase,
-  ) {
-    final ReaderSearchCubit cubit = ReaderSearchCubit._(
-      sendSearchInCurrentChapterUseCase,
-      sendSearchInWholeBookUseCase,
-      sendGotoUseCase,
-    );
-
-    // Setup resultList subscription.
-    cubit._resultListSubscription =
-        observeSearchListUseCase().listen(cubit._setResultList);
-
-    return cubit;
-  }
-
-  ReaderSearchCubit._(
-    this._sendSearchInCurrentChapterUseCase,
-    this._sendSearchInWholeBookUseCase,
+  ReaderSearchCubit(
+    this._searchInCurrentChapterUseCase,
+    this._searchInWholeBookUseCase,
+    this._observeSearchListUseCase,
     this._sendGotoUseCase,
   ) : super(const ReaderSearchState());
 
-  final ReaderSendSearchInCurrentChapterUseCase
-      _sendSearchInCurrentChapterUseCase;
-  final ReaderSendSearchInWholeBookUseCase _sendSearchInWholeBookUseCase;
-  final ReaderSendGotoUseCase _sendGotoUseCase;
+  final ReaderSearchInCurrentChapterUseCase _searchInCurrentChapterUseCase;
+  final ReaderSearchInWholeBookUseCase _searchInWholeBookUseCase;
+  final ReaderObserveSearchListUseCase _observeSearchListUseCase;
+  final ReaderGotoUseCase _sendGotoUseCase;
 
   /// Stream Subscriptions
   late final StreamSubscription<List<ReaderSearchResultData>>
-      _resultListSubscription;
+      _resultListSubscription =
+      _observeSearchListUseCase().listen(_setResultList);
 
   void startSearch() {
     emit(state.copyWith(code: LoadingStateCode.loading));
     switch (state.range) {
       case ReaderSearchRangeCode.currentChapter:
-        _sendSearchInCurrentChapterUseCase(state.query);
+        _searchInCurrentChapterUseCase(state.query);
         break;
       case ReaderSearchRangeCode.all:
-        _sendSearchInWholeBookUseCase(state.query);
+        _searchInWholeBookUseCase(state.query);
         break;
     }
   }

@@ -1,5 +1,5 @@
 abstract class ReaderServerRepository {
-  Future<Uri> start(String bookFilePath);
+  Future<Uri> start(String bookIdentifier);
 
   Future<void> stop();
 }

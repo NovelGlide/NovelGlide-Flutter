@@ -15,185 +15,49 @@ import '../../../../preference/domain/use_cases/preference_get_use_cases.dart';
 import '../../../../preference/domain/use_cases/preference_observe_change_use_case.dart';
 import '../../../../preference/domain/use_cases/preference_reset_use_case.dart';
 import '../../../../preference/domain/use_cases/preference_save_use_case.dart';
-import '../../../../tts_service/domain/use_cases/tts_observe_state_changed_use_case.dart';
-import '../../../../tts_service/domain/use_cases/tts_pause_use_case.dart';
-import '../../../../tts_service/domain/use_cases/tts_reload_preference_use_case.dart';
-import '../../../../tts_service/domain/use_cases/tts_resume_use_case.dart';
-import '../../../../tts_service/domain/use_cases/tts_speak_use_case.dart';
-import '../../../../tts_service/domain/use_cases/tts_stop_use_case.dart';
-import '../../../data/data_transfer_objects/reader_web_message_dto.dart';
-import '../../../data/repositories/reader_search_repository_impl.dart';
-import '../../../data/repositories/reader_tts_repository_impl.dart';
-import '../../../data/repositories/reader_web_view_repository_impl.dart';
 import '../../../domain/entities/reader_destination_type.dart';
 import '../../../domain/entities/reader_navigation_state_code.dart';
 import '../../../domain/entities/reader_page_num_type.dart';
 import '../../../domain/entities/reader_set_state_data.dart';
-import '../../../domain/repositories/reader_search_repository.dart';
-import '../../../domain/repositories/reader_tts_repository.dart';
-import '../../../domain/repositories/reader_web_view_repository.dart';
-import '../../../domain/use_cases/reader_get_location_cache_use_case.dart';
+import '../../../domain/repositories/reader_webview_repository.dart';
+import '../../../domain/use_cases/appearance_use_cases/reader_set_font_color_use_case.dart';
+import '../../../domain/use_cases/appearance_use_cases/reader_set_font_size_use_case.dart';
+import '../../../domain/use_cases/appearance_use_cases/reader_set_line_height_use_case.dart';
+import '../../../domain/use_cases/appearance_use_cases/reader_set_smooth_scroll_use_case.dart';
+import '../../../domain/use_cases/reader_next_page_use_case.dart';
 import '../../../domain/use_cases/reader_observe_load_done_use_case.dart';
-import '../../../domain/use_cases/reader_observe_save_location_use_case.dart';
-import '../../../domain/use_cases/reader_observe_search_list_use_case.dart';
 import '../../../domain/use_cases/reader_observe_set_state_use_case.dart';
-import '../../../domain/use_cases/reader_observe_tts_end_use_case.dart';
-import '../../../domain/use_cases/reader_observe_tts_play_use_case.dart';
-import '../../../domain/use_cases/reader_observe_tts_stop_use_case.dart';
-import '../../../domain/use_cases/reader_send_goto_use_case.dart';
-import '../../../domain/use_cases/reader_send_next_page_use_case.dart';
-import '../../../domain/use_cases/reader_send_previous_page_use_case.dart';
-import '../../../domain/use_cases/reader_send_search_in_current_chapter_use_case.dart';
-import '../../../domain/use_cases/reader_send_search_in_whole_book_use_case.dart';
-import '../../../domain/use_cases/reader_send_set_font_color_use_case.dart';
-import '../../../domain/use_cases/reader_send_set_font_size_use_case.dart';
-import '../../../domain/use_cases/reader_send_set_line_height_use_case.dart';
-import '../../../domain/use_cases/reader_send_set_smooth_scroll_use_case.dart';
-import '../../../domain/use_cases/reader_send_tts_next_use_case.dart';
-import '../../../domain/use_cases/reader_send_tts_play_use_case.dart';
-import '../../../domain/use_cases/reader_send_tts_stop_use_case.dart';
-import '../../../domain/use_cases/reader_start_reader_server_use_case.dart';
-import '../../../domain/use_cases/reader_stop_reader_server_use_case.dart';
-import '../../../domain/use_cases/reader_store_location_cache_use_case.dart';
+import '../../../domain/use_cases/reader_previous_page_use_case.dart';
 import '../../search_page/cubit/reader_search_cubit.dart';
 import 'reader_tts_cubit.dart';
 
 part '../../../domain/entities/reader_loading_state_code.dart';
 part 'reader_gesture_handler.dart';
 part 'reader_state.dart';
-part 'reader_web_view_handler.dart';
 
 class ReaderCubit extends Cubit<ReaderState> {
-  factory ReaderCubit(
-    // Server use cases
-    ReaderStartReaderServerUseCase startReaderServerUseCase,
-    ReaderStopReaderServerUseCase stopReaderServerUseCase,
-    // Book use cases
-    BookGetUseCase bookGetUseCase,
-    // Location cache use cases
-    ReaderStoreLocationCacheUseCase storeLocationCacheUseCase,
-    ReaderGetLocationCacheUseCase getLocationCacheUseCase,
-    // Bookmark use cases
-    BookmarkGetDataUseCase bookmarkGetDataUseCase,
-    BookmarkUpdateDataUseCase bookmarkUpdateDataUseCase,
-    // Reader preference use cases.
-    ReaderGetPreferenceUseCase getPreferenceUseCase,
-    ReaderSavePreferenceUseCase savePreferenceUseCase,
-    ReaderObservePreferenceChangeUseCase observePreferenceChangeUseCase,
-    ReaderResetPreferenceUseCase resetPreferenceUseCase,
-    // TTS use cases
-    TtsReloadPreferenceUseCase ttsReloadPreferenceUseCase,
-    TtsObserveStateChangedUseCase ttsObserveStateChangedUseCase,
-    TtsSpeakUseCase ttsSpeakUseCase,
-    TtsStopUseCase ttsStopUseCase,
-    TtsPauseUseCase ttsPauseUseCase,
-    TtsResumeUseCase ttsResumeUseCase,
-  ) {
-    // Setup webview dependencies
-    final WebViewController webViewController = WebViewController();
-    final ReaderWebViewRepository webViewRepository =
-        ReaderWebViewRepositoryImpl(webViewController);
-
-    // Create searching dependencies
-    final ReaderSearchRepository searchRepository =
-        ReaderSearchRepositoryImpl(webViewRepository);
-
-    // Create TTS dependencies
-    final ReaderTtsRepository ttsRepository =
-        ReaderTtsRepositoryImpl(webViewRepository);
-
-    final ReaderCubit cubit = ReaderCubit._(
-      // Server use cases
-      startReaderServerUseCase,
-      stopReaderServerUseCase,
-      // Communication use cases
-      ReaderObserveSaveLocationUseCase(webViewRepository),
-      ReaderObserveSetStateUseCase(webViewRepository),
-      ReaderObserveLoadDoneUseCase(webViewRepository),
-      ReaderSendPreviousPageUseCase(webViewRepository),
-      ReaderSendNextPageUseCase(webViewRepository),
-      ReaderSendSetFontColorUseCase(webViewRepository),
-      ReaderSendSetFontSizeUseCase(webViewRepository),
-      ReaderSendSetLineHeightUseCase(webViewRepository),
-      ReaderSendSetSmoothScrollUseCase(webViewRepository),
-      // Book use cases
-      bookGetUseCase,
-      // Location cache use cases
-      storeLocationCacheUseCase,
-      getLocationCacheUseCase,
-      // Bookmark use cases
-      bookmarkGetDataUseCase,
-      bookmarkUpdateDataUseCase,
-      // Reader preference use cases
-      getPreferenceUseCase,
-      savePreferenceUseCase,
-      resetPreferenceUseCase,
-      // Dependencies
-      webViewController,
-      webViewRepository,
-      searchRepository,
-      ttsRepository,
-      // Cubits
-      ReaderSearchCubit(
-        ReaderSendSearchInCurrentChapterUseCase(webViewRepository),
-        ReaderSendSearchInWholeBookUseCase(webViewRepository),
-        ReaderSendGotoUseCase(webViewRepository),
-        ReaderObserveSearchListUseCase(searchRepository),
-      ),
-      ReaderTtsCubit(
-        ReaderSendTtsNextUseCase(webViewRepository),
-        ReaderSendTtsPlayUseCase(webViewRepository),
-        ReaderSendTtsStopUseCase(webViewRepository),
-        ReaderObserveTtsEndUseCase(ttsRepository),
-        ReaderObserveTtsPlayUseCase(ttsRepository),
-        ReaderObserveTtsStopUseCase(ttsRepository),
-        ttsReloadPreferenceUseCase,
-        ttsObserveStateChangedUseCase,
-        ttsSpeakUseCase,
-        ttsStopUseCase,
-        ttsPauseUseCase,
-        ttsResumeUseCase,
-      ),
-    );
-
-    // Stream listeners
-    cubit._preferenceSubscription =
-        observePreferenceChangeUseCase().listen(cubit._refreshPreference);
-
-    return cubit;
-  }
-
-  ReaderCubit._(
-    // Server use cases
-    this._startReaderServerUseCase,
-    this._stopReaderServerUseCase,
-    // Communication use cases
-    this._observeSaveLocationUseCase,
-    this._observeSetStateUseCase,
+  ReaderCubit(
+    this._webViewRepository,
+    // Reader use cases
     this._observeLoadDoneUseCase,
-    this._sendPreviousPageUseCase,
-    this._sendNextPageUseCase,
-    this._sendSetFontColorUseCase,
-    this._sendSetFontSizeUseCase,
-    this._sendSetLineHeightUseCase,
-    this._sendSetSmoothScrollUseCase,
+    this._observeSetStateUseCase,
+    this._nextPageUseCase,
+    this._previousPageUseCase,
+    this._setFontColorUseCase,
+    this._setFontSizeUseCase,
+    this._setLineHeightUseCase,
+    this._setSmoothScrollUseCase,
     // Book use cases
     this._bookGetUseCase,
-    // Location cache use cases
-    this._storeLocationCacheUseCase,
-    this._getLocationCacheUseCase,
     // Bookmark use cases
     this._bookmarkGetDataUseCase,
     this._bookmarkUpdateDataUseCase,
     // Reader preference use cases
     this._getPreferenceUseCase,
     this._savePreferenceUseCase,
+    this._observePreferenceChangeUseCase,
     this._resetPreferenceUseCase,
     // Dependencies
-    this.webViewController,
-    this._webViewRepository,
-    this._searchRepository,
-    this._ttsRepository,
     this.searchCubit,
     this.ttsCubit,
   ) : super(const ReaderState());
@@ -201,45 +65,30 @@ class ReaderCubit extends Cubit<ReaderState> {
   Book? bookData;
   late ThemeData currentTheme;
 
-  late final ReaderWebViewHandler webViewHandler;
   final ReaderSearchCubit searchCubit;
   final ReaderTtsCubit ttsCubit;
 
   late final ReaderGestureHandler gestureHandler =
       ReaderGestureHandler(onSwipeLeft: previousPage, onSwipeRight: nextPage);
 
+  WebViewController get webViewController =>
+      _webViewRepository.webViewController;
+
   /// Dependencies
-  final WebViewController webViewController;
   final ReaderWebViewRepository _webViewRepository;
-  final ReaderSearchRepository _searchRepository;
-  final ReaderTtsRepository _ttsRepository;
 
-  /// Stream Subscriptions
-  late final StreamSubscription<String> _saveLocationStreamSubscription;
-  late final StreamSubscription<void> _loadDoneStreamSubscription;
-  late final StreamSubscription<ReaderSetStateData> _setStateStreamSubscription;
-
-  /// Server use cases
-  final ReaderStartReaderServerUseCase _startReaderServerUseCase;
-  final ReaderStopReaderServerUseCase _stopReaderServerUseCase;
-
-  /// Communication use cases
-  final ReaderObserveSaveLocationUseCase _observeSaveLocationUseCase;
+  /// Reader use cases
   final ReaderObserveLoadDoneUseCase _observeLoadDoneUseCase;
   final ReaderObserveSetStateUseCase _observeSetStateUseCase;
-  final ReaderSendPreviousPageUseCase _sendPreviousPageUseCase;
-  final ReaderSendNextPageUseCase _sendNextPageUseCase;
-  final ReaderSendSetFontColorUseCase _sendSetFontColorUseCase;
-  final ReaderSendSetFontSizeUseCase _sendSetFontSizeUseCase;
-  final ReaderSendSetLineHeightUseCase _sendSetLineHeightUseCase;
-  final ReaderSendSetSmoothScrollUseCase _sendSetSmoothScrollUseCase;
+  final ReaderNextPageUseCase _nextPageUseCase;
+  final ReaderPreviousPageUseCase _previousPageUseCase;
+  final ReaderSetFontColorUseCase _setFontColorUseCase;
+  final ReaderSetFontSizeUseCase _setFontSizeUseCase;
+  final ReaderSetLineHeightUseCase _setLineHeightUseCase;
+  final ReaderSetSmoothScrollUseCase _setSmoothScrollUseCase;
 
   /// Book use cases
   final BookGetUseCase _bookGetUseCase;
-
-  /// Location cache use cases
-  final ReaderStoreLocationCacheUseCase _storeLocationCacheUseCase;
-  final ReaderGetLocationCacheUseCase _getLocationCacheUseCase;
 
   /// Bookmark use cases
   final BookmarkGetDataUseCase _bookmarkGetDataUseCase;
@@ -248,10 +97,19 @@ class ReaderCubit extends Cubit<ReaderState> {
   /// Reader preference use cases
   final ReaderGetPreferenceUseCase _getPreferenceUseCase;
   final ReaderSavePreferenceUseCase _savePreferenceUseCase;
+  final ReaderObservePreferenceChangeUseCase _observePreferenceChangeUseCase;
   final ReaderResetPreferenceUseCase _resetPreferenceUseCase;
 
+  /// Stream Subscriptions
+  late final StreamSubscription<void> _loadDoneStreamSubscription =
+      _observeLoadDoneUseCase().listen(_receiveLoadDone);
+  late final StreamSubscription<ReaderSetStateData>
+      _setStateStreamSubscription =
+      _observeSetStateUseCase().listen(_receiveSetState);
+
   /// Preference Stream Subscription
-  late final StreamSubscription<ReaderPreferenceData> _preferenceSubscription;
+  late final StreamSubscription<ReaderPreferenceData> _preferenceSubscription =
+      _observePreferenceChangeUseCase().listen(_refreshPreference);
 
   /// Initialize from widgets.
   Future<void> initAsync({
@@ -283,42 +141,20 @@ class ReaderCubit extends Cubit<ReaderState> {
           .then((BookmarkData? data) => bookmarkData = data),
     ]);
 
-    // Start back-end server
-    final Uri serverUri = await _startReaderServerUseCase(bookIdentifier);
-
-    // Initialize webview handler
-    webViewHandler = ReaderWebViewHandler(
-      controller: webViewController,
-      repository: _webViewRepository,
-      uri: serverUri,
-      destination: destinationType == ReaderDestinationType.bookmark
-          ? bookmarkData?.startCfi ?? destination
-          : destination,
-      savedLocation: await _getLocationCacheUseCase(bookIdentifier),
-    );
-
-    // Listen messages
-    _saveLocationStreamSubscription =
-        _observeSaveLocationUseCase().listen(_receiveSaveLocation);
-    _loadDoneStreamSubscription =
-        _observeLoadDoneUseCase().listen(_receiveLoadDone);
-    _setStateStreamSubscription =
-        _observeSetStateUseCase().listen(_receiveSetState);
-
-    if (isClosed) {
-      return;
+    if (!isClosed) {
+      // Emit state.
+      emit(state.copyWith(
+        code: ReaderLoadingStateCode.rendering,
+        bookName: this.bookData?.title,
+        bookmarkData: bookmarkData,
+        readerPreference: readerSettingsData,
+      ));
     }
 
-    // Emit state.
-    emit(state.copyWith(
-      code: ReaderLoadingStateCode.rendering,
-      bookName: this.bookData?.title,
-      bookmarkData: bookmarkData,
-      readerPreference: readerSettingsData,
-    ));
-
-    // Start loading the page.
-    webViewHandler.request();
+    await _webViewRepository.startLoading(
+      bookIdentifier: bookIdentifier,
+      destination: destination,
+    );
   }
 
   void setNavState(ReaderNavigationStateCode code) {
@@ -328,9 +164,9 @@ class ReaderCubit extends Cubit<ReaderState> {
   void sendThemeData([ThemeData? newTheme]) {
     currentTheme = newTheme ?? currentTheme;
     if (state.code.isLoaded) {
-      _sendSetFontColorUseCase(currentTheme.colorScheme.onSurface);
-      _sendSetFontSizeUseCase(state.readerPreference.fontSize);
-      _sendSetLineHeightUseCase(state.readerPreference.lineHeight);
+      _setFontColorUseCase(currentTheme.colorScheme.onSurface);
+      _setFontSizeUseCase(state.readerPreference.fontSize);
+      _setLineHeightUseCase(state.readerPreference.lineHeight);
     }
   }
 
@@ -371,7 +207,7 @@ class ReaderCubit extends Cubit<ReaderState> {
         isSmoothScroll: value,
       ),
     ));
-    _sendSetSmoothScrollUseCase(value);
+    _setSmoothScrollUseCase(value);
   }
 
   set pageNumType(ReaderPageNumType value) {
@@ -419,35 +255,25 @@ class ReaderCubit extends Cubit<ReaderState> {
   /// *************************************************************************
 
   void previousPage() {
-    _sendPreviousPageUseCase();
+    _previousPageUseCase();
   }
 
   void nextPage() {
-    _sendNextPageUseCase();
+    _nextPageUseCase();
   }
 
   /// *************************************************************************
   /// Communication
   /// *************************************************************************
 
-  void _receiveSaveLocation(String locationData) {
-    if (bookData != null) {
-      _storeLocationCacheUseCase(ReaderStoreLocationCacheUseCaseParam(
-        bookIdentifier: bookData!.identifier,
-        location: locationData,
-      ));
-    }
-  }
-
   void _receiveLoadDone(void _) {
-    _stopReaderServerUseCase();
     emit(state.copyWith(code: ReaderLoadingStateCode.loaded));
 
     // Send theme data after the page is loaded.
     sendThemeData();
 
     // Set smooth scroll.
-    _sendSetSmoothScrollUseCase(state.readerPreference.isSmoothScroll);
+    _setSmoothScrollUseCase(state.readerPreference.isSmoothScroll);
   }
 
   void _receiveSetState(ReaderSetStateData data) {
@@ -471,14 +297,9 @@ class ReaderCubit extends Cubit<ReaderState> {
   @override
   Future<void> close() async {
     await _preferenceSubscription.cancel();
-    await _saveLocationStreamSubscription.cancel();
     await _loadDoneStreamSubscription.cancel();
     await _setStateStreamSubscription.cancel();
-    await _stopReaderServerUseCase();
     await _webViewRepository.dispose();
-    await _searchRepository.dispose();
-    await _ttsRepository.dispose();
-    await searchCubit.close();
     super.close();
   }
 }

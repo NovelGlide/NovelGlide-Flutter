@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 
+import '../../../../core/web_server/domain/entities/app_local_web_server.dart';
 import '../../../../core/web_server/domain/entities/web_server_request.dart';
 import '../../../../core/web_server/domain/entities/web_server_response.dart';
 import '../../../../core/web_server/domain/use_cases/web_server_start_use_case.dart';
@@ -16,8 +17,6 @@ class ReaderServerRepositoryImpl implements ReaderServerRepository {
     this._stopUseCase,
   );
 
-  final int _serverPort = 8080;
-
   late String _bookIdentifier;
 
   final BookReadBytesUseCase _bookReadBytesUseCase;
@@ -25,10 +24,10 @@ class ReaderServerRepositoryImpl implements ReaderServerRepository {
   final WebServerStopUseCase _stopUseCase;
 
   @override
-  Future<Uri> start(String bookFilePath) async {
-    _bookIdentifier = bookFilePath;
+  Future<Uri> start(String bookIdentifier) async {
+    _bookIdentifier = bookIdentifier;
     _startUseCase(WebServerStartUseCaseParam(
-      port: _serverPort,
+      server: AppLocalWebServer.reader,
       routes: <String, Future<WebServerResponse> Function(WebServerRequest)>{
         '': _sendIndexHtml,
         'index.html': _sendIndexHtml,
@@ -38,7 +37,7 @@ class ReaderServerRepositoryImpl implements ReaderServerRepository {
       },
     ));
 
-    return Uri.http('localhost:$_serverPort');
+    return AppLocalWebServer.reader.uri;
   }
 
   /// Send the content of the index.html file.
@@ -83,6 +82,6 @@ class ReaderServerRepositoryImpl implements ReaderServerRepository {
 
   @override
   Future<void> stop() async {
-    _stopUseCase(_serverPort);
+    _stopUseCase(AppLocalWebServer.reader);
   }
 }

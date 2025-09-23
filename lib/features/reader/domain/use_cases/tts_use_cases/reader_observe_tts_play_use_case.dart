@@ -1,5 +1,5 @@
-import '../../../../core/domain/use_cases/use_case.dart';
-import '../repositories/reader_tts_repository.dart';
+import '../../../../../core/domain/use_cases/use_case.dart';
+import '../../repositories/reader_tts_repository.dart';
 
 class ReaderObserveTtsPlayUseCase extends UseCase<Stream<String>, void> {
   ReaderObserveTtsPlayUseCase(this._repository);
@@ -8,6 +8,6 @@ class ReaderObserveTtsPlayUseCase extends UseCase<Stream<String>, void> {
 
   @override
   Stream<String> call([void parameter]) {
-    return _repository.ttsPlayStream;
+    return _repository.onPlayTts;
   }
 }

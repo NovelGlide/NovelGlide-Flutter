@@ -1,5 +1,5 @@
 import '../../../../core/domain/use_cases/use_case.dart';
-import '../../../reader/domain/use_cases/reader_delete_location_cache_use_case.dart';
+import '../../../reader/domain/use_cases/location_cache_use_cases/reader_delete_location_cache_use_case.dart';
 import '../repositories/book_repository.dart';
 
 class BookDeleteUseCase extends UseCase<Future<bool>, Set<String>> {

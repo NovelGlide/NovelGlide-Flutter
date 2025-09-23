@@ -1,5 +1,5 @@
 import '../../../../core/domain/use_cases/use_case.dart';
-import '../repositories/reader_web_view_repository.dart';
+import '../repositories/reader_webview_repository.dart';
 
 class ReaderObserveLoadDoneUseCase extends UseCase<Stream<void>, void> {
   ReaderObserveLoadDoneUseCase(this._repository);
@@ -8,6 +8,6 @@ class ReaderObserveLoadDoneUseCase extends UseCase<Stream<void>, void> {
 
   @override
   Stream<void> call([void parameter]) {
-    return _repository.loadDoneStream;
+    return _repository.onLoadDone;
   }
 }

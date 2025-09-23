@@ -9,19 +9,19 @@ import '../../../../tts_service/domain/use_cases/tts_reload_preference_use_case.
 import '../../../../tts_service/domain/use_cases/tts_resume_use_case.dart';
 import '../../../../tts_service/domain/use_cases/tts_speak_use_case.dart';
 import '../../../../tts_service/domain/use_cases/tts_stop_use_case.dart';
-import '../../../domain/use_cases/reader_observe_tts_end_use_case.dart';
-import '../../../domain/use_cases/reader_observe_tts_play_use_case.dart';
-import '../../../domain/use_cases/reader_observe_tts_stop_use_case.dart';
-import '../../../domain/use_cases/reader_send_tts_next_use_case.dart';
-import '../../../domain/use_cases/reader_send_tts_play_use_case.dart';
-import '../../../domain/use_cases/reader_send_tts_stop_use_case.dart';
+import '../../../domain/use_cases/tts_use_cases/reader_next_tts_use_case.dart';
+import '../../../domain/use_cases/tts_use_cases/reader_observe_tts_end_use_case.dart';
+import '../../../domain/use_cases/tts_use_cases/reader_observe_tts_play_use_case.dart';
+import '../../../domain/use_cases/tts_use_cases/reader_observe_tts_stop_use_case.dart';
+import '../../../domain/use_cases/tts_use_cases/reader_play_tts_use_case.dart';
+import '../../../domain/use_cases/tts_use_cases/reader_stop_tts_use_case.dart';
 import 'reader_tts_state.dart';
 
 class ReaderTtsCubit extends Cubit<ReaderTtsState> {
   ReaderTtsCubit(
-    this._readerSendTtsNextUseCase,
-    this._readerSendTtsPlayUseCase,
-    this._readerSendTtsStopUseCase,
+    this._readerNextTtsUseCase,
+    this._readerPlayTtsUseCase,
+    this._readerStopTtsUseCase,
     this._readerObserveTtsEndUseCase,
     this._readerObserveTtsPlayUseCase,
     this._readerObserveTtsStopUseCase,
@@ -34,9 +34,9 @@ class ReaderTtsCubit extends Cubit<ReaderTtsState> {
   ) : super(const ReaderTtsState());
 
   /// Communication use cases
-  final ReaderSendTtsNextUseCase _readerSendTtsNextUseCase;
-  final ReaderSendTtsPlayUseCase _readerSendTtsPlayUseCase;
-  final ReaderSendTtsStopUseCase _readerSendTtsStopUseCase;
+  final ReaderNextTtsUseCase _readerNextTtsUseCase;
+  final ReaderPlayTtsUseCase _readerPlayTtsUseCase;
+  final ReaderStopTtsUseCase _readerStopTtsUseCase;
   final ReaderObserveTtsEndUseCase _readerObserveTtsEndUseCase;
   final ReaderObserveTtsPlayUseCase _readerObserveTtsPlayUseCase;
   final ReaderObserveTtsStopUseCase _readerObserveTtsStopUseCase;
@@ -50,24 +50,19 @@ class ReaderTtsCubit extends Cubit<ReaderTtsState> {
   final TtsResumeUseCase _ttsResumeUseCase;
 
   /// Stream subscription
-  late final StreamSubscription<void> _ttsEndStreamSubscription;
-  late final StreamSubscription<String> _ttsPlayStreamSubscription;
-  late final StreamSubscription<void> _ttsStopStreamSubscription;
+  late final StreamSubscription<void> _ttsEndStreamSubscription =
+      _readerObserveTtsEndUseCase().listen(_ttsEnd);
+  late final StreamSubscription<String> _ttsPlayStreamSubscription =
+      _readerObserveTtsPlayUseCase().listen(_ttsPlay);
+  late final StreamSubscription<void> _ttsStopStreamSubscription =
+      _readerObserveTtsStopUseCase().listen(_ttsStop);
   late final StreamSubscription<TtsStateCode>
-      _ttsStateChangedStreamSubscription;
+      _ttsStateChangedStreamSubscription =
+      _ttsObserveStateChangedUseCase().listen(_onTtsStateChanged);
 
   bool isSpeakingEnd = false;
 
   Future<void> startLoading() async {
-    // Listen streams
-    _ttsEndStreamSubscription = _readerObserveTtsEndUseCase().listen(_ttsEnd);
-    _ttsPlayStreamSubscription =
-        _readerObserveTtsPlayUseCase().listen(_ttsPlay);
-    _ttsStopStreamSubscription =
-        _readerObserveTtsStopUseCase().listen(_ttsStop);
-    _ttsStateChangedStreamSubscription =
-        _ttsObserveStateChangedUseCase().listen(_onTtsStateChanged);
-
     // Reload TTS
     await _ttsReloadPreferenceUseCase();
   }
@@ -79,7 +74,7 @@ class ReaderTtsCubit extends Cubit<ReaderTtsState> {
           emit(ReaderTtsState(ttsState: code));
         } else {
           // The current sentence has been said. Go to next sentence.
-          _readerSendTtsNextUseCase();
+          _readerNextTtsUseCase();
         }
         break;
 
@@ -90,7 +85,7 @@ class ReaderTtsCubit extends Cubit<ReaderTtsState> {
 
   void sendPlaySignal() {
     isSpeakingEnd = false;
-    _readerSendTtsPlayUseCase();
+    _readerPlayTtsUseCase();
   }
 
   void resumeSpeaking() {
@@ -103,7 +98,7 @@ class ReaderTtsCubit extends Cubit<ReaderTtsState> {
 
   void stopSpeaking() {
     _ttsStopUseCase();
-    _readerSendTtsStopUseCase();
+    _readerStopTtsUseCase();
   }
 
   /// Request to play TTS

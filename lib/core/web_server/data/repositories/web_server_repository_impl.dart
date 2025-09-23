@@ -2,6 +2,7 @@ import 'dart:async';
 
 import '../../../lifecycle/domain/repositories/lifecycle_repository.dart';
 import '../../../log_system/log_system.dart';
+import '../../domain/entities/app_local_web_server.dart';
 import '../../domain/entities/web_server_request.dart';
 import '../../domain/entities/web_server_response.dart';
 import '../../domain/repositories/web_server_repository.dart';
@@ -24,11 +25,11 @@ class WebServerRepositoryImpl implements WebServerRepository {
   WebServerRepositoryImpl._(this._serverDataSource);
 
   final WebServerDataSource _serverDataSource;
-  final Set<int> _ports = <int>{};
+  final Set<AppLocalWebServer> _ports = <AppLocalWebServer>{};
 
   @override
   Future<void> start(
-    int port,
+    AppLocalWebServer port,
     Map<String, Future<WebServerResponse> Function(WebServerRequest request)>
         routes,
   ) async {
@@ -41,7 +42,7 @@ class WebServerRepositoryImpl implements WebServerRepository {
   }
 
   @override
-  Future<void> stop(int port) async {
+  Future<void> stop(AppLocalWebServer port) async {
     if (_ports.contains(port)) {
       _ports.remove(port);
       await _serverDataSource.stop(port);
@@ -49,7 +50,7 @@ class WebServerRepositoryImpl implements WebServerRepository {
   }
 
   Future<void> onDetach(void _) async {
-    for (final int port in _ports) {
+    for (final AppLocalWebServer port in _ports) {
       await _serverDataSource.stop(port);
     }
   }

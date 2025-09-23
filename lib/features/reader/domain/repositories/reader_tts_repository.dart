@@ -1,12 +1,16 @@
 abstract class ReaderTtsRepository {
   // Stream play tts event
-  Stream<String> get ttsPlayStream;
+  Stream<String> get onPlayTts;
 
   // Stream stop tts event
-  Stream<void> get ttsStopStream;
+  Stream<void> get onStopTts;
 
   // Stream tts end event
-  Stream<void> get ttsEndStream;
+  Stream<void> get onEndTts;
 
-  Future<void> dispose();
+  void ttsPlay();
+
+  void ttsNext();
+
+  void ttsStop();
 }

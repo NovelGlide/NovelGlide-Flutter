@@ -10,7 +10,7 @@ import '../books/domain/use_cases/book_reset_use_case.dart';
 import '../collection/domain/use_cases/collection_reset_use_case.dart';
 import '../collection/presentation/collection_list/cubit/collection_list_cubit.dart';
 import '../preference/domain/use_cases/preference_reset_use_case.dart';
-import '../reader/domain/use_cases/reader_clear_location_cache_use_case.dart';
+import '../reader/domain/use_cases/location_cache_use_cases/reader_clear_location_cache_use_case.dart';
 import '../settings_page/presentation/widgets/settings_card.dart';
 import '../settings_page/presentation/widgets/settings_list_tile.dart';
 import '../shared_components/common_loading_widgets/common_loading_dialog.dart';
