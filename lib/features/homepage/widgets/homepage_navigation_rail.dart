@@ -67,11 +67,11 @@ class HomepageNavigationRail extends StatelessWidget {
           label: Text(
             key: const ValueKey<String>('homepage_bookshelf'),
             appLocalizations.generalBookshelf,
-            style: state.navItem.isBookshelf && state.isEnabled
+            style: state.navItem.isBookshelf
                 ? selectedTextStyle
                 : unselectedTextStyle,
           ),
-          disabled: state.navItem.isBookshelf && state.isEnabled,
+          disabled: state.navItem.isBookshelf || !state.isEnabled,
         ),
         NavigationRailDestination(
           padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -84,11 +84,11 @@ class HomepageNavigationRail extends StatelessWidget {
           label: Text(
             key: const ValueKey<String>('homepage_explore'),
             appLocalizations.generalExplore,
-            style: state.navItem.isDiscovery && state.isEnabled
+            style: state.navItem.isDiscovery
                 ? selectedTextStyle
                 : unselectedTextStyle,
           ),
-          disabled: state.navItem.isDiscovery && state.isEnabled,
+          disabled: state.navItem.isDiscovery || !state.isEnabled,
         ),
         NavigationRailDestination(
           padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -103,11 +103,11 @@ class HomepageNavigationRail extends StatelessWidget {
           label: Text(
             key: const ValueKey<String>('homepage_bookmark'),
             appLocalizations.generalBookmark(2),
-            style: state.navItem.isBookmark && state.isEnabled
+            style: state.navItem.isBookmark
                 ? selectedTextStyle
                 : unselectedTextStyle,
           ),
-          disabled: state.navItem.isBookmark && state.isEnabled,
+          disabled: state.navItem.isBookmark || !state.isEnabled,
         ),
         NavigationRailDestination(
           padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -122,11 +122,11 @@ class HomepageNavigationRail extends StatelessWidget {
           label: Text(
             key: const ValueKey<String>('homepage_settings'),
             appLocalizations.generalSettings,
-            style: state.navItem.isSettings && state.isEnabled
+            style: state.navItem.isSettings
                 ? selectedTextStyle
                 : unselectedTextStyle,
           ),
-          disabled: state.navItem.isSettings && state.isEnabled,
+          disabled: state.navItem.isSettings || !state.isEnabled,
         ),
       ],
       onDestinationSelected: (int index) {
