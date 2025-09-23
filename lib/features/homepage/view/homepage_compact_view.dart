@@ -8,7 +8,16 @@ class HomepageCompactView extends StatelessWidget {
     return Scaffold(
       extendBody: true,
       appBar: const HomepageAppBarBuilder(),
-      body: const HomepageScaffoldBody(),
+      body: const Column(
+        children: <Widget>[
+          Advertisement(
+            unitId: AdUnitId.homepageCompact,
+          ),
+          Expanded(
+            child: HomepageScaffoldBody(),
+          ),
+        ],
+      ),
       bottomNavigationBar: SafeArea(
         child: Container(
           height: 80.0,

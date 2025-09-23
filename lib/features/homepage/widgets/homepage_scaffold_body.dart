@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../advertisement/domain/entities/ad_unit_id.dart';
-import '../../advertisement/presentation/advertisement.dart';
 import '../../bookmark/presentation/bookmark_list/bookmark_list_scaffold_body.dart';
 import '../../books/presentation/bookshelf/bookshelf.dart';
 import '../../explore/presentation/browser/explore_browser.dart';
@@ -14,33 +12,24 @@ class HomepageScaffoldBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        const Advertisement(
-          unitId: AdUnitId.homepage,
-        ),
-        Expanded(
-          child: BlocBuilder<HomepageCubit, HomepageState>(
-            buildWhen: (HomepageState previous, HomepageState current) =>
-                previous.navItem != current.navItem,
-            builder: (BuildContext context, HomepageState state) {
-              switch (state.navItem) {
-                case HomepageNavigationItem.bookshelf:
-                  return const Bookshelf();
+    return BlocBuilder<HomepageCubit, HomepageState>(
+      buildWhen: (HomepageState previous, HomepageState current) =>
+          previous.navItem != current.navItem,
+      builder: (BuildContext context, HomepageState state) {
+        switch (state.navItem) {
+          case HomepageNavigationItem.bookshelf:
+            return const Bookshelf();
 
-                case HomepageNavigationItem.explore:
-                  return const ExploreBrowser();
+          case HomepageNavigationItem.explore:
+            return const ExploreBrowser();
 
-                case HomepageNavigationItem.bookmark:
-                  return const BookmarkListScaffoldBody();
+          case HomepageNavigationItem.bookmark:
+            return const BookmarkListScaffoldBody();
 
-                case HomepageNavigationItem.settings:
-                  return const SettingsPage();
-              }
-            },
-          ),
-        ),
-      ],
+          case HomepageNavigationItem.settings:
+            return const SettingsPage();
+        }
+      },
     );
   }
 }

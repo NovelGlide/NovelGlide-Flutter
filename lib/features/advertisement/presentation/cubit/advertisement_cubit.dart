@@ -29,8 +29,11 @@ class AdvertisementCubit extends Cubit<AdvertisementState> {
   final AdCheckEnabledUseCase _checkEnabledUseCase;
 
   Future<void> loadAd(AdUnitId unitId, int width) async {
-    if (!isAdEnabled) {
+    if (!_checkEnabledUseCase() || unitId.id == null) {
       // Ad is not enabled.
+      emit(state.copyWith(
+        isEnabled: false,
+      ));
       return;
     }
 
@@ -41,10 +44,9 @@ class AdvertisementCubit extends Cubit<AdvertisementState> {
 
     emit(state.copyWith(
       adMobBannerAd: data.adMobBannerAd,
+      isEnabled: true,
     ));
   }
-
-  bool get isAdEnabled => _checkEnabledUseCase();
 
   @override
   Future<void> close() async {

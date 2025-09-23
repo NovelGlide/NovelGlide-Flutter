@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../enum/window_size.dart';
 import '../../main.dart';
+import '../advertisement/domain/entities/ad_unit_id.dart';
+import '../advertisement/presentation/advertisement.dart';
 import '../bookmark/presentation/bookmark_list/cubit/bookmark_list_cubit.dart';
 import '../books/presentation/book_list/cubit/book_list_cubit.dart';
 import '../books/presentation/bookshelf/cubit/bookshelf_cubit.dart';

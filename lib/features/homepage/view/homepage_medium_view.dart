@@ -13,7 +13,7 @@ class HomepageMediumView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Container(
-              margin: const EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 8.0),
+              margin: const EdgeInsets.fromLTRB(8.0, 0.0, 16.0, 8.0),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(36.0),
                 boxShadow: <BoxShadow>[
@@ -27,8 +27,22 @@ class HomepageMediumView extends StatelessWidget {
               clipBehavior: Clip.hardEdge,
               child: const HomepageNavigationRail(),
             ),
-            const Expanded(
-              child: HomepageScaffoldBody(),
+            Expanded(
+              child: Stack(
+                children: <Widget>[
+                  const HomepageScaffoldBody(),
+                  Positioned(
+                    left: 0.0,
+                    bottom: 0.0,
+                    child: SizedBox(
+                      width: WindowSize.compact.maxWidth,
+                      child: const Advertisement(
+                        unitId: AdUnitId.homepageMedium,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
