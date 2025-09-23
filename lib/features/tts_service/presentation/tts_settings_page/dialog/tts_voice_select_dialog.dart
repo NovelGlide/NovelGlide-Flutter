@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../enum/window_size.dart';
 import '../../../../../generated/i18n/app_localizations.dart';
 import '../../../domain/entities/tts_voice_data.dart';
 
@@ -12,6 +13,7 @@ class TtsVoiceSelectDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final AppLocalizations appLocalizations = AppLocalizations.of(context)!;
     return Dialog(
+      constraints: BoxConstraints(maxWidth: WindowSize.compact.maxWidth),
       clipBehavior: Clip.hardEdge,
       child: Scaffold(
         appBar: AppBar(

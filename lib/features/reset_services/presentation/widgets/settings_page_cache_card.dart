@@ -1,4 +1,10 @@
-part of '../../reset_service.dart';
+import 'package:flutter/material.dart';
+
+import '../../../../generated/i18n/app_localizations.dart';
+import '../../../../main.dart';
+import '../../../reader/domain/use_cases/location_cache_use_cases/reader_clear_location_cache_use_case.dart';
+import '../../../settings_page/presentation/widgets/settings_card.dart';
+import 'settings_page_list_tile.dart';
 
 class SettingsPageCacheCard extends StatelessWidget {
   const SettingsPageCacheCard({super.key});
@@ -14,13 +20,9 @@ class SettingsPageCacheCard extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 12.0),
             child: Text(
               appLocalizations.resetPageCacheTitle,
-              style: Theme
-                  .of(context)
-                  .textTheme
-                  .titleMedium
-                  ?.copyWith(
-                fontWeight: FontWeight.w900,
-              ),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w900,
+                  ),
             ),
           ),
 

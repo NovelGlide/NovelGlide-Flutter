@@ -1,4 +1,12 @@
-part of '../../reset_service.dart';
+import 'package:flutter/material.dart';
+
+import '../../../../generated/i18n/app_localizations.dart';
+import '../../../../main.dart';
+import '../../../bookmark/domain/use_cases/bookmark_reset_use_case.dart';
+import '../../../books/domain/use_cases/book_reset_use_case.dart';
+import '../../../collection/domain/use_cases/collection_reset_use_case.dart';
+import '../../../settings_page/presentation/widgets/settings_card.dart';
+import 'settings_page_list_tile.dart';
 
 class SettingsPageDataCard extends StatelessWidget {
   const SettingsPageDataCard({super.key});

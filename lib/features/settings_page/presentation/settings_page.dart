@@ -11,7 +11,7 @@ import '../../feedback/presentation/feedback_page.dart';
 import '../../locale_system/presentation/locale_settings_page/locale_settings_page.dart';
 import '../../manual/domain/entities/shared_manual_path_enum.dart';
 import '../../manual/presentation/shared_manual.dart';
-import '../../reset_services/reset_service.dart';
+import '../../reset_services/presentation/reset_service_settings_list_tile.dart';
 import '../../tts_service/presentation/tts_settings_page/tts_settings_page.dart';
 import 'widgets/settings_list_tile.dart';
 

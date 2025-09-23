@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../enum/window_size.dart';
 import '../../../../generated/i18n/app_localizations.dart';
 import '../../../../main.dart';
 import 'cubit/tts_settings_cubit.dart';
@@ -35,36 +36,42 @@ class _PageScaffold extends StatelessWidget {
       body: SafeArea(
         child: Scrollbar(
           child: SingleChildScrollView(
-            child: Column(
-              children: <Widget>[
-                const TtsDemoSection(),
-                const TtsVoiceSelectTile(),
-                TtsSettingSlider(
-                  title: appLocalizations.ttsSettingsPitch,
-                  onChanged: cubit.setPitch,
-                  min: 0.5,
-                  max: 2.0,
-                  divisions: 15,
-                  valueSelector: (TtsSettingsState state) => state.data.pitch,
-                ),
-                TtsSettingSlider(
-                  title: appLocalizations.ttsSettingsVolume,
-                  onChanged: cubit.setVolume,
-                  min: 0.0,
-                  max: 1.0,
-                  divisions: 10,
-                  valueSelector: (TtsSettingsState state) => state.data.volume,
-                ),
-                TtsSettingSlider(
-                  title: appLocalizations.ttsSettingsSpeechRate,
-                  onChanged: cubit.setSpeechRate,
-                  min: 0.5,
-                  max: 2.0,
-                  divisions: 15,
-                  valueSelector: (TtsSettingsState state) =>
-                      state.data.speechRate,
-                ),
-              ],
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: WindowSize.compact.maxWidth,
+              ),
+              child: Column(
+                children: <Widget>[
+                  const TtsDemoSection(),
+                  const TtsVoiceSelectTile(),
+                  TtsSettingSlider(
+                    title: appLocalizations.ttsSettingsPitch,
+                    onChanged: cubit.setPitch,
+                    min: 0.5,
+                    max: 2.0,
+                    divisions: 15,
+                    valueSelector: (TtsSettingsState state) => state.data.pitch,
+                  ),
+                  TtsSettingSlider(
+                    title: appLocalizations.ttsSettingsVolume,
+                    onChanged: cubit.setVolume,
+                    min: 0.0,
+                    max: 1.0,
+                    divisions: 10,
+                    valueSelector: (TtsSettingsState state) =>
+                        state.data.volume,
+                  ),
+                  TtsSettingSlider(
+                    title: appLocalizations.ttsSettingsSpeechRate,
+                    onChanged: cubit.setSpeechRate,
+                    min: 0.5,
+                    max: 2.0,
+                    divisions: 15,
+                    valueSelector: (TtsSettingsState state) =>
+                        state.data.speechRate,
+                  ),
+                ],
+              ),
             ),
           ),
         ),

@@ -1,4 +1,10 @@
-part of '../reset_service.dart';
+import 'package:flutter/material.dart';
+
+import '../../../enum/window_size.dart';
+import '../../../generated/i18n/app_localizations.dart';
+import 'widgets/settings_page_cache_card.dart';
+import 'widgets/settings_page_data_card.dart';
+import 'widgets/settings_page_preference_card.dart';
 
 class ResetPage extends StatelessWidget {
   const ResetPage({super.key});
@@ -10,13 +16,18 @@ class ResetPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(appLocalizations.resetPageTitle),
       ),
-      body: const SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: <Widget>[
-              SettingsPagePreferenceCard(),
-              SettingsPageCacheCard(),
-              SettingsPageDataCard(),
+      body: SafeArea(
+        child: Scrollbar(
+          child: CustomScrollView(
+            slivers: <Widget>[
+              SliverGrid.extent(
+                maxCrossAxisExtent: WindowSize.compact.maxWidth,
+                children: const <Widget>[
+                  SettingsPagePreferenceCard(),
+                  SettingsPageCacheCard(),
+                  SettingsPageDataCard(),
+                ],
+              ),
             ],
           ),
         ),

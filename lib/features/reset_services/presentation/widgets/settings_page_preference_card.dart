@@ -1,4 +1,10 @@
-part of '../../reset_service.dart';
+import 'package:flutter/material.dart';
+
+import '../../../../generated/i18n/app_localizations.dart';
+import '../../../../main.dart';
+import '../../../preference/domain/use_cases/preference_reset_use_case.dart';
+import '../../../settings_page/presentation/widgets/settings_card.dart';
+import 'settings_page_list_tile.dart';
 
 class SettingsPagePreferenceCard extends StatelessWidget {
   const SettingsPagePreferenceCard({super.key});

@@ -1,4 +1,8 @@
-part of '../../reset_service.dart';
+import 'package:flutter/material.dart';
+
+import '../../../shared_components/common_delete_dialog.dart';
+import '../../../shared_components/common_loading_widgets/common_loading_dialog.dart';
+import '../../../shared_components/common_success_dialog.dart';
 
 class SettingsPageListTile extends StatelessWidget {
   const SettingsPageListTile({
