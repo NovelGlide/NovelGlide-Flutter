@@ -50,19 +50,24 @@ class ReaderTtsCubit extends Cubit<ReaderTtsState> {
   final TtsResumeUseCase _ttsResumeUseCase;
 
   /// Stream subscription
-  late final StreamSubscription<void> _ttsEndStreamSubscription =
-      _readerObserveTtsEndUseCase().listen(_ttsEnd);
-  late final StreamSubscription<String> _ttsPlayStreamSubscription =
-      _readerObserveTtsPlayUseCase().listen(_ttsPlay);
-  late final StreamSubscription<void> _ttsStopStreamSubscription =
-      _readerObserveTtsStopUseCase().listen(_ttsStop);
+  late final StreamSubscription<void> _ttsEndStreamSubscription;
+  late final StreamSubscription<String> _ttsPlayStreamSubscription;
+  late final StreamSubscription<void> _ttsStopStreamSubscription;
   late final StreamSubscription<TtsStateCode>
-      _ttsStateChangedStreamSubscription =
-      _ttsObserveStateChangedUseCase().listen(_onTtsStateChanged);
+      _ttsStateChangedStreamSubscription;
 
   bool isSpeakingEnd = false;
 
   Future<void> startLoading() async {
+    // Register Listeners
+    _ttsEndStreamSubscription = _readerObserveTtsEndUseCase().listen(_ttsEnd);
+    _ttsPlayStreamSubscription =
+        _readerObserveTtsPlayUseCase().listen(_ttsPlay);
+    _ttsStopStreamSubscription =
+        _readerObserveTtsStopUseCase().listen(_ttsStop);
+    _ttsStateChangedStreamSubscription =
+        _ttsObserveStateChangedUseCase().listen(_onTtsStateChanged);
+
     // Reload TTS
     await _ttsReloadPreferenceUseCase();
   }

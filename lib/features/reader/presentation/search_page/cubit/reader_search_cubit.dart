@@ -28,8 +28,12 @@ class ReaderSearchCubit extends Cubit<ReaderSearchState> {
 
   /// Stream Subscriptions
   late final StreamSubscription<List<ReaderSearchResultData>>
-      _resultListSubscription =
-      _observeSearchListUseCase().listen(_setResultList);
+      _resultListSubscription;
+
+  Future<void> init() async {
+    _resultListSubscription =
+        _observeSearchListUseCase().listen(_setResultList);
+  }
 
   void startSearch() {
     emit(state.copyWith(code: LoadingStateCode.loading));

@@ -141,7 +141,7 @@ void setupReaderDependencies() {
           ReaderSearchInWholeBookUseCase(searchRepository),
           ReaderObserveSearchListUseCase(searchRepository),
           ReaderGotoUseCase(webViewRepository),
-        ),
+        )..init(),
         ReaderTtsCubit(
           ReaderNextTtsUseCase(ttsRepository),
           ReaderPlayTtsUseCase(ttsRepository),
