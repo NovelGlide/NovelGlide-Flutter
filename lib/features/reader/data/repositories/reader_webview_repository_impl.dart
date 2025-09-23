@@ -23,22 +23,9 @@ class ReaderWebViewRepositoryImpl implements ReaderWebViewRepository {
   final ReaderServerRepository _serverRepository;
   final ReaderLocationCacheRepository _cacheRepository;
 
-  late final String _bookIdentifier;
-
   /// Message Subscriptions
-  late final Set<StreamSubscription<dynamic>> _subscriptionSet =
-      <StreamSubscription<dynamic>>{
-    // Load done.
-    _dataSource.onLoadDone.listen((void _) async {
-      // Stop the local web server.
-      await _serverRepository.stop();
-    }),
-
-    // Save location.
-    _dataSource.onSaveLocation.listen((String location) async {
-      await _cacheRepository.store(_bookIdentifier, location);
-    }),
-  };
+  final Set<StreamSubscription<dynamic>> _subscriptionSet =
+      <StreamSubscription<dynamic>>{};
 
   @override
   WebViewController get webViewController => _dataSource.webViewController;
@@ -48,8 +35,6 @@ class ReaderWebViewRepositoryImpl implements ReaderWebViewRepository {
     required String bookIdentifier,
     String? destination,
   }) async {
-    _bookIdentifier = bookIdentifier;
-
     // Start up the local server
     final Uri serverUri = await _serverRepository.start(bookIdentifier);
 
@@ -75,6 +60,21 @@ class ReaderWebViewRepositoryImpl implements ReaderWebViewRepository {
             : NavigationDecision.prevent;
       },
     ));
+
+    // Setup Listeners
+    _subscriptionSet.add(
+      // Load done.
+      _dataSource.onLoadDone.listen((void _) async {
+        // Stop the local web server.
+        await _serverRepository.stop();
+      }),
+    );
+    _subscriptionSet.add(
+      // Save location.
+      _dataSource.onSaveLocation.listen((String location) async {
+        await _cacheRepository.store(bookIdentifier, location);
+      }),
+    );
 
     // Load the page.
     webViewController.loadRequest(serverUri);

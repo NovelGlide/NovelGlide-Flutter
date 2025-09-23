@@ -21,8 +21,8 @@ class ReaderNavPreviousButton extends StatelessWidget {
           buildWhen: (ReaderTtsState previous, ReaderTtsState current) =>
               previous.ttsState != current.ttsState,
           builder: (BuildContext context, ReaderTtsState ttsState) {
-            final bool isEnabled =
-                state.code.isLoaded && ttsState.ttsState.isIdle;
+            final bool isEnabled = state.code.isLoaded &&
+                (ttsState.ttsState.isIdle || ttsState.ttsState.isInitial);
             return IconButton(
               icon: const Icon(Icons.arrow_back_ios_rounded),
               tooltip: appLocalizations.generalPreviousPage,

@@ -101,11 +101,8 @@ class ReaderCubit extends Cubit<ReaderState> {
   final ReaderResetPreferenceUseCase _resetPreferenceUseCase;
 
   /// Stream Subscriptions
-  late final StreamSubscription<void> _loadDoneStreamSubscription =
-      _observeLoadDoneUseCase().listen(_receiveLoadDone);
-  late final StreamSubscription<ReaderSetStateData>
-      _setStateStreamSubscription =
-      _observeSetStateUseCase().listen(_receiveSetState);
+  late final StreamSubscription<void> _loadDoneStreamSubscription;
+  late final StreamSubscription<ReaderSetStateData> _setStateStreamSubscription;
 
   /// Preference Stream Subscription
   late final StreamSubscription<ReaderPreferenceData> _preferenceSubscription =
@@ -150,6 +147,12 @@ class ReaderCubit extends Cubit<ReaderState> {
         readerPreference: readerSettingsData,
       ));
     }
+
+    // Register Listeners
+    _loadDoneStreamSubscription =
+        _observeLoadDoneUseCase().listen(_receiveLoadDone);
+    _setStateStreamSubscription =
+        _observeSetStateUseCase().listen(_receiveSetState);
 
     await _webViewRepository.startLoading(
       bookIdentifier: bookIdentifier,

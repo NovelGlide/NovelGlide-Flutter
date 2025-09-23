@@ -7,6 +7,8 @@ enum TtsStateCode {
   completed,
   canceled;
 
+  bool get isInitial => this == TtsStateCode.initial;
+
   bool get isReady => this == TtsStateCode.ready;
 
   bool get isIdle =>

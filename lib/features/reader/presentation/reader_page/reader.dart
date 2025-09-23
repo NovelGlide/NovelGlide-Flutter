@@ -17,6 +17,7 @@ import '../../domain/entities/reader_page_num_type.dart';
 import '../search_page/widgets/reader_search_button.dart';
 import 'cubit/reader_cubit.dart';
 import 'cubit/reader_tts_cubit.dart';
+import 'cubit/reader_tts_state.dart';
 import 'widgets/nav/default/reader_nav_bookmark_button.dart';
 import 'widgets/nav/default/reader_nav_next_button.dart';
 import 'widgets/nav/default/reader_nav_previous_button.dart';

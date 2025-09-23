@@ -12,7 +12,8 @@ import '../reader_webview_data_source.dart';
 
 class ReaderWebViewDataSourceImpl implements ReaderWebViewDataSource {
   factory ReaderWebViewDataSourceImpl() {
-    final ReaderWebViewDataSourceImpl instance = ReaderWebViewDataSourceImpl();
+    final ReaderWebViewDataSourceImpl instance =
+        ReaderWebViewDataSourceImpl._();
 
     instance.webViewController.enableZoom(false);
     instance.webViewController.setBackgroundColor(Colors.transparent);
@@ -24,6 +25,8 @@ class ReaderWebViewDataSourceImpl implements ReaderWebViewDataSource {
 
     return instance;
   }
+
+  ReaderWebViewDataSourceImpl._();
 
   static const String _channelName = 'appApi';
 
