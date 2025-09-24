@@ -29,7 +29,7 @@ class ReaderWidget extends StatelessWidget {
       providers: <BlocProvider<dynamic>>[
         BlocProvider<ReaderCubit>(
           create: (_) => cubit
-            ..initAsync(
+            ..init(
               bookData: bookData,
               bookIdentifier: bookIdentifier,
               currentTheme: Theme.of(context),

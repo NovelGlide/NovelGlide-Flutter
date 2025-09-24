@@ -105,7 +105,7 @@ class ReaderCubit extends Cubit<ReaderState> {
       <StreamSubscription<dynamic>>{};
 
   /// Initialize from widgets.
-  Future<void> initAsync({
+  Future<void> init({
     required String bookIdentifier,
     required ThemeData currentTheme,
     required ReaderDestinationType destinationType,
