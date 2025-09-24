@@ -1,4 +1,8 @@
-part of '../reader.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../cubit/reader_cubit.dart';
+import 'reader_loading_widget.dart';
 
 class ReaderOverlapWidget extends StatelessWidget {
   const ReaderOverlapWidget({super.key});

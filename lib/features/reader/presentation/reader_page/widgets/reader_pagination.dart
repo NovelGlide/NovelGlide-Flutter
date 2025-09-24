@@ -1,4 +1,8 @@
-part of '../reader.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../domain/entities/reader_page_num_type.dart';
+import '../cubit/reader_cubit.dart';
 
 class ReaderPagination extends StatelessWidget {
   const ReaderPagination({super.key});

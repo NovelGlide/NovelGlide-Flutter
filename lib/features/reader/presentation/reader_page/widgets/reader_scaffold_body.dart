@@ -1,4 +1,13 @@
-part of '../reader.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../../advertisement/domain/entities/ad_unit_id.dart';
+import '../../../../advertisement/presentation/advertisement.dart';
+import '../core_webview/reader_core_webview.dart';
+import '../cubit/reader_cubit.dart';
+import 'reader_breadcrumb.dart';
+import 'reader_overlap_widget.dart';
+import 'reader_pagination.dart';
 
 class ReaderScaffoldBody extends StatelessWidget {
   const ReaderScaffoldBody({super.key});

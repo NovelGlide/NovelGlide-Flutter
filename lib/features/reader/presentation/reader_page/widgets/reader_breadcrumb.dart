@@ -1,4 +1,7 @@
-part of '../reader.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../cubit/reader_cubit.dart';
 
 class ReaderBreadcrumb extends StatelessWidget {
   const ReaderBreadcrumb({super.key});

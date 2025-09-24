@@ -1,4 +1,9 @@
-part of '../reader.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../../../generated/i18n/app_localizations.dart';
+import '../../../../shared_components/common_loading_widgets/common_loading_widget.dart';
+import '../cubit/reader_cubit.dart';
 
 class ReaderLoadingWidget extends StatelessWidget {
   const ReaderLoadingWidget({super.key});

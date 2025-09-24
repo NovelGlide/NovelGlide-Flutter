@@ -1,4 +1,8 @@
-part of '../reader.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../search_page/widgets/reader_search_button.dart';
+import '../cubit/reader_cubit.dart';
 
 class ReaderAppBar extends StatelessWidget implements PreferredSizeWidget {
   const ReaderAppBar({super.key});
