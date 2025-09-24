@@ -29,23 +29,23 @@ class WebServerRepositoryImpl implements WebServerRepository {
 
   @override
   Future<void> start(
-    AppLocalWebServer port,
+    AppLocalWebServer server,
     Map<String, Future<WebServerResponse> Function(WebServerRequest request)>
         routes,
   ) async {
-    if (!_ports.contains(port)) {
-      _ports.add(port);
-      await _serverDataSource.start(port, routes);
+    if (!_ports.contains(server)) {
+      _ports.add(server);
+      await _serverDataSource.start(server, routes);
     } else {
-      LogSystem.error('Web servers: Port $port is already in use.');
+      LogSystem.error('Web servers: Port $server is already in use.');
     }
   }
 
   @override
-  Future<void> stop(AppLocalWebServer port) async {
-    if (_ports.contains(port)) {
-      _ports.remove(port);
-      await _serverDataSource.stop(port);
+  Future<void> stop(AppLocalWebServer server) async {
+    if (_ports.contains(server)) {
+      _ports.remove(server);
+      await _serverDataSource.stop(server);
     }
   }
 

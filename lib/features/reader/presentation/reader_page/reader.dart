@@ -1,8 +1,5 @@
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../../../../../generated/i18n/app_localizations.dart';
 import '../../../../enum/window_size.dart';
@@ -15,6 +12,7 @@ import '../../domain/entities/reader_destination_type.dart';
 import '../../domain/entities/reader_navigation_state_code.dart';
 import '../../domain/entities/reader_page_num_type.dart';
 import '../search_page/widgets/reader_search_button.dart';
+import 'core_webview/reader_core_webview.dart';
 import 'cubit/reader_cubit.dart';
 import 'cubit/reader_tts_cubit.dart';
 import 'cubit/reader_tts_state.dart';

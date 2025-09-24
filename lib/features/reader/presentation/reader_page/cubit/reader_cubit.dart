@@ -19,7 +19,7 @@ import '../../../domain/entities/reader_destination_type.dart';
 import '../../../domain/entities/reader_navigation_state_code.dart';
 import '../../../domain/entities/reader_page_num_type.dart';
 import '../../../domain/entities/reader_set_state_data.dart';
-import '../../../domain/repositories/reader_webview_repository.dart';
+import '../../../domain/repositories/reader_core_repository.dart';
 import '../../../domain/use_cases/appearance_use_cases/reader_set_font_color_use_case.dart';
 import '../../../domain/use_cases/appearance_use_cases/reader_set_font_size_use_case.dart';
 import '../../../domain/use_cases/appearance_use_cases/reader_set_line_height_use_case.dart';
@@ -37,7 +37,7 @@ part 'reader_state.dart';
 
 class ReaderCubit extends Cubit<ReaderState> {
   ReaderCubit(
-    this._webViewRepository,
+    this._coreRepository,
     // Reader use cases
     this._observeLoadDoneUseCase,
     this._observeSetStateUseCase,
@@ -59,8 +59,9 @@ class ReaderCubit extends Cubit<ReaderState> {
     this._resetPreferenceUseCase,
     // Dependencies
     this.searchCubit,
-    this.ttsCubit,
-  ) : super(const ReaderState());
+    this.ttsCubit, {
+    this.webViewController,
+  }) : super(const ReaderState());
 
   Book? bookData;
   late ThemeData currentTheme;
@@ -71,11 +72,10 @@ class ReaderCubit extends Cubit<ReaderState> {
   late final ReaderGestureHandler gestureHandler =
       ReaderGestureHandler(onSwipeLeft: previousPage, onSwipeRight: nextPage);
 
-  WebViewController get webViewController =>
-      _webViewRepository.webViewController;
+  final WebViewController? webViewController;
 
   /// Dependencies
-  final ReaderWebViewRepository _webViewRepository;
+  final ReaderCoreRepository _coreRepository;
 
   /// Reader use cases
   final ReaderObserveLoadDoneUseCase _observeLoadDoneUseCase;
@@ -101,12 +101,8 @@ class ReaderCubit extends Cubit<ReaderState> {
   final ReaderResetPreferenceUseCase _resetPreferenceUseCase;
 
   /// Stream Subscriptions
-  late final StreamSubscription<void> _loadDoneStreamSubscription;
-  late final StreamSubscription<ReaderSetStateData> _setStateStreamSubscription;
-
-  /// Preference Stream Subscription
-  late final StreamSubscription<ReaderPreferenceData> _preferenceSubscription =
-      _observePreferenceChangeUseCase().listen(_refreshPreference);
+  final Set<StreamSubscription<dynamic>> _subscriptionSet =
+      <StreamSubscription<dynamic>>{};
 
   /// Initialize from widgets.
   Future<void> initAsync({
@@ -149,12 +145,12 @@ class ReaderCubit extends Cubit<ReaderState> {
     }
 
     // Register Listeners
-    _loadDoneStreamSubscription =
-        _observeLoadDoneUseCase().listen(_receiveLoadDone);
-    _setStateStreamSubscription =
-        _observeSetStateUseCase().listen(_receiveSetState);
+    _subscriptionSet.add(_observeLoadDoneUseCase().listen(_receiveLoadDone));
+    _subscriptionSet.add(_observeSetStateUseCase().listen(_receiveSetState));
+    _subscriptionSet
+        .add(_observePreferenceChangeUseCase().listen(_refreshPreference));
 
-    await _webViewRepository.startLoading(
+    await _coreRepository.startLoading(
       bookIdentifier: bookIdentifier,
       destination: destination,
     );
@@ -299,10 +295,11 @@ class ReaderCubit extends Cubit<ReaderState> {
 
   @override
   Future<void> close() async {
-    await _preferenceSubscription.cancel();
-    await _loadDoneStreamSubscription.cancel();
-    await _setStateStreamSubscription.cancel();
-    await _webViewRepository.dispose();
+    for (StreamSubscription<dynamic> subscription in _subscriptionSet) {
+      await subscription.cancel();
+    }
+
+    await _coreRepository.dispose();
     super.close();
   }
 }

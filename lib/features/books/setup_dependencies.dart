@@ -33,7 +33,6 @@ import 'domain/use_cases/book_get_use_case.dart';
 import 'domain/use_cases/book_is_file_valid_use_case.dart';
 import 'domain/use_cases/book_observe_change_use_case.dart';
 import 'domain/use_cases/book_pick_use_case.dart';
-import 'domain/use_cases/book_read_bytes_use_case.dart';
 import 'domain/use_cases/book_reset_use_case.dart';
 import 'presentation/add_page/cubit/book_add_cubit.dart';
 import 'presentation/book_list/cubit/book_list_cubit.dart';
@@ -67,11 +66,6 @@ void setupBookDependencies() {
   );
   sl.registerFactory<BookExistsUseCase>(
     () => BookExistsUseCase(
-      sl<BookRepository>(),
-    ),
-  );
-  sl.registerFactory<BookReadBytesUseCase>(
-    () => BookReadBytesUseCase(
       sl<BookRepository>(),
     ),
   );

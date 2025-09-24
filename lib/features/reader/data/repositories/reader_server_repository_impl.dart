@@ -5,37 +5,34 @@ import 'package:flutter/services.dart';
 import '../../../../core/web_server/domain/entities/app_local_web_server.dart';
 import '../../../../core/web_server/domain/entities/web_server_request.dart';
 import '../../../../core/web_server/domain/entities/web_server_response.dart';
-import '../../../../core/web_server/domain/use_cases/web_server_start_use_case.dart';
-import '../../../../core/web_server/domain/use_cases/web_server_stop_use_case.dart';
-import '../../../books/domain/use_cases/book_read_bytes_use_case.dart';
+import '../../../../core/web_server/domain/repositories/web_server_repository.dart';
+import '../../../books/domain/repositories/book_repository.dart';
 import '../../domain/repositories/reader_server_repository.dart';
 
 class ReaderServerRepositoryImpl implements ReaderServerRepository {
   ReaderServerRepositoryImpl(
-    this._bookReadBytesUseCase,
-    this._startUseCase,
-    this._stopUseCase,
+    this._webServerRepository,
+    this._bookRepository,
   );
 
   late String _bookIdentifier;
 
-  final BookReadBytesUseCase _bookReadBytesUseCase;
-  final WebServerStartUseCase _startUseCase;
-  final WebServerStopUseCase _stopUseCase;
+  final WebServerRepository _webServerRepository;
+  final BookRepository _bookRepository;
 
   @override
   Future<Uri> start(String bookIdentifier) async {
     _bookIdentifier = bookIdentifier;
-    _startUseCase(WebServerStartUseCaseParam(
-      server: AppLocalWebServer.reader,
-      routes: <String, Future<WebServerResponse> Function(WebServerRequest)>{
+    _webServerRepository.start(
+      AppLocalWebServer.reader,
+      <String, Future<WebServerResponse> Function(WebServerRequest)>{
         '': _sendIndexHtml,
         'index.html': _sendIndexHtml,
         'index.js': _sendIndexJs,
         'main.css': _sendMainCss,
         'book.epub': _sendBookEpub,
       },
-    ));
+    );
 
     return AppLocalWebServer.reader.uri;
   }
@@ -73,7 +70,7 @@ class ReaderServerRepositoryImpl implements ReaderServerRepository {
   /// Send the content of the book.epub file.
   Future<WebServerResponse> _sendBookEpub(WebServerRequest request) async {
     return WebServerResponse(
-      body: await _bookReadBytesUseCase(_bookIdentifier),
+      body: await _bookRepository.readBookBytes(_bookIdentifier),
       headers: const <String, Object>{
         HttpHeaders.contentTypeHeader: 'application/epub+zip'
       },
@@ -82,6 +79,6 @@ class ReaderServerRepositoryImpl implements ReaderServerRepository {
 
   @override
   Future<void> stop() async {
-    _stopUseCase(AppLocalWebServer.reader);
+    await _webServerRepository.stop(AppLocalWebServer.reader);
   }
 }

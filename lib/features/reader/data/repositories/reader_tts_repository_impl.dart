@@ -1,34 +1,34 @@
 import 'dart:async';
 
+import '../../domain/repositories/reader_core_repository.dart';
 import '../../domain/repositories/reader_tts_repository.dart';
-import '../../domain/repositories/reader_webview_repository.dart';
 
 class ReaderTtsRepositoryImpl extends ReaderTtsRepository {
-  ReaderTtsRepositoryImpl(this._webViewRepository);
+  ReaderTtsRepositoryImpl(this._coreRepository);
 
-  final ReaderWebViewRepository _webViewRepository;
-
-  @override
-  Stream<void> get onEndTts => _webViewRepository.onEndTts;
+  final ReaderCoreRepository _coreRepository;
 
   @override
-  Stream<String> get onPlayTts => _webViewRepository.onPlayTts;
+  Stream<void> get onEndTts => _coreRepository.onEndTts;
 
   @override
-  Stream<void> get onStopTts => _webViewRepository.onStopTts;
+  Stream<String> get onPlayTts => _coreRepository.onPlayTts;
+
+  @override
+  Stream<void> get onStopTts => _coreRepository.onStopTts;
 
   @override
   void ttsPlay() {
-    _webViewRepository.ttsPlay();
+    _coreRepository.ttsPlay();
   }
 
   @override
   void ttsNext() {
-    _webViewRepository.ttsNext();
+    _coreRepository.ttsNext();
   }
 
   @override
   void ttsStop() {
-    _webViewRepository.ttsStop();
+    _coreRepository.ttsStop();
   }
 }

@@ -1,12 +1,13 @@
+import 'package:webview_flutter/webview_flutter.dart';
+
 import '../../core/file_system/domain/repositories/file_system_repository.dart';
 import '../../core/path_provider/domain/repositories/app_path_provider.dart';
-import '../../core/web_server/domain/use_cases/web_server_start_use_case.dart';
-import '../../core/web_server/domain/use_cases/web_server_stop_use_case.dart';
+import '../../core/web_server/domain/repositories/web_server_repository.dart';
 import '../../main.dart';
 import '../bookmark/domain/use_cases/bookmark_get_data_use_case.dart';
 import '../bookmark/domain/use_cases/bookmark_update_data_use_case.dart';
+import '../books/domain/repositories/book_repository.dart';
 import '../books/domain/use_cases/book_get_use_case.dart';
-import '../books/domain/use_cases/book_read_bytes_use_case.dart';
 import '../preference/domain/repositories/preference_repository.dart';
 import '../preference/domain/use_cases/preference_get_use_cases.dart';
 import '../preference/domain/use_cases/preference_observe_change_use_case.dart';
@@ -24,10 +25,11 @@ import 'data/repositories/reader_search_repository_impl.dart';
 import 'data/repositories/reader_server_repository_impl.dart';
 import 'data/repositories/reader_tts_repository_impl.dart';
 import 'data/repositories/reader_webview_repository_impl.dart';
+import 'domain/repositories/reader_core_repository.dart';
 import 'domain/repositories/reader_location_cache_repository.dart';
 import 'domain/repositories/reader_search_repository.dart';
+import 'domain/repositories/reader_server_repository.dart';
 import 'domain/repositories/reader_tts_repository.dart';
-import 'domain/repositories/reader_webview_repository.dart';
 import 'domain/use_cases/appearance_use_cases/reader_set_font_color_use_case.dart';
 import 'domain/use_cases/appearance_use_cases/reader_set_font_size_use_case.dart';
 import 'domain/use_cases/appearance_use_cases/reader_set_line_height_use_case.dart';
@@ -58,6 +60,14 @@ void setupReaderDependencies() {
     () => ReaderLocationCacheRepositoryImpl(
       sl<AppPathProvider>(),
       sl<FileSystemRepository>(),
+    ),
+  );
+
+  // Reader Server Repository
+  sl.registerLazySingleton<ReaderServerRepository>(
+    () => ReaderServerRepositoryImpl(
+      sl<WebServerRepository>(),
+      sl<BookRepository>(),
     ),
   );
 
@@ -98,34 +108,31 @@ void setupReaderDependencies() {
   // Register factories
   sl.registerFactory<ReaderCubit>(
     () {
-      final ReaderWebViewRepository webViewRepository =
-          ReaderWebViewRepositoryImpl(
-        ReaderWebViewDataSourceImpl(),
-        ReaderServerRepositoryImpl(
-          sl<BookReadBytesUseCase>(),
-          sl<WebServerStartUseCase>(),
-          sl<WebServerStopUseCase>(),
-        ),
+      final WebViewController controller = WebViewController();
+      final ReaderCoreRepository coreRepository = ReaderWebViewRepositoryImpl(
+        controller,
+        ReaderWebViewDataSourceImpl(controller),
+        sl<ReaderServerRepository>(),
         sl<ReaderLocationCacheRepository>(),
       );
 
       final ReaderTtsRepository ttsRepository =
-          ReaderTtsRepositoryImpl(webViewRepository);
+          ReaderTtsRepositoryImpl(coreRepository);
 
       final ReaderSearchRepository searchRepository =
-          ReaderSearchRepositoryImpl(webViewRepository);
+          ReaderSearchRepositoryImpl(coreRepository);
 
       return ReaderCubit(
-        webViewRepository,
+        coreRepository,
         // Reader use cases
-        ReaderObserveLoadDoneUseCase(webViewRepository),
-        ReaderObserveSetStateUseCase(webViewRepository),
-        ReaderNextPageUseCase(webViewRepository),
-        ReaderPreviousPageUseCase(webViewRepository),
-        ReaderSetFontColorUseCase(webViewRepository),
-        ReaderSetFontSizeUseCase(webViewRepository),
-        ReaderSetLineHeightUseCase(webViewRepository),
-        ReaderSetSmoothScrollUseCase(webViewRepository),
+        ReaderObserveLoadDoneUseCase(coreRepository),
+        ReaderObserveSetStateUseCase(coreRepository),
+        ReaderNextPageUseCase(coreRepository),
+        ReaderPreviousPageUseCase(coreRepository),
+        ReaderSetFontColorUseCase(coreRepository),
+        ReaderSetFontSizeUseCase(coreRepository),
+        ReaderSetLineHeightUseCase(coreRepository),
+        ReaderSetSmoothScrollUseCase(coreRepository),
         // Book use cases
         sl<BookGetUseCase>(),
         // Bookmark use cases
@@ -140,7 +147,7 @@ void setupReaderDependencies() {
           ReaderSearchInCurrentChapterUseCase(searchRepository),
           ReaderSearchInWholeBookUseCase(searchRepository),
           ReaderObserveSearchListUseCase(searchRepository),
-          ReaderGotoUseCase(webViewRepository),
+          ReaderGotoUseCase(coreRepository),
         )..init(),
         ReaderTtsCubit(
           ReaderNextTtsUseCase(ttsRepository),
@@ -156,6 +163,7 @@ void setupReaderDependencies() {
           sl<TtsPauseUseCase>(),
           sl<TtsResumeUseCase>(),
         ),
+        webViewController: controller,
       );
     },
   );

@@ -6,19 +6,21 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../../../core/utils/color_extension.dart';
 import '../../domain/entities/reader_search_result_data.dart';
+import '../../domain/repositories/reader_core_repository.dart';
 import '../../domain/repositories/reader_location_cache_repository.dart';
 import '../../domain/repositories/reader_server_repository.dart';
-import '../../domain/repositories/reader_webview_repository.dart';
 import '../data_sources/reader_webview_data_source.dart';
 import '../data_transfer_objects/reader_web_message_dto.dart';
 
-class ReaderWebViewRepositoryImpl implements ReaderWebViewRepository {
+class ReaderWebViewRepositoryImpl implements ReaderCoreRepository {
   ReaderWebViewRepositoryImpl(
+    this._controller,
     this._dataSource,
     this._serverRepository,
     this._cacheRepository,
   );
 
+  final WebViewController _controller;
   final ReaderWebViewDataSource _dataSource;
   final ReaderServerRepository _serverRepository;
   final ReaderLocationCacheRepository _cacheRepository;
@@ -26,9 +28,6 @@ class ReaderWebViewRepositoryImpl implements ReaderWebViewRepository {
   /// Message Subscriptions
   final Set<StreamSubscription<dynamic>> _subscriptionSet =
       <StreamSubscription<dynamic>>{};
-
-  @override
-  WebViewController get webViewController => _dataSource.webViewController;
 
   @override
   Future<void> startLoading({
@@ -39,7 +38,7 @@ class ReaderWebViewRepositoryImpl implements ReaderWebViewRepository {
     final Uri serverUri = await _serverRepository.start(bookIdentifier);
 
     // Setup the navigation delegate.
-    webViewController.setNavigationDelegate(NavigationDelegate(
+    _controller.setNavigationDelegate(NavigationDelegate(
       onPageFinished: (String url) async {
         _dataSource.setChannel();
         _dataSource.send(ReaderWebMessageDto(
@@ -77,7 +76,7 @@ class ReaderWebViewRepositoryImpl implements ReaderWebViewRepository {
     );
 
     // Load the page.
-    webViewController.loadRequest(serverUri);
+    _controller.loadRequest(serverUri);
   }
 
   @override

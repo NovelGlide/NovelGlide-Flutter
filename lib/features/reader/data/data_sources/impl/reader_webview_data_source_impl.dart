@@ -11,14 +11,14 @@ import '../../data_transfer_objects/reader_web_message_dto.dart';
 import '../reader_webview_data_source.dart';
 
 class ReaderWebViewDataSourceImpl implements ReaderWebViewDataSource {
-  factory ReaderWebViewDataSourceImpl() {
+  factory ReaderWebViewDataSourceImpl(WebViewController controller) {
     final ReaderWebViewDataSourceImpl instance =
-        ReaderWebViewDataSourceImpl._();
+        ReaderWebViewDataSourceImpl._(controller);
 
-    instance.webViewController.enableZoom(false);
-    instance.webViewController.setBackgroundColor(Colors.transparent);
-    instance.webViewController.setJavaScriptMode(JavaScriptMode.unrestricted);
-    instance.webViewController.addJavaScriptChannel(
+    controller.enableZoom(false);
+    controller.setBackgroundColor(Colors.transparent);
+    controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+    controller.addJavaScriptChannel(
       _channelName,
       onMessageReceived: instance._receive,
     );
@@ -26,11 +26,11 @@ class ReaderWebViewDataSourceImpl implements ReaderWebViewDataSource {
     return instance;
   }
 
-  ReaderWebViewDataSourceImpl._();
+  ReaderWebViewDataSourceImpl._(this._controller);
 
   static const String _channelName = 'appApi';
 
-  final WebViewController _controller = WebViewController();
+  final WebViewController _controller;
 
   /// ========== Messages Stream Controllers ==========
   final StreamController<void> _loadDoneStreamController =
@@ -109,9 +109,6 @@ class ReaderWebViewDataSourceImpl implements ReaderWebViewDataSource {
       }
     }
   }
-
-  @override
-  WebViewController get webViewController => _controller;
 
   @override
   void send(ReaderWebMessageDto message) {

@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 import '../entities/reader_search_result_data.dart';
 import '../entities/reader_set_state_data.dart';
 
-abstract class ReaderWebViewRepository {
-  WebViewController get webViewController;
-
+abstract class ReaderCoreRepository {
   Future<void> startLoading({
     required String bookIdentifier,
     String? destination,
