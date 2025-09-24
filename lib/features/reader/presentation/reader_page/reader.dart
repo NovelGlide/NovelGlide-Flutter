@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../enum/window_size.dart';
 import '../../../../main.dart';
 import '../../../books/domain/entities/book.dart';
 import '../../domain/entities/reader_destination_type.dart';
 import 'cubit/reader_cubit.dart';
 import 'cubit/reader_tts_cubit.dart';
-import 'views/reader_compact_view.dart';
-import 'views/reader_medium_view.dart';
-
-part 'widgets/reader_scaffold.dart';
+import 'widgets/reader_scaffold.dart';
 
 class ReaderWidget extends StatelessWidget {
   const ReaderWidget({

@@ -1,4 +1,10 @@
-part of '../reader.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../../../enum/window_size.dart';
+import '../cubit/reader_cubit.dart';
+import '../views/reader_compact_view.dart';
+import '../views/reader_medium_view.dart';
 
 class ReaderScaffold extends StatelessWidget {
   const ReaderScaffold({super.key});
