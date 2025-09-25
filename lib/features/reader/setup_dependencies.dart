@@ -52,6 +52,7 @@ import 'domain/use_cases/tts_use_cases/reader_observe_tts_play_use_case.dart';
 import 'domain/use_cases/tts_use_cases/reader_observe_tts_stop_use_case.dart';
 import 'domain/use_cases/tts_use_cases/reader_play_tts_use_case.dart';
 import 'domain/use_cases/tts_use_cases/reader_stop_tts_use_case.dart';
+import 'presentation/reader_page/core_html/cubit/reader_core_html_cubit.dart';
 import 'presentation/reader_page/cubit/reader_cubit.dart';
 import 'presentation/reader_page/cubit/reader_tts_cubit.dart';
 import 'presentation/search_page/cubit/reader_search_cubit.dart';
@@ -187,5 +188,10 @@ void setupReaderDependencies() {
         sl<ReaderResetPreferenceUseCase>(),
       );
     },
+  );
+
+  // Register the factory of ReaderCoreHtmlCubit
+  sl.registerFactory<ReaderCoreHtmlCubit>(
+    () => ReaderCoreHtmlCubit(),
   );
 }
