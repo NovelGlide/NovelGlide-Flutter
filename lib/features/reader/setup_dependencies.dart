@@ -20,11 +20,13 @@ import '../tts_service/domain/use_cases/tts_resume_use_case.dart';
 import '../tts_service/domain/use_cases/tts_speak_use_case.dart';
 import '../tts_service/domain/use_cases/tts_stop_use_case.dart';
 import 'data/data_sources/impl/reader_webview_data_source_impl.dart';
+import 'data/repositories/reader_core_html_repository_impl.dart';
 import 'data/repositories/reader_core_webview_repository_impl.dart';
 import 'data/repositories/reader_location_cache_repository_impl.dart';
 import 'data/repositories/reader_search_repository_impl.dart';
 import 'data/repositories/reader_server_repository_impl.dart';
 import 'data/repositories/reader_tts_repository_impl.dart';
+import 'domain/entities/reader_core_type.dart';
 import 'domain/repositories/reader_core_repository.dart';
 import 'domain/repositories/reader_location_cache_repository.dart';
 import 'domain/repositories/reader_search_repository.dart';
@@ -105,17 +107,25 @@ void setupReaderDependencies() {
     ),
   );
 
-  // Register factories
-  sl.registerFactory<ReaderCubit>(
-    () {
-      final WebViewController controller = WebViewController();
-      final ReaderCoreRepository coreRepository =
-          ReaderCoreWebViewRepositoryImpl(
-        controller,
-        ReaderWebViewDataSourceImpl(controller),
-        sl<ReaderServerRepository>(),
-        sl<ReaderLocationCacheRepository>(),
-      );
+  // Register the factory of cubit dependencies setup.
+  sl.registerFactoryParam<ReaderCubitDependencies, ReaderCoreType, void>(
+    (ReaderCoreType coreType, void _) {
+      // Initialize the WebView controller.
+      final WebViewController? controller = switch (coreType) {
+        ReaderCoreType.webView => WebViewController(),
+        _ => null,
+      };
+
+      // Initialize the core repository.
+      final ReaderCoreRepository coreRepository = switch (coreType) {
+        ReaderCoreType.webView => ReaderCoreWebViewRepositoryImpl(
+            controller!,
+            ReaderWebViewDataSourceImpl(controller),
+            sl<ReaderServerRepository>(),
+            sl<ReaderLocationCacheRepository>(),
+          ),
+        ReaderCoreType.html => ReaderCoreHtmlRepositoryImpl(),
+      };
 
       final ReaderTtsRepository ttsRepository =
           ReaderTtsRepositoryImpl(coreRepository);
@@ -123,7 +133,8 @@ void setupReaderDependencies() {
       final ReaderSearchRepository searchRepository =
           ReaderSearchRepositoryImpl(coreRepository);
 
-      return ReaderCubit(
+      return ReaderCubitDependencies(
+        controller,
         coreRepository,
         // Reader use cases
         ReaderObserveLoadDoneUseCase(coreRepository),
@@ -134,16 +145,6 @@ void setupReaderDependencies() {
         ReaderSetFontSizeUseCase(coreRepository),
         ReaderSetLineHeightUseCase(coreRepository),
         ReaderSetSmoothScrollUseCase(coreRepository),
-        // Book use cases
-        sl<BookGetUseCase>(),
-        // Bookmark use cases
-        sl<BookmarkGetDataUseCase>(),
-        sl<BookmarkUpdateDataUseCase>(),
-        // Reader preference use cases.
-        sl<ReaderGetPreferenceUseCase>(),
-        sl<ReaderSavePreferenceUseCase>(),
-        sl<ReaderObservePreferenceChangeUseCase>(),
-        sl<ReaderResetPreferenceUseCase>(),
         ReaderSearchCubit(
           ReaderSearchInCurrentChapterUseCase(searchRepository),
           ReaderSearchInWholeBookUseCase(searchRepository),
@@ -164,7 +165,24 @@ void setupReaderDependencies() {
           sl<TtsPauseUseCase>(),
           sl<TtsResumeUseCase>(),
         ),
-        webViewController: controller,
+      );
+    },
+  );
+
+  // Register the factory of ReaderCubit
+  sl.registerFactory<ReaderCubit>(
+    () {
+      return ReaderCubit(
+        // Book use cases
+        sl<BookGetUseCase>(),
+        // Bookmark use cases
+        sl<BookmarkGetDataUseCase>(),
+        sl<BookmarkUpdateDataUseCase>(),
+        // Reader preference use cases.
+        sl<ReaderGetPreferenceUseCase>(),
+        sl<ReaderSavePreferenceUseCase>(),
+        sl<ReaderObservePreferenceChangeUseCase>(),
+        sl<ReaderResetPreferenceUseCase>(),
       );
     },
   );

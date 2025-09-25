@@ -1,3 +1,4 @@
 enum ReaderCoreType {
   webView,
+  html,
 }

@@ -3,6 +3,7 @@ part of 'reader_cubit.dart';
 class ReaderState extends Equatable {
   const ReaderState({
     this.code = ReaderLoadingStateCode.initial,
+    this.coreType,
     this.bookName = '',
     this.breadcrumb = '',
     this.chapterFileName = '',
@@ -15,6 +16,7 @@ class ReaderState extends Equatable {
   });
 
   final ReaderLoadingStateCode code;
+  final ReaderCoreType? coreType;
 
   /// Book state.
   final String bookName;
@@ -47,6 +49,7 @@ class ReaderState extends Equatable {
       ];
 
   ReaderState copyWith({
+    ReaderCoreType? coreType,
     ReaderLoadingStateCode? code,
     String? bookName,
     String? breadcrumb,
@@ -59,6 +62,7 @@ class ReaderState extends Equatable {
     ReaderPreferenceData? readerPreference,
   }) {
     return ReaderState(
+      coreType: coreType ?? this.coreType,
       code: code ?? this.code,
       bookName: bookName ?? this.bookName,
       breadcrumb: breadcrumb ?? this.breadcrumb,

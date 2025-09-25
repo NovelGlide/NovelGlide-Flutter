@@ -6,11 +6,9 @@ import '../../domain/entities/reader_search_result_data.dart';
 import '../../domain/entities/reader_set_state_data.dart';
 import '../../domain/repositories/reader_core_repository.dart';
 
-class ReaderCoreWidgetRepositoryImpl implements ReaderCoreRepository {
+class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
   final StreamController<void> _loadDoneStreamController =
       StreamController<void>.broadcast();
-  final StreamController<String> _saveLocationStreamController =
-      StreamController<String>.broadcast();
   final StreamController<ReaderSetStateData> _setStateStreamController =
       StreamController<ReaderSetStateData>.broadcast();
   final StreamController<String> _ttsPlayStreamController =

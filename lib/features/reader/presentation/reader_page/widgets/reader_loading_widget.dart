@@ -15,23 +15,17 @@ class ReaderLoadingWidget extends StatelessWidget {
           previous.code != current.code,
       builder: (BuildContext context, ReaderState state) {
         final AppLocalizations appLocalizations = AppLocalizations.of(context)!;
-        String? title;
-        switch (state.code) {
-          case ReaderLoadingStateCode.initial:
-            title = appLocalizations.readerLoadingInitialize;
-            break;
-
-          case ReaderLoadingStateCode.bookLoading:
-            title = appLocalizations.readerLoadingBookLoading;
-            break;
-
-          case ReaderLoadingStateCode.rendering:
-            title = appLocalizations.readerLoadingRendering;
-            break;
-
-          case ReaderLoadingStateCode.loaded:
-            break;
-        }
+        final String? title = switch (state.code) {
+          ReaderLoadingStateCode.initial =>
+            appLocalizations.readerLoadingInitialize,
+          ReaderLoadingStateCode.preferenceLoading =>
+            throw UnimplementedError(),
+          ReaderLoadingStateCode.bookLoading =>
+            appLocalizations.readerLoadingBookLoading,
+          ReaderLoadingStateCode.rendering =>
+            appLocalizations.readerLoadingRendering,
+          ReaderLoadingStateCode.loaded => null,
+        };
 
         return Container(
           width: double.infinity,
