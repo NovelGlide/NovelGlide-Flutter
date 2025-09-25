@@ -12,8 +12,8 @@ import '../../domain/repositories/reader_server_repository.dart';
 import '../data_sources/reader_webview_data_source.dart';
 import '../data_transfer_objects/reader_web_message_dto.dart';
 
-class ReaderWebViewRepositoryImpl implements ReaderCoreRepository {
-  ReaderWebViewRepositoryImpl(
+class ReaderCoreWebViewRepositoryImpl implements ReaderCoreRepository {
+  ReaderCoreWebViewRepositoryImpl(
     this._controller,
     this._dataSource,
     this._serverRepository,

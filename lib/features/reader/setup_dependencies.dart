@@ -20,11 +20,11 @@ import '../tts_service/domain/use_cases/tts_resume_use_case.dart';
 import '../tts_service/domain/use_cases/tts_speak_use_case.dart';
 import '../tts_service/domain/use_cases/tts_stop_use_case.dart';
 import 'data/data_sources/impl/reader_webview_data_source_impl.dart';
+import 'data/repositories/reader_core_webview_repository_impl.dart';
 import 'data/repositories/reader_location_cache_repository_impl.dart';
 import 'data/repositories/reader_search_repository_impl.dart';
 import 'data/repositories/reader_server_repository_impl.dart';
 import 'data/repositories/reader_tts_repository_impl.dart';
-import 'data/repositories/reader_webview_repository_impl.dart';
 import 'domain/repositories/reader_core_repository.dart';
 import 'domain/repositories/reader_location_cache_repository.dart';
 import 'domain/repositories/reader_search_repository.dart';
@@ -109,7 +109,8 @@ void setupReaderDependencies() {
   sl.registerFactory<ReaderCubit>(
     () {
       final WebViewController controller = WebViewController();
-      final ReaderCoreRepository coreRepository = ReaderWebViewRepositoryImpl(
+      final ReaderCoreRepository coreRepository =
+          ReaderCoreWebViewRepositoryImpl(
         controller,
         ReaderWebViewDataSourceImpl(controller),
         sl<ReaderServerRepository>(),
