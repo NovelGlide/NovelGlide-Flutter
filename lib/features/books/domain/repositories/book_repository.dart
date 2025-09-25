@@ -29,8 +29,6 @@ abstract class BookRepository {
 
   Future<List<BookChapter>> getChapterList(String identifier);
 
-  Future<void> clearTemporaryPickedBooks();
-
   Future<void> reset();
 
   Future<bool> isFileValid(String path);

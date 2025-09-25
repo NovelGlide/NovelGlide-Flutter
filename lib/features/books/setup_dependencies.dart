@@ -8,6 +8,7 @@ import '../bookmark/domain/use_cases/bookmark_reset_use_case.dart';
 import '../collection/domain/use_cases/collection_delete_all_books_use_case.dart';
 import '../download_manager/domain/use_cases/downloader_download_file_use_case.dart';
 import '../pick_file/domain/repositories/pick_file_repository.dart';
+import '../pick_file/domain/use_cases/pick_file_clear_temp_use_case.dart';
 import '../preference/domain/repositories/preference_repository.dart';
 import '../preference/domain/use_cases/preference_get_use_cases.dart';
 import '../preference/domain/use_cases/preference_observe_change_use_case.dart';
@@ -20,7 +21,6 @@ import 'data/data_sources/implementations/epub_data_source.dart';
 import 'data/repositories/book_repository_impl.dart';
 import 'domain/repositories/book_repository.dart';
 import 'domain/use_cases/book_add_use_case.dart';
-import 'domain/use_cases/book_clear_temporary_picked_files_use_case.dart';
 import 'domain/use_cases/book_delete_use_case.dart';
 import 'domain/use_cases/book_download_and_add_use_case.dart';
 import 'domain/use_cases/book_exists_use_case.dart';
@@ -66,11 +66,6 @@ void setupBookDependencies() {
   );
   sl.registerFactory<BookExistsUseCase>(
     () => BookExistsUseCase(
-      sl<BookRepository>(),
-    ),
-  );
-  sl.registerFactory<BookClearTemporaryPickedFilesUseCase>(
-    () => BookClearTemporaryPickedFilesUseCase(
       sl<BookRepository>(),
     ),
   );
@@ -180,9 +175,9 @@ void setupBookDependencies() {
   sl.registerFactory<BookAddCubit>(
     () => BookAddCubit(
       sl<BookAddUseCase>(),
-      sl<BookClearTemporaryPickedFilesUseCase>(),
       sl<BookGetAllowedExtensionsUseCase>(),
       sl<BookPickUseCase>(),
+      sl<PickFileClearTempUseCase>(),
     ),
   );
   sl.registerFactory<TocCubit>(

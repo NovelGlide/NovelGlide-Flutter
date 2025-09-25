@@ -129,11 +129,6 @@ class BookRepositoryImpl implements BookRepository {
   }
 
   @override
-  Future<void> clearTemporaryPickedBooks() {
-    return _pickFileRepository.clearTemporaryFiles();
-  }
-
-  @override
   Future<void> reset() async {
     await _epubDataSource.deleteAllBooks();
 
