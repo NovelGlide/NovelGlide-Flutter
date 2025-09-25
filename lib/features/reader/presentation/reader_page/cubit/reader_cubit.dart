@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-import '../../../../../main.dart';
 import '../../../../bookmark/domain/entities/bookmark_data.dart';
 import '../../../../bookmark/domain/use_cases/bookmark_get_data_use_case.dart';
 import '../../../../bookmark/domain/use_cases/bookmark_update_data_use_case.dart';
@@ -72,6 +71,7 @@ class ReaderCubitDependencies {
 
 class ReaderCubit extends Cubit<ReaderState> {
   ReaderCubit(
+    this._dependenciesFactory,
     // Book use cases
     this._bookGetUseCase,
     // Bookmark use cases
@@ -87,6 +87,7 @@ class ReaderCubit extends Cubit<ReaderState> {
   Book? bookData;
   late ThemeData currentTheme;
 
+  final ReaderCubitDependencies Function(ReaderCoreType) _dependenciesFactory;
   late final ReaderCubitDependencies _dependencies;
 
   late final ReaderGestureHandler gestureHandler = ReaderGestureHandler(
@@ -138,15 +139,12 @@ class ReaderCubit extends Cubit<ReaderState> {
     final ReaderPreferenceData readerSettingsData =
         await _getPreferenceUseCase();
 
-    // TODO(kai): Load the type from preferences.
-    final ReaderCoreType coreType = ReaderCoreType.webView;
-
     // Load the dependencies of the cubit
-    _dependencies = sl<ReaderCubitDependencies>(param1: coreType);
+    _dependencies = _dependenciesFactory(readerSettingsData.coreType);
 
     // Load the book data.
     emit(state.copyWith(
-      coreType: coreType,
+      coreType: readerSettingsData.coreType,
       code: ReaderLoadingStateCode.bookLoading,
     ));
 

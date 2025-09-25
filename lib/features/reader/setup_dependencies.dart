@@ -173,6 +173,8 @@ void setupReaderDependencies() {
   sl.registerFactory<ReaderCubit>(
     () {
       return ReaderCubit(
+        (ReaderCoreType coreType) =>
+            sl<ReaderCubitDependencies>(param1: coreType),
         // Book use cases
         sl<BookGetUseCase>(),
         // Bookmark use cases

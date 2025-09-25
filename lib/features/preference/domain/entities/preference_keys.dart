@@ -33,4 +33,5 @@ enum PreferenceKeys {
   readerAutoSaving,
   readerSmoothScroll,
   readerPageNumType,
+  readerCoreType,
 }
