@@ -1,0 +1,90 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+
+import '../../domain/entities/reader_search_result_data.dart';
+import '../../domain/entities/reader_set_state_data.dart';
+import '../../domain/repositories/reader_core_repository.dart';
+
+class ReaderCoreWidgetRepositoryImpl implements ReaderCoreRepository {
+  final StreamController<void> _loadDoneStreamController =
+      StreamController<void>.broadcast();
+  final StreamController<String> _saveLocationStreamController =
+      StreamController<String>.broadcast();
+  final StreamController<ReaderSetStateData> _setStateStreamController =
+      StreamController<ReaderSetStateData>.broadcast();
+  final StreamController<String> _ttsPlayStreamController =
+      StreamController<String>.broadcast();
+  final StreamController<void> _ttsStopStreamController =
+      StreamController<void>.broadcast();
+  final StreamController<void> _ttsEndStreamController =
+      StreamController<void>.broadcast();
+  final StreamController<List<ReaderSearchResultData>>
+      _searchResultStreamController =
+      StreamController<List<ReaderSearchResultData>>.broadcast();
+
+  @override
+  Future<void> startLoading({
+    required String bookIdentifier,
+    String? chapterIdentifier,
+    String? cfi,
+  }) async {}
+
+  @override
+  void goto(String destination) {}
+
+  @override
+  void nextPage() {}
+
+  @override
+  void previousPage() {}
+
+  @override
+  void ttsPlay() {}
+
+  @override
+  void ttsNext() {}
+
+  @override
+  void ttsStop() {}
+
+  @override
+  void searchInCurrentChapter(String query) {}
+
+  @override
+  void searchInWholeBook(String query) {}
+
+  @override
+  set fontColor(Color fontColor) {}
+
+  @override
+  set fontSize(double fontSize) {}
+
+  @override
+  set lineHeight(double lineHeight) {}
+
+  @override
+  set smoothScroll(bool smoothScroll) {}
+
+  @override
+  Stream<void> get onLoadDone => _loadDoneStreamController.stream;
+
+  @override
+  Stream<ReaderSetStateData> get onSetState => _setStateStreamController.stream;
+
+  @override
+  Stream<String> get onPlayTts => _ttsPlayStreamController.stream;
+
+  @override
+  Stream<void> get onStopTts => _ttsStopStreamController.stream;
+
+  @override
+  Stream<void> get onEndTts => _ttsEndStreamController.stream;
+
+  @override
+  Stream<List<ReaderSearchResultData>> get onSetSearchResultList =>
+      _searchResultStreamController.stream;
+
+  @override
+  Future<void> dispose() async {}
+}

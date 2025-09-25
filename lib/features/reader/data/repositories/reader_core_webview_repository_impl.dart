@@ -32,7 +32,8 @@ class ReaderCoreWebViewRepositoryImpl implements ReaderCoreRepository {
   @override
   Future<void> startLoading({
     required String bookIdentifier,
-    String? destination,
+    String? chapterIdentifier,
+    String? cfi,
   }) async {
     // Start up the local server
     final Uri serverUri = await _serverRepository.start(bookIdentifier);
@@ -44,7 +45,7 @@ class ReaderCoreWebViewRepositoryImpl implements ReaderCoreRepository {
         _dataSource.send(ReaderWebMessageDto(
           route: 'main',
           data: <String, String?>{
-            'destination': destination,
+            'destination': cfi ?? chapterIdentifier,
             'savedLocation': await _cacheRepository.get(bookIdentifier),
           },
         ));

@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../main.dart';
 import '../../../books/domain/entities/book.dart';
-import '../../domain/entities/reader_destination_type.dart';
 import 'cubit/reader_cubit.dart';
 import 'cubit/reader_tts_cubit.dart';
 import 'widgets/reader_scaffold.dart';
@@ -13,14 +12,14 @@ class ReaderWidget extends StatelessWidget {
     super.key,
     required this.bookIdentifier,
     this.bookData,
-    this.destinationType = ReaderDestinationType.none,
-    this.destination,
+    this.chapterIdentifier,
+    this.cfi,
   });
 
   final String bookIdentifier;
   final Book? bookData;
-  final ReaderDestinationType destinationType;
-  final String? destination;
+  final String? chapterIdentifier;
+  final String? cfi;
 
   @override
   Widget build(BuildContext context) {
@@ -33,8 +32,7 @@ class ReaderWidget extends StatelessWidget {
               bookData: bookData,
               bookIdentifier: bookIdentifier,
               currentTheme: Theme.of(context),
-              destinationType: destinationType,
-              destination: destination,
+              cfi: cfi,
             ),
         ),
         BlocProvider<ReaderTtsCubit>(

@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../enum/window_size.dart';
 import '../../../../../generated/i18n/app_localizations.dart';
-import '../../../../reader/domain/entities/reader_destination_type.dart';
 import '../../../../reader/presentation/reader_page/reader.dart';
 import '../../../domain/entities/book.dart';
 import '../cubit/toc_cubit.dart';
@@ -63,8 +62,8 @@ class TocFabSection extends StatelessWidget {
                     builder: (_) => ReaderWidget(
                       bookIdentifier: bookData.identifier,
                       bookData: bookData,
-                      destinationType: ReaderDestinationType.bookmark,
-                      destination: state.bookmarkData?.startCfi,
+                      chapterIdentifier: state.bookmarkData?.chapterIdentifier,
+                      cfi: state.bookmarkData?.startCfi,
                     ),
                   ));
                 },
@@ -73,7 +72,9 @@ class TocFabSection extends StatelessWidget {
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 24.0, vertical: 12.0),
+                    horizontal: 24.0,
+                    vertical: 12.0,
+                  ),
                   fixedSize: const Size.fromHeight(56.0),
                   elevation: 5.0,
                 ),

@@ -32,7 +32,7 @@ class TocListItem extends StatelessWidget {
             builder: (_) => ReaderWidget(
               bookData: bookData,
               bookIdentifier: bookData.identifier,
-              destination: bookChapter.identifier,
+              chapterIdentifier: bookChapter.identifier,
             ),
           ),
         );

@@ -15,7 +15,6 @@ import '../../../../preference/domain/use_cases/preference_get_use_cases.dart';
 import '../../../../preference/domain/use_cases/preference_observe_change_use_case.dart';
 import '../../../../preference/domain/use_cases/preference_reset_use_case.dart';
 import '../../../../preference/domain/use_cases/preference_save_use_case.dart';
-import '../../../domain/entities/reader_destination_type.dart';
 import '../../../domain/entities/reader_navigation_state_code.dart';
 import '../../../domain/entities/reader_page_num_type.dart';
 import '../../../domain/entities/reader_set_state_data.dart';
@@ -108,8 +107,8 @@ class ReaderCubit extends Cubit<ReaderState> {
   Future<void> init({
     required String bookIdentifier,
     required ThemeData currentTheme,
-    required ReaderDestinationType destinationType,
-    String? destination,
+    String? chapterIdentifier,
+    String? cfi,
     Book? bookData,
   }) async {
     // Initialize members
@@ -121,6 +120,12 @@ class ReaderCubit extends Cubit<ReaderState> {
       bookName: bookData?.title,
       code: ReaderLoadingStateCode.bookLoading,
     ));
+
+    // Register Listeners
+    _subscriptionSet.add(_observeLoadDoneUseCase().listen(_receiveLoadDone));
+    _subscriptionSet.add(_observeSetStateUseCase().listen(_receiveSetState));
+    _subscriptionSet
+        .add(_observePreferenceChangeUseCase().listen(_refreshPreference));
 
     // Start loading the data of book, reader settings, and bookmarks.
     late ReaderPreferenceData readerSettingsData;
@@ -142,18 +147,13 @@ class ReaderCubit extends Cubit<ReaderState> {
         bookmarkData: bookmarkData,
         readerPreference: readerSettingsData,
       ));
+
+      await _coreRepository.startLoading(
+        bookIdentifier: bookIdentifier,
+        chapterIdentifier: chapterIdentifier,
+        cfi: cfi,
+      );
     }
-
-    // Register Listeners
-    _subscriptionSet.add(_observeLoadDoneUseCase().listen(_receiveLoadDone));
-    _subscriptionSet.add(_observeSetStateUseCase().listen(_receiveSetState));
-    _subscriptionSet
-        .add(_observePreferenceChangeUseCase().listen(_refreshPreference));
-
-    await _coreRepository.startLoading(
-      bookIdentifier: bookIdentifier,
-      destination: destination,
-    );
   }
 
   void setNavState(ReaderNavigationStateCode code) {

@@ -6,7 +6,8 @@ import '../entities/reader_set_state_data.dart';
 abstract class ReaderCoreRepository {
   Future<void> startLoading({
     required String bookIdentifier,
-    String? destination,
+    String? chapterIdentifier,
+    String? cfi,
   });
 
   void goto(String destination);
