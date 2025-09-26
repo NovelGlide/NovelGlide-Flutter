@@ -34,6 +34,11 @@ class EpubDataSource extends BookLocalDataSource {
 
   final Map<String, BookCover> _coverBytesCache = <String, BookCover>{};
 
+  Future<String> _getAbsolutePathFromIdentifier(String identifier) async {
+    final String libraryPath = await _pathProvider.libraryPath;
+    return join(libraryPath, identifier);
+  }
+
   @override
   List<String> get allowedExtensions {
     final List<String> extensions = <String>[];
@@ -50,8 +55,6 @@ class EpubDataSource extends BookLocalDataSource {
 
   @override
   Future<void> addBooks(Set<String> externalPathSet) async {
-    final String libraryPath = await _pathProvider.libraryPath;
-
     for (String path in externalPathSet) {
       final MimeType? mimeType = await _mimeRepository.lookupAll(path);
       if (mimeType == null || !allowedMimeTypes.contains(mimeType)) {
@@ -77,15 +80,15 @@ class EpubDataSource extends BookLocalDataSource {
         identifier = '${random.nextString(10)}.$ext';
       }
 
-      final String destination = join(libraryPath, identifier);
+      final String destination =
+          await _getAbsolutePathFromIdentifier(identifier);
       _fileSystemRepository.copyFile(path, destination);
     }
   }
 
   @override
   Future<bool> delete(String identifier) async {
-    final String libraryPath = await _pathProvider.libraryPath;
-    final String destination = join(libraryPath, identifier);
+    final String destination = await _getAbsolutePathFromIdentifier(identifier);
     if (await _fileSystemRepository.existsFile(destination)) {
       await _fileSystemRepository.deleteFile(destination);
     }
@@ -102,15 +105,14 @@ class EpubDataSource extends BookLocalDataSource {
 
   @override
   Future<bool> exists(String identifier) async {
-    final String libraryPath = await _pathProvider.libraryPath;
-    final String destination = join(libraryPath, identifier);
+    final String destination = await _getAbsolutePathFromIdentifier(identifier);
     return _fileSystemRepository.existsFile(destination);
   }
 
   @override
   Future<Book> getBook(String identifier) async {
-    final String libraryPath = await _pathProvider.libraryPath;
-    final String absolutePath = absolute(libraryPath, identifier);
+    final String absolutePath =
+        await _getAbsolutePathFromIdentifier(identifier);
     final epub.EpubBook epubBook = await _loadEpubBook(absolutePath);
     final epub.Image? coverImage = _findCoverImage(epubBook);
 
@@ -155,8 +157,8 @@ class EpubDataSource extends BookLocalDataSource {
 
   @override
   Future<Uint8List> readBookBytes(String identifier) async {
-    final String libraryPath = await _pathProvider.libraryPath;
-    final String absolutePath = absolute(libraryPath, identifier);
+    final String absolutePath =
+        await _getAbsolutePathFromIdentifier(identifier);
     return _fileSystemRepository.readFileAsBytes(absolutePath);
   }
 
@@ -171,13 +173,48 @@ class EpubDataSource extends BookLocalDataSource {
 
   @override
   Future<List<BookChapter>> getChapterList(String identifier) async {
-    final String libraryPath = await _pathProvider.libraryPath;
-    final String absolutePath = absolute(libraryPath, identifier);
+    final String absolutePath =
+        await _getAbsolutePathFromIdentifier(identifier);
     final epub.EpubBook epubBook = await _loadEpubBook(absolutePath);
 
     return (epubBook.Chapters ?? <epub.EpubChapter>[])
         .map((epub.EpubChapter e) => _createBookChapter(e))
         .toList();
+  }
+
+  @override
+  Future<String?> getChapterContent(
+    String identifier,
+    String chapterIdentifier,
+  ) async {
+    final String absolutePath =
+        await _getAbsolutePathFromIdentifier(identifier);
+    final epub.EpubBook epubBook = await _loadEpubBook(absolutePath);
+    final List<epub.EpubChapter> chapterList = epubBook.Chapters ?? [];
+
+    // Search for the chapter. BFS
+    epub.EpubChapter? target;
+    final QueueList<epub.EpubChapter> queueList = QueueList<epub.EpubChapter>();
+    queueList.addAll(chapterList);
+
+    // Perform searching.
+    while (queueList.isNotEmpty) {
+      // Get the first chapter in the queue.
+      final epub.EpubChapter chapter = queueList.first;
+      queueList.removeFirst();
+
+      if (chapter.ContentFileName == chapterIdentifier) {
+        // Found
+        target = chapter;
+        queueList.clear();
+        break;
+      }
+
+      // Not found. Add all sub-chapters to the queue.
+      queueList.addAll(chapter.SubChapters ?? []);
+    }
+
+    return target?.HtmlContent;
   }
 
   @override
@@ -232,10 +269,8 @@ class EpubDataSource extends BookLocalDataSource {
                   item.Id?.toLowerCase() == 'cover-image' ||
                   item.Properties?.toLowerCase() == 'cover' ||
                   item.Properties?.toLowerCase() == 'cover-image') &&
-              (item.MediaType?.toLowerCase() == 'image/jpeg' ||
-                  item.MediaType?.toLowerCase() == 'image/png' ||
-                  item.MediaType?.toLowerCase() == 'image/gif' ||
-                  item.MediaType?.toLowerCase() == 'image/bmp'));
+              MimeType.tryParse(item.MediaType?.toLowerCase())?.isImage ==
+                  true);
       if (coverItem != null) {
         return _readImage(epubBook, coverItem.Href!);
       }

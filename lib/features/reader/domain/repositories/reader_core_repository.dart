@@ -4,17 +4,17 @@ import '../entities/reader_search_result_data.dart';
 import '../entities/reader_set_state_data.dart';
 
 abstract class ReaderCoreRepository {
-  Future<void> startLoading({
+  Future<void> init({
     required String bookIdentifier,
     String? chapterIdentifier,
     String? cfi,
   });
 
-  void goto(String destination);
+  Future<void> goto(String destination);
 
-  void nextPage();
+  Future<void> nextPage();
 
-  void previousPage();
+  Future<void> previousPage();
 
   void ttsPlay();
 

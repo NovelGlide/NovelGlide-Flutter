@@ -129,6 +129,14 @@ class BookRepositoryImpl implements BookRepository {
   }
 
   @override
+  Future<String?> getChapterContent(
+    String identifier,
+    String chapterIdentifier,
+  ) {
+    return _epubDataSource.getChapterContent(identifier, chapterIdentifier);
+  }
+
+  @override
   Future<void> reset() async {
     await _epubDataSource.deleteAllBooks();
 

@@ -22,20 +22,20 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
       StreamController<List<ReaderSearchResultData>>.broadcast();
 
   @override
-  Future<void> startLoading({
+  Future<void> init({
     required String bookIdentifier,
     String? chapterIdentifier,
     String? cfi,
   }) async {}
 
   @override
-  void goto(String destination) {}
+  Future<void> goto(String destination) async {}
 
   @override
-  void nextPage() {}
+  Future<void> nextPage() async {}
 
   @override
-  void previousPage() {}
+  Future<void> previousPage() async {}
 
   @override
   void ttsPlay() {}

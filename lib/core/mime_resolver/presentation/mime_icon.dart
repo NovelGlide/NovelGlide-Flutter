@@ -13,13 +13,15 @@ class MimeIcon extends StatelessWidget {
   }
 
   static IconData getIconData(MimeType mimeType) {
+    if (mimeType.isImage) {
+      return Icons.image_rounded;
+    }
+
     return switch (mimeType) {
       MimeType.atomFeed => Icons.link_rounded,
       MimeType.epub => Icons.download_rounded,
       MimeType.zip => Icons.folder_zip_rounded,
       MimeType.pdf => Icons.picture_as_pdf_rounded,
-      MimeType.jpg => Icons.image_rounded,
-      MimeType.png => Icons.image_rounded,
       _ => Icons.question_mark_rounded,
     };
   }

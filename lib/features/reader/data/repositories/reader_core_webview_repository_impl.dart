@@ -30,7 +30,7 @@ class ReaderCoreWebViewRepositoryImpl implements ReaderCoreRepository {
       <StreamSubscription<dynamic>>{};
 
   @override
-  Future<void> startLoading({
+  Future<void> init({
     required String bookIdentifier,
     String? chapterIdentifier,
     String? cfi,
@@ -81,7 +81,7 @@ class ReaderCoreWebViewRepositoryImpl implements ReaderCoreRepository {
   }
 
   @override
-  void goto(String destination) {
+  Future<void> goto(String destination) async {
     _dataSource.send(ReaderWebMessageDto(
       route: 'goto',
       data: destination,
@@ -89,12 +89,12 @@ class ReaderCoreWebViewRepositoryImpl implements ReaderCoreRepository {
   }
 
   @override
-  void nextPage() {
+  Future<void> nextPage() async {
     _dataSource.send(const ReaderWebMessageDto(route: 'nextPage'));
   }
 
   @override
-  void previousPage() {
+  Future<void> previousPage() async {
     _dataSource.send(const ReaderWebMessageDto(route: 'prevPage'));
   }
 

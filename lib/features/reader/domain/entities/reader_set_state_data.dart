@@ -9,15 +9,6 @@ class ReaderSetStateData extends Equatable {
     required this.chapterTotalPage,
   });
 
-  factory ReaderSetStateData.fromJson(Map<String, dynamic> json) =>
-      ReaderSetStateData(
-        breadcrumb: json['breadcrumb'],
-        chapterIdentifier: json['chapterIdentifier'],
-        startCfi: json['startCfi'],
-        chapterCurrentPage: json['chapterCurrentPage'],
-        chapterTotalPage: json['chapterTotalPage'],
-      );
-
   final String? breadcrumb;
   final String? chapterIdentifier;
   final String? startCfi;

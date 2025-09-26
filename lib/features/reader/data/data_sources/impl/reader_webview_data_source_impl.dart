@@ -74,8 +74,13 @@ class ReaderWebViewDataSourceImpl implements ReaderWebViewDataSource {
 
         case 'setState':
           if (message.data is Map<String, dynamic>) {
-            _setStateStreamController
-                .add(ReaderSetStateData.fromJson(message.data));
+            _setStateStreamController.add(ReaderSetStateData(
+              breadcrumb: message.data['breadcrumb'],
+              chapterIdentifier: message.data['chapterIdentifier'],
+              startCfi: message.data['startCfi'],
+              chapterCurrentPage: message.data['chapterCurrentPage'],
+              chapterTotalPage: message.data['chapterTotalPage'],
+            ));
           }
           break;
 

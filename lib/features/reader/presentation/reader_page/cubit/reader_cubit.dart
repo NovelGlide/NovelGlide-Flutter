@@ -174,7 +174,7 @@ class ReaderCubit extends Cubit<ReaderState> {
         readerPreference: readerSettingsData,
       ));
 
-      await _dependencies._coreRepository.startLoading(
+      await _dependencies._coreRepository.init(
         bookIdentifier: bookIdentifier,
         chapterIdentifier: chapterIdentifier,
         cfi: cfi,
