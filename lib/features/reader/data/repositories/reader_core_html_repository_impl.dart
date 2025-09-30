@@ -2,11 +2,17 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../books/domain/repositories/book_repository.dart';
 import '../../domain/entities/reader_search_result_data.dart';
 import '../../domain/entities/reader_set_state_data.dart';
 import '../../domain/repositories/reader_core_repository.dart';
 
 class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
+  ReaderCoreHtmlRepositoryImpl(this._bookRepository);
+
+  final BookRepository _bookRepository;
+
+  /// Stream Controllers
   final StreamController<void> _loadDoneStreamController =
       StreamController<void>.broadcast();
   final StreamController<ReaderSetStateData> _setStateStreamController =
@@ -84,5 +90,12 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
       _searchResultStreamController.stream;
 
   @override
-  Future<void> dispose() async {}
+  Future<void> dispose() async {
+    await _loadDoneStreamController.close();
+    await _setStateStreamController.close();
+    await _ttsPlayStreamController.close();
+    await _ttsStopStreamController.close();
+    await _ttsEndStreamController.close();
+    await _searchResultStreamController.close();
+  }
 }

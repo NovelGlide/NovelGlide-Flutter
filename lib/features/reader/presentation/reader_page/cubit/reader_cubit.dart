@@ -47,8 +47,15 @@ class ReaderCubitDependencies {
     this._setFontSizeUseCase,
     this._setLineHeightUseCase,
     this._setSmoothScrollUseCase,
-    this._searchCubit,
-    this._ttsCubit,
+    // Book use cases
+    this._bookGetUseCase,
+    // Bookmark use cases
+    this._bookmarkGetDataUseCase,
+    this._bookmarkUpdateDataUseCase,
+    // Reader preference use cases
+    this._savePreferenceUseCase,
+    this._observePreferenceChangeUseCase,
+    this._resetPreferenceUseCase,
   );
 
   final WebViewController? _webViewController;
@@ -64,24 +71,25 @@ class ReaderCubitDependencies {
   final ReaderSetLineHeightUseCase _setLineHeightUseCase;
   final ReaderSetSmoothScrollUseCase _setSmoothScrollUseCase;
 
-  /// Cubits.
-  final ReaderSearchCubit _searchCubit;
-  final ReaderTtsCubit _ttsCubit;
+  /// Book use cases
+  final BookGetUseCase _bookGetUseCase;
+
+  /// Bookmark use cases
+  final BookmarkGetDataUseCase _bookmarkGetDataUseCase;
+  final BookmarkUpdateDataUseCase _bookmarkUpdateDataUseCase;
+
+  /// Reader preference use cases
+  final ReaderSavePreferenceUseCase _savePreferenceUseCase;
+  final ReaderObservePreferenceChangeUseCase _observePreferenceChangeUseCase;
+  final ReaderResetPreferenceUseCase _resetPreferenceUseCase;
 }
 
 class ReaderCubit extends Cubit<ReaderState> {
   ReaderCubit(
-    this._dependenciesFactory,
-    // Book use cases
-    this._bookGetUseCase,
-    // Bookmark use cases
-    this._bookmarkGetDataUseCase,
-    this._bookmarkUpdateDataUseCase,
-    // Reader preference use cases
     this._getPreferenceUseCase,
-    this._savePreferenceUseCase,
-    this._observePreferenceChangeUseCase,
-    this._resetPreferenceUseCase,
+    this._dependenciesFactory,
+    this.ttsCubit,
+    this.searchCubit,
   ) : super(const ReaderState());
 
   Book? bookData;
@@ -97,22 +105,9 @@ class ReaderCubit extends Cubit<ReaderState> {
 
   WebViewController? get webViewController => _dependencies._webViewController;
 
-  ReaderSearchCubit get searchCubit => _dependencies._searchCubit;
-
-  ReaderTtsCubit get ttsCubit => _dependencies._ttsCubit;
-
-  /// Book use cases
-  final BookGetUseCase _bookGetUseCase;
-
-  /// Bookmark use cases
-  final BookmarkGetDataUseCase _bookmarkGetDataUseCase;
-  final BookmarkUpdateDataUseCase _bookmarkUpdateDataUseCase;
-
-  /// Reader preference use cases
   final ReaderGetPreferenceUseCase _getPreferenceUseCase;
-  final ReaderSavePreferenceUseCase _savePreferenceUseCase;
-  final ReaderObservePreferenceChangeUseCase _observePreferenceChangeUseCase;
-  final ReaderResetPreferenceUseCase _resetPreferenceUseCase;
+  final ReaderTtsCubit ttsCubit;
+  final ReaderSearchCubit searchCubit;
 
   /// Stream Subscriptions
   final Set<StreamSubscription<dynamic>> _subscriptionSet =
@@ -142,6 +137,12 @@ class ReaderCubit extends Cubit<ReaderState> {
     // Load the dependencies of the cubit
     _dependencies = _dependenciesFactory(readerSettingsData.coreType);
 
+    // Initialize TTS cubit
+    ttsCubit.init(_dependencies._coreRepository);
+
+    // Initialize search cubit
+    searchCubit.init(_dependencies._coreRepository);
+
     // Load the book data.
     emit(state.copyWith(
       coreType: readerSettingsData.coreType,
@@ -149,19 +150,22 @@ class ReaderCubit extends Cubit<ReaderState> {
     ));
 
     // Register Listeners
-    _subscriptionSet
-        .add(_dependencies._observeLoadDoneUseCase().listen(_receiveLoadDone));
-    _subscriptionSet
-        .add(_dependencies._observeSetStateUseCase().listen(_receiveSetState));
-    _subscriptionSet
-        .add(_observePreferenceChangeUseCase().listen(_refreshPreference));
+    _subscriptionSet.addAll(<StreamSubscription<dynamic>>[
+      _dependencies._observeLoadDoneUseCase().listen(_receiveLoadDone),
+      _dependencies._observeSetStateUseCase().listen(_receiveSetState),
+      _dependencies
+          ._observePreferenceChangeUseCase()
+          .listen(_refreshPreference),
+    ]);
 
     // Start loading the data of book, and bookmarks.
     late BookmarkData? bookmarkData;
     await Future.wait<void>(<Future<void>>[
-      _bookGetUseCase(bookIdentifier)
+      _dependencies
+          ._bookGetUseCase(bookIdentifier)
           .then((Book value) => this.bookData = value),
-      _bookmarkGetDataUseCase(bookIdentifier)
+      _dependencies
+          ._bookmarkGetDataUseCase(bookIdentifier)
           .then((BookmarkData? data) => bookmarkData = data),
     ]);
 
@@ -243,10 +247,11 @@ class ReaderCubit extends Cubit<ReaderState> {
     ));
   }
 
-  void savePreference() => _savePreferenceUseCase(state.readerPreference);
+  void savePreference() =>
+      _dependencies._savePreferenceUseCase(state.readerPreference);
 
   Future<void> resetPreference() async {
-    await _resetPreferenceUseCase();
+    await _dependencies._resetPreferenceUseCase();
   }
 
   Future<void> _refreshPreference(ReaderPreferenceData data) async {
@@ -270,7 +275,7 @@ class ReaderCubit extends Cubit<ReaderState> {
       savedTime: DateTime.now(),
     );
 
-    _bookmarkUpdateDataUseCase(<BookmarkData>{data});
+    _dependencies._bookmarkUpdateDataUseCase(<BookmarkData>{data});
 
     emit(state.copyWith(bookmarkData: data));
   }
@@ -327,6 +332,7 @@ class ReaderCubit extends Cubit<ReaderState> {
     }
 
     await _dependencies._coreRepository.dispose();
+
     super.close();
   }
 }

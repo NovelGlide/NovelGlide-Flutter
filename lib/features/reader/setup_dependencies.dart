@@ -52,7 +52,6 @@ import 'domain/use_cases/tts_use_cases/reader_observe_tts_play_use_case.dart';
 import 'domain/use_cases/tts_use_cases/reader_observe_tts_stop_use_case.dart';
 import 'domain/use_cases/tts_use_cases/reader_play_tts_use_case.dart';
 import 'domain/use_cases/tts_use_cases/reader_stop_tts_use_case.dart';
-import 'presentation/reader_page/core_html/cubit/reader_core_html_cubit.dart';
 import 'presentation/reader_page/cubit/reader_cubit.dart';
 import 'presentation/reader_page/cubit/reader_tts_cubit.dart';
 import 'presentation/search_page/cubit/reader_search_cubit.dart';
@@ -108,90 +107,93 @@ void setupReaderDependencies() {
     ),
   );
 
-  // Register the factory of cubit dependencies setup.
-  sl.registerFactoryParam<ReaderCubitDependencies, ReaderCoreType, void>(
-    (ReaderCoreType coreType, void _) {
-      // Initialize the WebView controller.
-      final WebViewController? controller = switch (coreType) {
-        ReaderCoreType.webView => WebViewController(),
-        _ => null,
-      };
-
-      // Initialize the core repository.
-      final ReaderCoreRepository coreRepository = switch (coreType) {
-        ReaderCoreType.webView => ReaderCoreWebViewRepositoryImpl(
-            controller!,
-            ReaderWebViewDataSourceImpl(controller),
-            sl<ReaderServerRepository>(),
-            sl<ReaderLocationCacheRepository>(),
-          ),
-        ReaderCoreType.html => ReaderCoreHtmlRepositoryImpl(),
-      };
-
-      final ReaderTtsRepository ttsRepository =
-          ReaderTtsRepositoryImpl(coreRepository);
-
-      final ReaderSearchRepository searchRepository =
-          ReaderSearchRepositoryImpl(coreRepository);
-
-      return ReaderCubitDependencies(
-        controller,
-        coreRepository,
-        // Reader use cases
-        ReaderObserveLoadDoneUseCase(coreRepository),
-        ReaderObserveSetStateUseCase(coreRepository),
-        ReaderNextPageUseCase(coreRepository),
-        ReaderPreviousPageUseCase(coreRepository),
-        ReaderSetFontColorUseCase(coreRepository),
-        ReaderSetFontSizeUseCase(coreRepository),
-        ReaderSetLineHeightUseCase(coreRepository),
-        ReaderSetSmoothScrollUseCase(coreRepository),
-        ReaderSearchCubit(
-          ReaderSearchInCurrentChapterUseCase(searchRepository),
-          ReaderSearchInWholeBookUseCase(searchRepository),
-          ReaderObserveSearchListUseCase(searchRepository),
-          ReaderGotoUseCase(coreRepository),
-        )..init(),
-        ReaderTtsCubit(
-          ReaderNextTtsUseCase(ttsRepository),
-          ReaderPlayTtsUseCase(ttsRepository),
-          ReaderStopTtsUseCase(ttsRepository),
-          ReaderObserveTtsEndUseCase(ttsRepository),
-          ReaderObserveTtsPlayUseCase(ttsRepository),
-          ReaderObserveTtsStopUseCase(ttsRepository),
-          sl<TtsReloadPreferenceUseCase>(),
-          sl<TtsObserveStateChangedUseCase>(),
-          sl<TtsSpeakUseCase>(),
-          sl<TtsStopUseCase>(),
-          sl<TtsPauseUseCase>(),
-          sl<TtsResumeUseCase>(),
-        ),
-      );
-    },
-  );
-
   // Register the factory of ReaderCubit
   sl.registerFactory<ReaderCubit>(
     () {
       return ReaderCubit(
-        (ReaderCoreType coreType) =>
-            sl<ReaderCubitDependencies>(param1: coreType),
-        // Book use cases
-        sl<BookGetUseCase>(),
-        // Bookmark use cases
-        sl<BookmarkGetDataUseCase>(),
-        sl<BookmarkUpdateDataUseCase>(),
-        // Reader preference use cases.
+        // Necessary use cases
         sl<ReaderGetPreferenceUseCase>(),
-        sl<ReaderSavePreferenceUseCase>(),
-        sl<ReaderObservePreferenceChangeUseCase>(),
-        sl<ReaderResetPreferenceUseCase>(),
+        // The factory of the dependencies initialization.
+        (ReaderCoreType coreType) {
+          // Initialize the WebView controller.
+          final WebViewController? controller = switch (coreType) {
+            ReaderCoreType.webView => WebViewController(),
+            _ => null,
+          };
+
+          // Initialize the core repository.
+          final ReaderCoreRepository coreRepository = switch (coreType) {
+            ReaderCoreType.webView => ReaderCoreWebViewRepositoryImpl(
+                controller!,
+                ReaderWebViewDataSourceImpl(controller),
+                sl<ReaderServerRepository>(),
+                sl<ReaderLocationCacheRepository>(),
+              ),
+            ReaderCoreType.html => ReaderCoreHtmlRepositoryImpl(
+                sl<BookRepository>(),
+              ),
+          };
+
+          return ReaderCubitDependencies(
+            controller,
+            coreRepository,
+            // Reader use cases
+            ReaderObserveLoadDoneUseCase(coreRepository),
+            ReaderObserveSetStateUseCase(coreRepository),
+            ReaderNextPageUseCase(coreRepository),
+            ReaderPreviousPageUseCase(coreRepository),
+            ReaderSetFontColorUseCase(coreRepository),
+            ReaderSetFontSizeUseCase(coreRepository),
+            ReaderSetLineHeightUseCase(coreRepository),
+            ReaderSetSmoothScrollUseCase(coreRepository),
+            // Book use cases
+            sl<BookGetUseCase>(),
+            // Bookmark use cases
+            sl<BookmarkGetDataUseCase>(),
+            sl<BookmarkUpdateDataUseCase>(),
+            // Reader preference use cases.
+            sl<ReaderSavePreferenceUseCase>(),
+            sl<ReaderObservePreferenceChangeUseCase>(),
+            sl<ReaderResetPreferenceUseCase>(),
+          );
+        },
+        // Setup the TTS cubit.
+        ReaderTtsCubit(
+          // The factory of the dependencies initialization.
+          (ReaderCoreRepository coreRepository) {
+            final ReaderTtsRepository ttsRepository =
+                ReaderTtsRepositoryImpl(coreRepository);
+
+            return ReaderTtsCubitDependencies(
+              ReaderNextTtsUseCase(ttsRepository),
+              ReaderPlayTtsUseCase(ttsRepository),
+              ReaderStopTtsUseCase(ttsRepository),
+              ReaderObserveTtsEndUseCase(ttsRepository),
+              ReaderObserveTtsPlayUseCase(ttsRepository),
+              ReaderObserveTtsStopUseCase(ttsRepository),
+              sl<TtsReloadPreferenceUseCase>(),
+              sl<TtsObserveStateChangedUseCase>(),
+              sl<TtsSpeakUseCase>(),
+              sl<TtsStopUseCase>(),
+              sl<TtsPauseUseCase>(),
+              sl<TtsResumeUseCase>(),
+            );
+          },
+        ),
+        ReaderSearchCubit(
+          (ReaderCoreRepository coreRepository) {
+            final ReaderSearchRepository searchRepository =
+                ReaderSearchRepositoryImpl(coreRepository);
+
+            return ReaderSearchCubitDependencies(
+              ReaderSearchInCurrentChapterUseCase(searchRepository),
+              ReaderSearchInWholeBookUseCase(searchRepository),
+              ReaderObserveSearchListUseCase(searchRepository),
+              ReaderGotoUseCase(coreRepository),
+            );
+          },
+        ),
       );
     },
-  );
-
-  // Register the factory of ReaderCoreHtmlCubit
-  sl.registerFactory<ReaderCoreHtmlCubit>(
-    () => ReaderCoreHtmlCubit(),
   );
 }

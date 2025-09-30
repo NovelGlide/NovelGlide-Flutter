@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../enum/loading_state_code.dart';
 import '../../../domain/entities/reader_search_result_data.dart';
+import '../../../domain/repositories/reader_core_repository.dart';
 import '../../../domain/use_cases/reader_goto_use_case.dart';
 import '../../../domain/use_cases/search_use_cases/reader_observe_search_list_use_case.dart';
 import '../../../domain/use_cases/search_use_cases/reader_search_in_current_chapter_use_case.dart';
@@ -13,36 +14,49 @@ import '../../../domain/use_cases/search_use_cases/reader_search_in_whole_book_u
 part 'reader_search_range_code.dart';
 part 'reader_search_state.dart';
 
-class ReaderSearchCubit extends Cubit<ReaderSearchState> {
-  ReaderSearchCubit(
+class ReaderSearchCubitDependencies {
+  ReaderSearchCubitDependencies(
     this._searchInCurrentChapterUseCase,
     this._searchInWholeBookUseCase,
     this._observeSearchListUseCase,
     this._sendGotoUseCase,
-  ) : super(const ReaderSearchState());
+  );
 
   final ReaderSearchInCurrentChapterUseCase _searchInCurrentChapterUseCase;
   final ReaderSearchInWholeBookUseCase _searchInWholeBookUseCase;
   final ReaderObserveSearchListUseCase _observeSearchListUseCase;
   final ReaderGotoUseCase _sendGotoUseCase;
+}
+
+class ReaderSearchCubit extends Cubit<ReaderSearchState> {
+  ReaderSearchCubit(
+    this._dependenciesFactory,
+  ) : super(const ReaderSearchState());
+
+  final ReaderSearchCubitDependencies Function(
+      ReaderCoreRepository coreRepository) _dependenciesFactory;
+  late final ReaderSearchCubitDependencies _dependencies;
 
   /// Stream Subscriptions
-  late final StreamSubscription<List<ReaderSearchResultData>>
-      _resultListSubscription;
+  final Set<StreamSubscription<dynamic>> _subscriptions =
+      <StreamSubscription<dynamic>>{};
 
-  Future<void> init() async {
-    _resultListSubscription =
-        _observeSearchListUseCase().listen(_setResultList);
+  Future<void> init(ReaderCoreRepository coreRepository) async {
+    _dependencies = _dependenciesFactory(coreRepository);
+
+    _subscriptions.addAll([
+      _dependencies._observeSearchListUseCase().listen(_setResultList),
+    ]);
   }
 
   void startSearch() {
     emit(state.copyWith(code: LoadingStateCode.loading));
     switch (state.range) {
       case ReaderSearchRangeCode.currentChapter:
-        _searchInCurrentChapterUseCase(state.query);
+        _dependencies._searchInCurrentChapterUseCase(state.query);
         break;
       case ReaderSearchRangeCode.all:
-        _searchInWholeBookUseCase(state.query);
+        _dependencies._searchInWholeBookUseCase(state.query);
         break;
     }
   }
@@ -64,11 +78,14 @@ class ReaderSearchCubit extends Cubit<ReaderSearchState> {
     );
   }
 
-  void goto(String cfi) => _sendGotoUseCase(cfi);
+  void goto(String cfi) => _dependencies._sendGotoUseCase(cfi);
 
   @override
   Future<void> close() async {
-    await _resultListSubscription.cancel();
+    for (StreamSubscription<dynamic> subscription in _subscriptions) {
+      await subscription.cancel();
+    }
+
     super.close();
   }
 }

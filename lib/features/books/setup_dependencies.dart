@@ -30,7 +30,6 @@ import 'domain/use_cases/book_get_cover_use_case.dart';
 import 'domain/use_cases/book_get_list_by_identifiers_use_case.dart';
 import 'domain/use_cases/book_get_list_use_case.dart';
 import 'domain/use_cases/book_get_use_case.dart';
-import 'domain/use_cases/book_is_file_valid_use_case.dart';
 import 'domain/use_cases/book_observe_change_use_case.dart';
 import 'domain/use_cases/book_pick_use_case.dart';
 import 'domain/use_cases/book_reset_use_case.dart';
@@ -92,11 +91,6 @@ void setupBookDependencies() {
   );
   sl.registerFactory<BookGetUseCase>(
     () => BookGetUseCase(
-      sl<BookRepository>(),
-    ),
-  );
-  sl.registerFactory<BookIsFileValidUseCase>(
-    () => BookIsFileValidUseCase(
       sl<BookRepository>(),
     ),
   );

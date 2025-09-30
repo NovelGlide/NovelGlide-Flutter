@@ -18,8 +18,7 @@ class ReaderLoadingWidget extends StatelessWidget {
         final String? title = switch (state.code) {
           ReaderLoadingStateCode.initial =>
             appLocalizations.readerLoadingInitialize,
-          ReaderLoadingStateCode.preferenceLoading =>
-            throw UnimplementedError(),
+          ReaderLoadingStateCode.preferenceLoading => 'Preference Loading...',
           ReaderLoadingStateCode.bookLoading =>
             appLocalizations.readerLoadingBookLoading,
           ReaderLoadingStateCode.rendering =>

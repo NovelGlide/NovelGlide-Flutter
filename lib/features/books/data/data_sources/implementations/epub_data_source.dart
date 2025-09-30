@@ -132,6 +132,7 @@ class EpubDataSource extends BookLocalDataSource {
       title: epubBook.Title ?? '',
       modifiedDate: await _fileSystemRepository.getModifiedDate(absolutePath),
       coverIdentifier: bookIdentifier,
+      ltr: epubBook.Schema?.Package?.Spine?.ltr ?? true,
     );
   }
 
@@ -190,7 +191,8 @@ class EpubDataSource extends BookLocalDataSource {
     final String absolutePath =
         await _getAbsolutePathFromIdentifier(identifier);
     final epub.EpubBook epubBook = await _loadEpubBook(absolutePath);
-    final List<epub.EpubChapter> chapterList = epubBook.Chapters ?? [];
+    final List<epub.EpubChapter> chapterList =
+        epubBook.Chapters ?? <epub.EpubChapter>[];
 
     // Search for the chapter. BFS
     epub.EpubChapter? target;
@@ -211,7 +213,7 @@ class EpubDataSource extends BookLocalDataSource {
       }
 
       // Not found. Add all sub-chapters to the queue.
-      queueList.addAll(chapter.SubChapters ?? []);
+      queueList.addAll(chapter.SubChapters ?? <epub.EpubChapter>[]);
     }
 
     return target?.HtmlContent;
