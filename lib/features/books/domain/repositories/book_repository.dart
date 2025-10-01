@@ -29,10 +29,10 @@ abstract class BookRepository {
 
   Future<List<BookChapter>> getChapterList(String identifier);
 
-  Future<String?> getChapterContent(
-    String identifier,
-    String chapterIdentifier,
-  );
+  Future<String?> getContent(
+    String identifier, {
+    String? chapterIdentifier,
+  });
 
   Future<void> reset();
 

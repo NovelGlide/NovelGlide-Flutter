@@ -4,7 +4,7 @@ import '../entities/reader_search_result_data.dart';
 import '../entities/reader_set_state_data.dart';
 
 abstract class ReaderCoreRepository {
-  Future<void> init({
+  Future<String> loadContent({
     required String bookIdentifier,
     String? chapterIdentifier,
     String? cfi,

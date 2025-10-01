@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../../core/log_system/log_system.dart';
 import '../../../books/domain/repositories/book_repository.dart';
 import '../../domain/entities/reader_search_result_data.dart';
 import '../../domain/entities/reader_set_state_data.dart';
@@ -26,11 +27,19 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
       StreamController<List<ReaderSearchResultData>>.broadcast();
 
   @override
-  Future<void> init({
+  Future<String> loadContent({
     required String bookIdentifier,
     String? chapterIdentifier,
     String? cfi,
-  }) async {}
+  }) async {
+    LogSystem.info(chapterIdentifier.toString());
+    _bookRepository.getContent(
+      bookIdentifier,
+      chapterIdentifier: chapterIdentifier,
+    );
+
+    return '';
+  }
 
   @override
   Future<void> goto(String destination) async {}

@@ -32,6 +32,7 @@ class ReaderWidget extends StatelessWidget {
             ..init(
               bookData: bookData,
               bookIdentifier: bookIdentifier,
+              chapterIdentifier: chapterIdentifier,
               currentTheme: Theme.of(context),
               cfi: cfi,
             ),

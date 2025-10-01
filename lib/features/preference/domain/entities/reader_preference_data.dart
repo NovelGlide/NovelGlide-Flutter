@@ -11,7 +11,7 @@ class ReaderPreferenceData extends Equatable {
     this.isAutoSaving = false,
     this.isSmoothScroll = false,
     this.pageNumType = ReaderPageNumType.number,
-    this.coreType = ReaderCoreType.webView,
+    this.coreType = ReaderCoreType.html,
   });
 
   final double fontSize;

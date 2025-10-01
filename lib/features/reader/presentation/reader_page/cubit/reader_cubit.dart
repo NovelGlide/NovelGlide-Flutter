@@ -175,7 +175,7 @@ class ReaderCubit extends Cubit<ReaderState> {
       ));
     }
 
-    await _dependencies._coreRepository.init(
+    final String content = await _dependencies._coreRepository.loadContent(
       bookIdentifier: bookIdentifier,
       chapterIdentifier: chapterIdentifier,
       cfi: cfi,
@@ -183,7 +183,10 @@ class ReaderCubit extends Cubit<ReaderState> {
 
     if (!isClosed) {
       // Loading completed.
-      emit(state.copyWith(code: ReaderLoadingStateCode.loaded));
+      emit(state.copyWith(
+        code: ReaderLoadingStateCode.loaded,
+        htmlContent: content,
+      ));
     }
 
     // Send theme data after the page is loaded.

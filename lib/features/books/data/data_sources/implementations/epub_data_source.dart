@@ -184,39 +184,36 @@ class EpubDataSource extends BookLocalDataSource {
   }
 
   @override
-  Future<String?> getChapterContent(
-    String identifier,
-    String chapterIdentifier,
-  ) async {
+  Future<String?> getContent(
+    String identifier, {
+    String? manifestHref,
+  }) async {
+    // Load the book file.
     final String absolutePath =
         await _getAbsolutePathFromIdentifier(identifier);
     final epub.EpubBook epubBook = await _loadEpubBook(absolutePath);
-    final List<epub.EpubChapter> chapterList =
-        epubBook.Chapters ?? <epub.EpubChapter>[];
+    final Map<String, epub.EpubTextContentFile>? htmlFiles =
+        epubBook.Content?.Html;
+    final epub.EpubPackage? package = epubBook.Schema?.Package;
+    final epub.EpubManifest? manifest = package?.Manifest;
+    final epub.EpubSpine? spine = package?.Spine;
 
-    // Search for the chapter. BFS
-    epub.EpubChapter? target;
-    final QueueList<epub.EpubChapter> queueList = QueueList<epub.EpubChapter>();
-    queueList.addAll(chapterList);
+    LogSystem.info(htmlFiles.toString());
 
-    // Perform searching.
-    while (queueList.isNotEmpty) {
-      // Get the first chapter in the queue.
-      final epub.EpubChapter chapter = queueList.first;
-      queueList.removeFirst();
+    // Get the manifest items.
+    final epub.EpubManifestItem? item =
+        (manifest?.Items ?? <epub.EpubManifestItem>[])
+            .firstWhereOrNull((epub.EpubManifestItem item) {
+      final MimeType? mimeType = MimeType.tryParse(item.MediaType);
+      return mimeType == MimeType.xhtml && item.Href == manifestHref;
+    });
 
-      if (chapter.ContentFileName == chapterIdentifier) {
-        // Found
-        target = chapter;
-        queueList.clear();
-        break;
-      }
-
-      // Not found. Add all sub-chapters to the queue.
-      queueList.addAll(chapter.SubChapters ?? <epub.EpubChapter>[]);
+    if (item == null) {
+      // The content is not found. Load the first content in the spine list.
     }
 
-    return target?.HtmlContent;
+    // The book might be an empty book...
+    return null;
   }
 
   @override

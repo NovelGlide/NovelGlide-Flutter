@@ -129,11 +129,14 @@ class BookRepositoryImpl implements BookRepository {
   }
 
   @override
-  Future<String?> getChapterContent(
-    String identifier,
-    String chapterIdentifier,
-  ) {
-    return _epubDataSource.getChapterContent(identifier, chapterIdentifier);
+  Future<String?> getContent(
+    String identifier, {
+    String? chapterIdentifier,
+  }) {
+    return _epubDataSource.getContent(
+      identifier,
+      manifestHref: chapterIdentifier,
+    );
   }
 
   @override

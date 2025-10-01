@@ -1,4 +1,5 @@
 enum MimeType {
+  // Archives
   epub(
     <String>['application/epub+zip'],
     <String>['epub'],
@@ -7,10 +8,18 @@ enum MimeType {
     <String>['application/zip'],
     <String>['zip'],
   ),
+
+  // XML
   atomFeed(
     <String>['application/atom+xml'],
     <String>[],
   ),
+  xhtml(
+    <String>['application/xhtml+xml'],
+    <String>['xhtml'],
+  ),
+
+  // Images
   pdf(
     <String>['application/pdf'],
     <String>['pdf'],
