@@ -25,7 +25,6 @@ import '../../../domain/use_cases/appearance_use_cases/reader_set_font_size_use_
 import '../../../domain/use_cases/appearance_use_cases/reader_set_line_height_use_case.dart';
 import '../../../domain/use_cases/appearance_use_cases/reader_set_smooth_scroll_use_case.dart';
 import '../../../domain/use_cases/reader_next_page_use_case.dart';
-import '../../../domain/use_cases/reader_observe_load_done_use_case.dart';
 import '../../../domain/use_cases/reader_observe_set_state_use_case.dart';
 import '../../../domain/use_cases/reader_previous_page_use_case.dart';
 import '../../search_page/cubit/reader_search_cubit.dart';
@@ -39,7 +38,6 @@ class ReaderCubitDependencies {
   ReaderCubitDependencies(
     this._webViewController,
     this._coreRepository,
-    this._observeLoadDoneUseCase,
     this._observeSetStateUseCase,
     this._nextPageUseCase,
     this._previousPageUseCase,
@@ -62,7 +60,6 @@ class ReaderCubitDependencies {
   final ReaderCoreRepository _coreRepository;
 
   /// Reader use cases
-  final ReaderObserveLoadDoneUseCase _observeLoadDoneUseCase;
   final ReaderObserveSetStateUseCase _observeSetStateUseCase;
   final ReaderNextPageUseCase _nextPageUseCase;
   final ReaderPreviousPageUseCase _previousPageUseCase;
@@ -151,7 +148,6 @@ class ReaderCubit extends Cubit<ReaderState> {
 
     // Register Listeners
     _subscriptionSet.addAll(<StreamSubscription<dynamic>>[
-      _dependencies._observeLoadDoneUseCase().listen(_receiveLoadDone),
       _dependencies._observeSetStateUseCase().listen(_receiveSetState),
       _dependencies
           ._observePreferenceChangeUseCase()
@@ -177,13 +173,25 @@ class ReaderCubit extends Cubit<ReaderState> {
         bookmarkData: bookmarkData,
         readerPreference: readerSettingsData,
       ));
-
-      await _dependencies._coreRepository.init(
-        bookIdentifier: bookIdentifier,
-        chapterIdentifier: chapterIdentifier,
-        cfi: cfi,
-      );
     }
+
+    await _dependencies._coreRepository.init(
+      bookIdentifier: bookIdentifier,
+      chapterIdentifier: chapterIdentifier,
+      cfi: cfi,
+    );
+
+    if (!isClosed) {
+      // Loading completed.
+      emit(state.copyWith(code: ReaderLoadingStateCode.loaded));
+    }
+
+    // Send theme data after the page is loaded.
+    sendThemeData();
+
+    // Set smooth scroll.
+    _dependencies
+        ._setSmoothScrollUseCase(state.readerPreference.isSmoothScroll);
   }
 
   void setNavState(ReaderNavigationStateCode code) {
@@ -295,17 +303,6 @@ class ReaderCubit extends Cubit<ReaderState> {
   /// *************************************************************************
   /// Communication
   /// *************************************************************************
-
-  void _receiveLoadDone(void _) {
-    emit(state.copyWith(code: ReaderLoadingStateCode.loaded));
-
-    // Send theme data after the page is loaded.
-    sendThemeData();
-
-    // Set smooth scroll.
-    _dependencies
-        ._setSmoothScrollUseCase(state.readerPreference.isSmoothScroll);
-  }
 
   void _receiveSetState(ReaderSetStateData data) {
     emit(state.copyWith(

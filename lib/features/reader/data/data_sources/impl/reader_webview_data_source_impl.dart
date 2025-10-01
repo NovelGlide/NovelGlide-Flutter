@@ -31,10 +31,9 @@ class ReaderWebViewDataSourceImpl implements ReaderWebViewDataSource {
   static const String _channelName = 'appApi';
 
   final WebViewController _controller;
+  final Completer<void> _loadDoneCompleter = Completer<void>();
 
   /// ========== Messages Stream Controllers ==========
-  final StreamController<void> _loadDoneStreamController =
-      StreamController<void>.broadcast();
   final StreamController<String> _saveLocationStreamController =
       StreamController<String>.broadcast();
   final StreamController<ReaderSetStateData> _setStateStreamController =
@@ -63,7 +62,7 @@ class ReaderWebViewDataSourceImpl implements ReaderWebViewDataSource {
       // Dispatch messages
       switch (message.route) {
         case 'loadDone':
-          _loadDoneStreamController.add(null);
+          _loadDoneCompleter.complete();
           break;
 
         case 'saveLocation':
@@ -117,6 +116,12 @@ class ReaderWebViewDataSourceImpl implements ReaderWebViewDataSource {
   }
 
   @override
+  Future<void> loadPage(Uri uri) {
+    _controller.loadRequest(uri);
+    return _loadDoneCompleter.future;
+  }
+
+  @override
   void send(ReaderWebMessageDto message) {
     _controller.runJavaScript(
         'window.communicationService.receive("${message.route}", '
@@ -128,9 +133,6 @@ class ReaderWebViewDataSourceImpl implements ReaderWebViewDataSource {
     _controller.runJavaScript(
         'window.communicationService.setChannel(window.$_channelName)');
   }
-
-  @override
-  Stream<void> get onLoadDone => _loadDoneStreamController.stream;
 
   @override
   Stream<String> get onSaveLocation => _saveLocationStreamController.stream;
@@ -153,7 +155,6 @@ class ReaderWebViewDataSourceImpl implements ReaderWebViewDataSource {
 
   @override
   Future<void> dispose() async {
-    await _loadDoneStreamController.close();
     await _saveLocationStreamController.close();
     await _setStateStreamController.close();
     await _ttsPlayStreamController.close();

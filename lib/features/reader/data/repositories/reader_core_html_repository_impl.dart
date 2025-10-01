@@ -13,8 +13,6 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
   final BookRepository _bookRepository;
 
   /// Stream Controllers
-  final StreamController<void> _loadDoneStreamController =
-      StreamController<void>.broadcast();
   final StreamController<ReaderSetStateData> _setStateStreamController =
       StreamController<ReaderSetStateData>.broadcast();
   final StreamController<String> _ttsPlayStreamController =
@@ -71,9 +69,6 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
   set smoothScroll(bool smoothScroll) {}
 
   @override
-  Stream<void> get onLoadDone => _loadDoneStreamController.stream;
-
-  @override
   Stream<ReaderSetStateData> get onSetState => _setStateStreamController.stream;
 
   @override
@@ -91,7 +86,6 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
 
   @override
   Future<void> dispose() async {
-    await _loadDoneStreamController.close();
     await _setStateStreamController.close();
     await _ttsPlayStreamController.close();
     await _ttsStopStreamController.close();

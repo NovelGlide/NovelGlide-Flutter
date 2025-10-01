@@ -34,8 +34,6 @@ abstract class ReaderCoreRepository {
 
   set smoothScroll(bool smoothScroll);
 
-  Stream<void> get onLoadDone;
-
   Stream<ReaderSetStateData> get onSetState;
 
   Stream<String> get onPlayTts;

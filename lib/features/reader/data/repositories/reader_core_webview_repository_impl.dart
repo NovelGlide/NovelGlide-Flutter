@@ -62,22 +62,18 @@ class ReaderCoreWebViewRepositoryImpl implements ReaderCoreRepository {
     ));
 
     // Setup Listeners
-    _subscriptionSet.add(
-      // Load done.
-      _dataSource.onLoadDone.listen((void _) async {
-        // Stop the local web server.
-        await _serverRepository.stop();
-      }),
-    );
-    _subscriptionSet.add(
+    _subscriptionSet.addAll(<StreamSubscription<dynamic>>[
       // Save location.
       _dataSource.onSaveLocation.listen((String location) async {
         await _cacheRepository.store(bookIdentifier, location);
       }),
-    );
+    ]);
 
     // Load the page.
-    _controller.loadRequest(serverUri);
+    await _dataSource.loadPage(serverUri);
+
+    // Page loading completed. Stop the local web server.
+    await _serverRepository.stop();
   }
 
   @override
@@ -160,9 +156,6 @@ class ReaderCoreWebViewRepositoryImpl implements ReaderCoreRepository {
       data: smoothScroll,
     ));
   }
-
-  @override
-  Stream<void> get onLoadDone => _dataSource.onLoadDone;
 
   @override
   Stream<ReaderSetStateData> get onSetState => _dataSource.onSetState;

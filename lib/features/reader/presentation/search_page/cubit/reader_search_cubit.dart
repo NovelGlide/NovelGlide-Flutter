@@ -44,7 +44,7 @@ class ReaderSearchCubit extends Cubit<ReaderSearchState> {
   Future<void> init(ReaderCoreRepository coreRepository) async {
     _dependencies = _dependenciesFactory(coreRepository);
 
-    _subscriptions.addAll([
+    _subscriptions.addAll(<StreamSubscription<dynamic>>[
       _dependencies._observeSearchListUseCase().listen(_setResultList),
     ]);
   }

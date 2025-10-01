@@ -40,7 +40,6 @@ import 'domain/use_cases/location_cache_use_cases/reader_clear_location_cache_us
 import 'domain/use_cases/location_cache_use_cases/reader_delete_location_cache_use_case.dart';
 import 'domain/use_cases/reader_goto_use_case.dart';
 import 'domain/use_cases/reader_next_page_use_case.dart';
-import 'domain/use_cases/reader_observe_load_done_use_case.dart';
 import 'domain/use_cases/reader_observe_set_state_use_case.dart';
 import 'domain/use_cases/reader_previous_page_use_case.dart';
 import 'domain/use_cases/search_use_cases/reader_observe_search_list_use_case.dart';
@@ -138,7 +137,6 @@ void setupReaderDependencies() {
             controller,
             coreRepository,
             // Reader use cases
-            ReaderObserveLoadDoneUseCase(coreRepository),
             ReaderObserveSetStateUseCase(coreRepository),
             ReaderNextPageUseCase(coreRepository),
             ReaderPreviousPageUseCase(coreRepository),
