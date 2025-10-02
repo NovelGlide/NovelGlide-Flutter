@@ -31,7 +31,7 @@ abstract class BookLocalDataSource {
 
   Future<String?> getContent(
     String identifier, {
-    String? manifestHref,
+    String? contentHref,
   });
 
   // Validator

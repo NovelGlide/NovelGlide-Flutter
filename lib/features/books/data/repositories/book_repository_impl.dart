@@ -135,7 +135,7 @@ class BookRepositoryImpl implements BookRepository {
   }) {
     return _epubDataSource.getContent(
       identifier,
-      manifestHref: chapterIdentifier,
+      contentHref: chapterIdentifier,
     );
   }
 

@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../../../core/log_system/log_system.dart';
 import '../../../books/domain/repositories/book_repository.dart';
 import '../../domain/entities/reader_search_result_data.dart';
 import '../../domain/entities/reader_set_state_data.dart';
@@ -32,13 +31,11 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
     String? chapterIdentifier,
     String? cfi,
   }) async {
-    LogSystem.info(chapterIdentifier.toString());
-    _bookRepository.getContent(
-      bookIdentifier,
-      chapterIdentifier: chapterIdentifier,
-    );
-
-    return '';
+    return await _bookRepository.getContent(
+          bookIdentifier,
+          chapterIdentifier: chapterIdentifier,
+        ) ??
+        '';
   }
 
   @override

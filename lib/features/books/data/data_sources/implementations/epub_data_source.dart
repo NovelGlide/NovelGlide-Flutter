@@ -186,34 +186,33 @@ class EpubDataSource extends BookLocalDataSource {
   @override
   Future<String?> getContent(
     String identifier, {
-    String? manifestHref,
+    String? contentHref,
   }) async {
     // Load the book file.
     final String absolutePath =
         await _getAbsolutePathFromIdentifier(identifier);
     final epub.EpubBook epubBook = await _loadEpubBook(absolutePath);
-    final Map<String, epub.EpubTextContentFile>? htmlFiles =
-        epubBook.Content?.Html;
+    final Map<String, epub.EpubTextContentFile> htmlFiles =
+        epubBook.Content?.Html ?? <String, epub.EpubTextContentFile>{};
+
+    // The information of this book.
     final epub.EpubPackage? package = epubBook.Schema?.Package;
     final epub.EpubManifest? manifest = package?.Manifest;
     final epub.EpubSpine? spine = package?.Spine;
 
-    LogSystem.info(htmlFiles.toString());
+    // Get the first idRef in the spine list.
+    final String? idRef = spine?.Items?.firstOrNull?.IdRef;
 
-    // Get the manifest items.
-    final epub.EpubManifestItem? item =
-        (manifest?.Items ?? <epub.EpubManifestItem>[])
-            .firstWhereOrNull((epub.EpubManifestItem item) {
-      final MimeType? mimeType = MimeType.tryParse(item.MediaType);
-      return mimeType == MimeType.xhtml && item.Href == manifestHref;
-    });
+    // Use the requested href first.
+    final String? href = contentHref ??
+        // Find the href of the first spine.
+        manifest?.Items
+            ?.firstWhereOrNull((epub.EpubManifestItem item) => item.Id == idRef)
+            ?.Href;
 
-    if (item == null) {
-      // The content is not found. Load the first content in the spine list.
-    }
+    LogSystem.info(href.toString());
 
-    // The book might be an empty book...
-    return null;
+    return htmlFiles[href]?.Content;
   }
 
   @override
