@@ -37,6 +37,7 @@ dependencies:
   intl: any
   loading_animation_widget: ^1.2.0+4
   logger: ^2.4.0
+  lru_cache: ^0.0.2
   markdown_widget: ^2.3.2+8
   mime: ^2.0.0
   package_info_plus: ^9.0.0

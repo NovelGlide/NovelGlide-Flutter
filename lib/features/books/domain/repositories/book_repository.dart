@@ -5,6 +5,7 @@ import '../entities/book.dart';
 import '../entities/book_chapter.dart';
 import '../entities/book_content.dart';
 import '../entities/book_cover.dart';
+import '../entities/book_page.dart';
 import '../entities/book_pick_file_data.dart';
 
 abstract class BookRepository {
@@ -34,6 +35,8 @@ abstract class BookRepository {
     String identifier, {
     String? chapterIdentifier,
   });
+
+  Future<List<BookPage>> getPageList(String identifier);
 
   Future<void> reset();
 

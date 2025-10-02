@@ -20,6 +20,7 @@ import '../../../domain/entities/book.dart';
 import '../../../domain/entities/book_chapter.dart';
 import '../../../domain/entities/book_content.dart';
 import '../../../domain/entities/book_cover.dart';
+import '../../../domain/entities/book_page.dart';
 import '../book_local_data_source.dart';
 
 class EpubDataSource extends BookLocalDataSource {
@@ -129,10 +130,10 @@ class EpubDataSource extends BookLocalDataSource {
     );
 
     return Book(
-      identifier: bookIdentifier,
+      identifier: identifier,
       title: epubBook.Title ?? '',
       modifiedDate: await _fileSystemRepository.getModifiedDate(absolutePath),
-      coverIdentifier: bookIdentifier,
+      coverIdentifier: identifier,
       ltr: epubBook.Schema?.Package?.Spine?.ltr ?? true,
     );
   }
@@ -216,6 +217,28 @@ class EpubDataSource extends BookLocalDataSource {
       chapterIdentifier: href ?? '',
       content: htmlFiles[href]?.Content ?? '',
     );
+  }
+
+  @override
+  Future<List<BookPage>> getPageList(String identifier) async {
+    // Load the book file.
+    final String absolutePath =
+        await _getAbsolutePathFromIdentifier(identifier);
+    final epub.EpubBook epubBook = await _loadEpubBook(absolutePath);
+    final epub.EpubPackage? package = epubBook.Schema?.Package;
+    final epub.EpubManifest? manifest = package?.Manifest;
+    final epub.EpubSpine? spine = package?.Spine;
+
+    return (spine?.Items ?? <epub.EpubSpineItemRef>[])
+        .map<BookPage>((epub.EpubSpineItemRef spineItem) => BookPage(
+              identifier: manifest?.Items
+                      ?.firstWhereOrNull((epub.EpubManifestItem item) =>
+                          item.Id == spineItem.IdRef)
+                      ?.Href ??
+                  '',
+            ))
+        .where((BookPage page) => page.identifier.isNotEmpty)
+        .toList();
   }
 
   @override

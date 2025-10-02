@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../books/domain/entities/book_chapter.dart';
 import '../../../books/domain/entities/book_content.dart';
+import '../../../books/domain/entities/book_page.dart';
 import '../../../books/domain/repositories/book_repository.dart';
 import '../../domain/entities/reader_search_result_data.dart';
 import '../../domain/entities/reader_set_state_data.dart';
@@ -13,6 +14,8 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
   ReaderCoreHtmlRepositoryImpl(this._bookRepository);
 
   final BookRepository _bookRepository;
+
+  late final List<BookPage> _pageList;
 
   /// Stream Controllers
   final StreamController<ReaderSetStateData> _setStateStreamController =
