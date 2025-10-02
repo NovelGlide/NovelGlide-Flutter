@@ -10,6 +10,7 @@ import '../../../../core/utils/file_utils.dart';
 import '../../../pick_file/domain/repositories/pick_file_repository.dart';
 import '../../domain/entities/book.dart';
 import '../../domain/entities/book_chapter.dart';
+import '../../domain/entities/book_content.dart';
 import '../../domain/entities/book_cover.dart';
 import '../../domain/entities/book_pick_file_data.dart';
 import '../../domain/repositories/book_repository.dart';
@@ -129,7 +130,7 @@ class BookRepositoryImpl implements BookRepository {
   }
 
   @override
-  Future<String?> getContent(
+  Future<BookContent> getContent(
     String identifier, {
     String? chapterIdentifier,
   }) {

@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import '../entities/book.dart';
 import '../entities/book_chapter.dart';
+import '../entities/book_content.dart';
 import '../entities/book_cover.dart';
 import '../entities/book_pick_file_data.dart';
 
@@ -29,7 +30,7 @@ abstract class BookRepository {
 
   Future<List<BookChapter>> getChapterList(String identifier);
 
-  Future<String?> getContent(
+  Future<BookContent> getContent(
     String identifier, {
     String? chapterIdentifier,
   });

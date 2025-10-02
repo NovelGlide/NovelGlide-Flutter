@@ -13,8 +13,17 @@ class ReaderCoreHtml extends StatelessWidget {
       buildWhen: (ReaderState previous, ReaderState current) =>
           previous.content != current.content,
       builder: (BuildContext context, ReaderState state) {
-        return Html(
-          data: state.content,
+        return Scrollbar(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Html(
+                data: state.content,
+                onLinkTap: (_, __, ___) {},
+                shrinkWrap: true,
+              ),
+            ),
+          ),
         );
       },
     );

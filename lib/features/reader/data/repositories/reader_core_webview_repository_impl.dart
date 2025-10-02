@@ -30,7 +30,7 @@ class ReaderCoreWebViewRepositoryImpl implements ReaderCoreRepository {
       <StreamSubscription<dynamic>>{};
 
   @override
-  Future<String> loadContent({
+  Future<void> loadContent({
     required String bookIdentifier,
     String? chapterIdentifier,
     String? cfi,
@@ -74,10 +74,6 @@ class ReaderCoreWebViewRepositoryImpl implements ReaderCoreRepository {
 
     // Page loading completed. Stop the local web server.
     await _serverRepository.stop();
-
-    // All content loading will be run on JavaScript in WebView.
-    // No need to read the real content and return.
-    return '';
   }
 
   @override

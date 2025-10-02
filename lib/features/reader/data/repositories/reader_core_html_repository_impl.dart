@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../books/domain/entities/book_chapter.dart';
+import '../../../books/domain/entities/book_content.dart';
 import '../../../books/domain/repositories/book_repository.dart';
 import '../../domain/entities/reader_search_result_data.dart';
 import '../../domain/entities/reader_set_state_data.dart';
@@ -26,16 +28,56 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
       StreamController<List<ReaderSearchResultData>>.broadcast();
 
   @override
-  Future<String> loadContent({
+  Future<void> loadContent({
     required String bookIdentifier,
     String? chapterIdentifier,
     String? cfi,
   }) async {
-    return await _bookRepository.getContent(
-          bookIdentifier,
-          chapterIdentifier: chapterIdentifier,
-        ) ??
-        '';
+    final BookContent content = await _bookRepository.getContent(
+      bookIdentifier,
+      chapterIdentifier: chapterIdentifier,
+    );
+
+    _setStateStreamController.add(ReaderSetStateData(
+      breadcrumb: _constructBreadcrumb(
+        await _bookRepository.getChapterList(bookIdentifier),
+        chapterIdentifier ?? '',
+      ),
+      chapterIdentifier: content.chapterIdentifier,
+      startCfi: '',
+      chapterCurrentPage: 1,
+      chapterTotalPage: 1,
+      content: content.content,
+    ));
+  }
+
+  String? _constructBreadcrumb(
+    List<BookChapter> chapterList,
+    String chapterIdentifier, {
+    String breadcrumbs = '',
+    int level = 0,
+  }) {
+    for (BookChapter chapter in chapterList) {
+      breadcrumbs +=
+          (breadcrumbs.isNotEmpty ? ' > ' : '') + chapter.title.trim();
+
+      if (chapter.identifier == chapterIdentifier) {
+        return breadcrumbs;
+      }
+
+      final String? result = _constructBreadcrumb(
+        chapterList,
+        chapterIdentifier,
+        breadcrumbs: breadcrumbs,
+        level: level + 1,
+      );
+
+      if (result?.isNotEmpty == true) {
+        return result;
+      }
+    }
+
+    return null;
   }
 
   @override

@@ -18,6 +18,7 @@ import '../../../../../core/mime_resolver/domain/repositories/mime_repository.da
 import '../../../../../core/path_provider/domain/repositories/app_path_provider.dart';
 import '../../../domain/entities/book.dart';
 import '../../../domain/entities/book_chapter.dart';
+import '../../../domain/entities/book_content.dart';
 import '../../../domain/entities/book_cover.dart';
 import '../book_local_data_source.dart';
 
@@ -184,7 +185,7 @@ class EpubDataSource extends BookLocalDataSource {
   }
 
   @override
-  Future<String?> getContent(
+  Future<BookContent> getContent(
     String identifier, {
     String? contentHref,
   }) async {
@@ -210,9 +211,11 @@ class EpubDataSource extends BookLocalDataSource {
             ?.firstWhereOrNull((epub.EpubManifestItem item) => item.Id == idRef)
             ?.Href;
 
-    LogSystem.info(href.toString());
-
-    return htmlFiles[href]?.Content;
+    return BookContent(
+      bookIdentifier: identifier,
+      chapterIdentifier: href ?? '',
+      content: htmlFiles[href]?.Content ?? '',
+    );
   }
 
   @override

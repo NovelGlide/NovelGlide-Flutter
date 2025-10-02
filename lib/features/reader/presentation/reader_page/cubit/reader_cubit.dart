@@ -175,7 +175,7 @@ class ReaderCubit extends Cubit<ReaderState> {
       ));
     }
 
-    final String content = await _dependencies._coreRepository.loadContent(
+    await _dependencies._coreRepository.loadContent(
       bookIdentifier: bookIdentifier,
       chapterIdentifier: chapterIdentifier,
       cfi: cfi,
@@ -185,7 +185,6 @@ class ReaderCubit extends Cubit<ReaderState> {
       // Loading completed.
       emit(state.copyWith(
         code: ReaderLoadingStateCode.loaded,
-        htmlContent: content,
       ));
     }
 
@@ -314,6 +313,7 @@ class ReaderCubit extends Cubit<ReaderState> {
       startCfi: data.startCfi,
       chapterCurrentPage: data.chapterCurrentPage,
       chapterTotalPage: data.chapterTotalPage,
+      htmlContent: data.content,
     ));
 
     if (state.readerPreference.isAutoSaving) {

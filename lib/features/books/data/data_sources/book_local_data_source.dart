@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import '../../../../core/mime_resolver/domain/entities/mime_type.dart';
 import '../../domain/entities/book.dart';
 import '../../domain/entities/book_chapter.dart';
+import '../../domain/entities/book_content.dart';
 import '../../domain/entities/book_cover.dart';
 
 abstract class BookLocalDataSource {
@@ -29,7 +30,7 @@ abstract class BookLocalDataSource {
 
   Future<List<BookChapter>> getChapterList(String identifier);
 
-  Future<String?> getContent(
+  Future<BookContent> getContent(
     String identifier, {
     String? contentHref,
   });
