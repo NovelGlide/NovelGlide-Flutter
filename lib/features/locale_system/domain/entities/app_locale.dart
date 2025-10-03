@@ -22,5 +22,5 @@ class AppLocale extends Equatable {
   @override
   String toString() => <String?>[languageCode, scriptCode, countryCode]
       .whereType<String>()
-      .join('_');
+      .join('-');
 }

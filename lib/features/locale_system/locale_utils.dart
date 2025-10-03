@@ -16,7 +16,8 @@ class LocaleUtils {
     final AppLocalizations appLocalizations = AppLocalizations.of(context)!;
     return switch (locale) {
       const AppLocale('en') => appLocalizations.languageCodeEnUS,
-      const AppLocale('zh') => appLocalizations.languageCodeZhTW,
+      const AppLocale('zh') => appLocalizations.languageCodeZh,
+      const AppLocale('zh', 'Hant', 'TW') => appLocalizations.languageCodeZhTW,
       const AppLocale('zh', 'Hans', 'CN') => appLocalizations.languageCodeZhCN,
       const AppLocale('ja') => appLocalizations.languageCodeJaJP,
       _ => locale.toString(),

@@ -9,23 +9,25 @@ class ReaderCoreHtml extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ReaderCubit, ReaderState>(
-      buildWhen: (ReaderState previous, ReaderState current) =>
-          previous.content != current.content,
-      builder: (BuildContext context, ReaderState state) {
-        return Scrollbar(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Html(
-                data: state.content,
-                onLinkTap: (_, __, ___) {},
-                shrinkWrap: true,
+    return SizedBox.expand(
+      child: BlocBuilder<ReaderCubit, ReaderState>(
+        buildWhen: (ReaderState previous, ReaderState current) =>
+            previous.content != current.content,
+        builder: (BuildContext context, ReaderState state) {
+          return Scrollbar(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Html(
+                  data: state.content,
+                  onLinkTap: (_, __, ___) {},
+                  shrinkWrap: true,
+                ),
               ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

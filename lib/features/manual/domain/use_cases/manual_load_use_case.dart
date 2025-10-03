@@ -31,7 +31,8 @@ class ManualLoadUseCase
   @override
   Future<String?> call(ManualLoadUseCaseParam parameter) async {
     try {
-      return _repository.loadManual(parameter.filePath, parameter.appLocale);
+      return await _repository.loadManual(
+          parameter.filePath, parameter.appLocale);
     } catch (e, s) {
       LogSystem.error(
         'Failed to load manual. ($parameter)',
