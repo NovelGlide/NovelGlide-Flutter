@@ -7,7 +7,7 @@ A first attempt to develop a cross-platform app.
 
 ## Development Environment
 
-- Flutter version: 3.35.3
+- Flutter version: 3.35.5
 
 ## Features
 
