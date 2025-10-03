@@ -313,7 +313,7 @@ class ReaderCubit extends Cubit<ReaderState> {
       startCfi: data.startCfi,
       chapterCurrentPage: data.chapterCurrentPage,
       chapterTotalPage: data.chapterTotalPage,
-      htmlContent: data.content,
+      content: data.content,
     ));
 
     if (state.readerPreference.isAutoSaving) {
