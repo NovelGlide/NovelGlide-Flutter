@@ -15,16 +15,6 @@ class ReaderLoadingWidget extends StatelessWidget {
           previous.code != current.code,
       builder: (BuildContext context, ReaderState state) {
         final AppLocalizations appLocalizations = AppLocalizations.of(context)!;
-        final String? title = switch (state.code) {
-          ReaderLoadingStateCode.initial =>
-            appLocalizations.readerLoadingInitialize,
-          ReaderLoadingStateCode.preferenceLoading => 'Preference Loading...',
-          ReaderLoadingStateCode.bookLoading =>
-            appLocalizations.readerLoadingBookLoading,
-          ReaderLoadingStateCode.rendering =>
-            appLocalizations.readerLoadingRendering,
-          ReaderLoadingStateCode.loaded => null,
-        };
 
         return Container(
           width: double.infinity,
@@ -33,7 +23,24 @@ class ReaderLoadingWidget extends StatelessWidget {
             color: Theme.of(context).colorScheme.surface,
           ),
           child: Center(
-            child: CommonLoadingWidget(title: title),
+            child: CommonLoadingWidget(
+                title: switch (state.code) {
+              // Initial state.
+              ReaderLoadingStateCode.initial =>
+                appLocalizations.readerLoadingInitialize,
+              // Loading the preference. TODO(kai): Localization
+              ReaderLoadingStateCode.preferenceLoading =>
+                'Loading preference...',
+              // Loading the book.
+              ReaderLoadingStateCode.bookLoading =>
+                appLocalizations.readerLoadingBookLoading,
+              // Rendering the content.
+              ReaderLoadingStateCode.rendering =>
+                appLocalizations.readerLoadingRendering,
+              // Loading the page. TODO(kai): Localization
+              ReaderLoadingStateCode.pageLoading => 'Loading page...',
+              ReaderLoadingStateCode.loaded => null,
+            }),
           ),
         );
       },

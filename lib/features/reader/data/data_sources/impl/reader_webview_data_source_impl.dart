@@ -79,7 +79,11 @@ class ReaderWebViewDataSourceImpl implements ReaderWebViewDataSource {
               startCfi: message.data['startCfi'],
               chapterCurrentPage: message.data['chapterCurrentPage'],
               chapterTotalPage: message.data['chapterTotalPage'],
+              // Content will processed by JavaScript.
               content: null,
+              // They're not supported.
+              atStart: false,
+              atEnd: false,
             ));
           }
           break;

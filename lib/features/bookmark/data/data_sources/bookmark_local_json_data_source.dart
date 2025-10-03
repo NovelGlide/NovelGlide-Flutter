@@ -9,7 +9,7 @@ abstract class BookmarkLocalJsonDataSource {
 
   Future<void> updateData(Set<BookmarkData> dataSet);
 
-  Future<void> deleteData(Set<BookmarkData> dataSet);
+  Future<void> deleteData(Set<String> identifierSet);
 
   Future<void> reset();
 }

@@ -12,7 +12,6 @@ import '../../domain/entities/book.dart';
 import '../../domain/entities/book_chapter.dart';
 import '../../domain/entities/book_content.dart';
 import '../../domain/entities/book_cover.dart';
-import '../../domain/entities/book_page.dart';
 import '../../domain/entities/book_pick_file_data.dart';
 import '../../domain/repositories/book_repository.dart';
 import '../data_sources/book_local_data_source.dart';
@@ -139,11 +138,6 @@ class BookRepositoryImpl implements BookRepository {
       identifier,
       contentHref: chapterIdentifier,
     );
-  }
-
-  @override
-  Future<List<BookPage>> getPageList(String identifier) {
-    return _epubDataSource.getPageList(identifier);
   }
 
   @override

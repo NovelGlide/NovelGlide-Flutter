@@ -130,10 +130,10 @@ class EpubDataSource extends BookLocalDataSource {
     );
 
     return Book(
-      identifier: identifier,
+      identifier: bookIdentifier,
       title: epubBook.Title ?? '',
       modifiedDate: await _fileSystemRepository.getModifiedDate(absolutePath),
-      coverIdentifier: identifier,
+      coverIdentifier: bookIdentifier,
       ltr: epubBook.Schema?.Package?.Spine?.ltr ?? true,
     );
   }
@@ -216,29 +216,17 @@ class EpubDataSource extends BookLocalDataSource {
       bookIdentifier: identifier,
       chapterIdentifier: href ?? '',
       content: htmlFiles[href]?.Content ?? '',
+      pageList: (spine?.Items ?? <epub.EpubSpineItemRef>[])
+          .map<BookPage>((epub.EpubSpineItemRef spineItem) => BookPage(
+                identifier: manifest?.Items
+                        ?.firstWhereOrNull((epub.EpubManifestItem item) =>
+                            item.Id == spineItem.IdRef)
+                        ?.Href ??
+                    '',
+              ))
+          .where((BookPage page) => page.identifier.isNotEmpty)
+          .toList(),
     );
-  }
-
-  @override
-  Future<List<BookPage>> getPageList(String identifier) async {
-    // Load the book file.
-    final String absolutePath =
-        await _getAbsolutePathFromIdentifier(identifier);
-    final epub.EpubBook epubBook = await _loadEpubBook(absolutePath);
-    final epub.EpubPackage? package = epubBook.Schema?.Package;
-    final epub.EpubManifest? manifest = package?.Manifest;
-    final epub.EpubSpine? spine = package?.Spine;
-
-    return (spine?.Items ?? <epub.EpubSpineItemRef>[])
-        .map<BookPage>((epub.EpubSpineItemRef spineItem) => BookPage(
-              identifier: manifest?.Items
-                      ?.firstWhereOrNull((epub.EpubManifestItem item) =>
-                          item.Id == spineItem.IdRef)
-                      ?.Href ??
-                  '',
-            ))
-        .where((BookPage page) => page.identifier.isNotEmpty)
-        .toList();
   }
 
   @override

@@ -14,6 +14,8 @@ class ReaderState extends Equatable {
     this.navigationStateCode = ReaderNavigationStateCode.defaultState,
     this.bookmarkData,
     this.readerPreference = const ReaderPreferenceData(),
+    this.atStart = true,
+    this.atEnd = true,
   });
 
   final ReaderLoadingStateCode code;
@@ -27,6 +29,8 @@ class ReaderState extends Equatable {
   final int chapterCurrentPage;
   final int chapterTotalPage;
   final String content;
+  final bool atStart;
+  final bool atEnd;
 
   /// Bottom buttons state.
   final ReaderNavigationStateCode navigationStateCode;
@@ -49,6 +53,8 @@ class ReaderState extends Equatable {
         navigationStateCode,
         bookmarkData,
         readerPreference,
+        atStart,
+        atEnd,
       ];
 
   ReaderState copyWith({
@@ -62,8 +68,10 @@ class ReaderState extends Equatable {
     int? chapterTotalPage,
     String? content,
     ReaderNavigationStateCode? navigationStateCode,
-    BookmarkData? bookmarkData,
+    ValueGetter<BookmarkData?>? bookmarkDataGetter,
     ReaderPreferenceData? readerPreference,
+    bool? atStart,
+    bool? atEnd,
   }) {
     return ReaderState(
       coreType: coreType ?? this.coreType,
@@ -76,8 +84,11 @@ class ReaderState extends Equatable {
       chapterTotalPage: chapterTotalPage ?? this.chapterTotalPage,
       content: content ?? this.content,
       navigationStateCode: navigationStateCode ?? this.navigationStateCode,
-      bookmarkData: bookmarkData ?? this.bookmarkData,
+      bookmarkData:
+          bookmarkDataGetter == null ? bookmarkData : bookmarkDataGetter(),
       readerPreference: readerPreference ?? this.readerPreference,
+      atStart: atStart ?? this.atStart,
+      atEnd: atEnd ?? this.atEnd,
     );
   }
 }

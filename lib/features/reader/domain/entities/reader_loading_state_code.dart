@@ -5,6 +5,7 @@ enum ReaderLoadingStateCode {
   preferenceLoading,
   bookLoading,
   rendering,
+  pageLoading,
   loaded;
 
   bool get isInitial => this == ReaderLoadingStateCode.initial;
@@ -12,7 +13,8 @@ enum ReaderLoadingStateCode {
   bool get isLoading =>
       this == ReaderLoadingStateCode.preferenceLoading ||
       this == ReaderLoadingStateCode.bookLoading ||
-      this == ReaderLoadingStateCode.rendering;
+      this == ReaderLoadingStateCode.rendering ||
+      this == ReaderLoadingStateCode.pageLoading;
 
   bool get isLoaded => this == ReaderLoadingStateCode.loaded;
 }

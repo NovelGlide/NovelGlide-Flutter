@@ -15,8 +15,8 @@ class BookmarkRepositoryImpl extends BookmarkRepository {
       StreamController<void>.broadcast();
 
   @override
-  Future<void> deleteData(Set<BookmarkData> dataSet) async {
-    await _localJsonDataSource.deleteData(dataSet);
+  Future<void> deleteData(Set<String> identifierSet) async {
+    await _localJsonDataSource.deleteData(identifierSet);
 
     // Send a notification
     _onChangedController.add(null);
@@ -30,7 +30,7 @@ class BookmarkRepositoryImpl extends BookmarkRepository {
   @override
   Future<List<BookmarkData>> getList() async {
     final List<BookmarkData> list = await _localJsonDataSource.getList();
-    final Set<BookmarkData> deleted = <BookmarkData>{};
+    final Set<String> deleted = <String>{};
     final List<BookmarkData> retList = <BookmarkData>[];
 
     // Filter the book doesn't exist
@@ -38,7 +38,7 @@ class BookmarkRepositoryImpl extends BookmarkRepository {
       if (await _bookRepository.exists(data.bookIdentifier)) {
         retList.add(data);
       } else {
-        deleted.add(data);
+        deleted.add(data.bookIdentifier);
       }
     }
 

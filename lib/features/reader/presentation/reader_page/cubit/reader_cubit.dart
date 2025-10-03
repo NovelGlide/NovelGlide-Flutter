@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../../../bookmark/domain/entities/bookmark_data.dart';
+import '../../../../bookmark/domain/use_cases/bookmark_delete_data_use_case.dart';
 import '../../../../bookmark/domain/use_cases/bookmark_get_data_use_case.dart';
 import '../../../../bookmark/domain/use_cases/bookmark_update_data_use_case.dart';
 import '../../../../books/domain/entities/book.dart';
@@ -50,6 +51,7 @@ class ReaderCubitDependencies {
     // Bookmark use cases
     this._bookmarkGetDataUseCase,
     this._bookmarkUpdateDataUseCase,
+    this._bookmarkDeleteDataUseCase,
     // Reader preference use cases
     this._savePreferenceUseCase,
     this._observePreferenceChangeUseCase,
@@ -74,6 +76,7 @@ class ReaderCubitDependencies {
   /// Bookmark use cases
   final BookmarkGetDataUseCase _bookmarkGetDataUseCase;
   final BookmarkUpdateDataUseCase _bookmarkUpdateDataUseCase;
+  final BookmarkDeleteDataUseCase _bookmarkDeleteDataUseCase;
 
   /// Reader preference use cases
   final ReaderSavePreferenceUseCase _savePreferenceUseCase;
@@ -170,7 +173,7 @@ class ReaderCubit extends Cubit<ReaderState> {
       emit(state.copyWith(
         code: ReaderLoadingStateCode.rendering,
         bookName: this.bookData?.title,
-        bookmarkData: bookmarkData,
+        bookmarkDataGetter: () => bookmarkData,
         readerPreference: readerSettingsData,
       ));
     }
@@ -287,19 +290,39 @@ class ReaderCubit extends Cubit<ReaderState> {
 
     _dependencies._bookmarkUpdateDataUseCase(<BookmarkData>{data});
 
-    emit(state.copyWith(bookmarkData: data));
+    emit(state.copyWith(bookmarkDataGetter: () => data));
+  }
+
+  void removeBookmark() {
+    _dependencies._bookmarkDeleteDataUseCase(<String>{bookData!.identifier});
+
+    emit(state.copyWith(bookmarkDataGetter: () => null));
   }
 
   /// *************************************************************************
   /// Page Navigation
   /// *************************************************************************
 
-  void previousPage() {
-    _dependencies._previousPageUseCase();
+  Future<void> previousPage() async {
+    if (state.atStart) {
+      // There's not a previous page.
+      return;
+    }
+
+    emit(state.copyWith(code: ReaderLoadingStateCode.pageLoading));
+    await _dependencies._previousPageUseCase();
+    emit(state.copyWith(code: ReaderLoadingStateCode.loaded));
   }
 
-  void nextPage() {
-    _dependencies._nextPageUseCase();
+  Future<void> nextPage() async {
+    if (state.atEnd) {
+      // There's not a next page.
+      return;
+    }
+
+    emit(state.copyWith(code: ReaderLoadingStateCode.pageLoading));
+    await _dependencies._nextPageUseCase();
+    emit(state.copyWith(code: ReaderLoadingStateCode.loaded));
   }
 
   /// *************************************************************************
@@ -314,6 +337,8 @@ class ReaderCubit extends Cubit<ReaderState> {
       chapterCurrentPage: data.chapterCurrentPage,
       chapterTotalPage: data.chapterTotalPage,
       content: data.content,
+      atStart: data.atStart,
+      atEnd: data.atEnd,
     ));
 
     if (state.readerPreference.isAutoSaving) {

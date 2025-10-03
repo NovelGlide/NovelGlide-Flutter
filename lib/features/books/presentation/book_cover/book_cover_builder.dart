@@ -12,17 +12,19 @@ class BookCoverBuilder extends StatelessWidget {
     super.key,
     required this.bookData,
     this.builder,
+    this.placeholder,
   });
 
   final Book bookData;
   final Widget? Function(BuildContext context, BookCover coverData)? builder;
+  final Widget? placeholder;
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<BookCover>(
       future: sl<BookGetCoverUseCase>()(bookData.coverIdentifier),
       builder: (BuildContext context, AsyncSnapshot<BookCover> snapshot) {
-        Widget? child;
+        Widget? child = placeholder;
 
         if (snapshot.hasData) {
           child = builder?.call(context, snapshot.data!) ??

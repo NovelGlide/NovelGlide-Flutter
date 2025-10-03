@@ -15,7 +15,9 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
 
   final BookRepository _bookRepository;
 
+  late final String _bookIdentifier;
   late final List<BookPage> _pageList;
+  int _currentPage = 0;
 
   /// Stream Controllers
   final StreamController<ReaderSetStateData> _setStateStreamController =
@@ -36,21 +38,35 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
     String? chapterIdentifier,
     String? cfi,
   }) async {
+    // Save the current book identifier.
+    _bookIdentifier = bookIdentifier;
+
+    // Load the content.
     final BookContent content = await _bookRepository.getContent(
       bookIdentifier,
       chapterIdentifier: chapterIdentifier,
     );
 
+    // Store the page list for page navigation.
+    _pageList = content.pageList;
+
+    // Calculate the current page number.
+    _currentPage = _pageList.indexWhere(
+        (BookPage page) => page.identifier == content.chapterIdentifier);
+
     _setStateStreamController.add(ReaderSetStateData(
       breadcrumb: _constructBreadcrumb(
-        await _bookRepository.getChapterList(bookIdentifier),
-        chapterIdentifier ?? '',
-      ),
+            await _bookRepository.getChapterList(bookIdentifier),
+            content.chapterIdentifier,
+          ) ??
+          '',
       chapterIdentifier: content.chapterIdentifier,
       startCfi: '',
-      chapterCurrentPage: 1,
-      chapterTotalPage: 1,
+      chapterCurrentPage: _currentPage + 1,
+      chapterTotalPage: _pageList.length,
       content: content.content,
+      atStart: _pageList.first.identifier == content.chapterIdentifier,
+      atEnd: _pageList.last.identifier == content.chapterIdentifier,
     ));
   }
 
@@ -69,7 +85,7 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
       }
 
       final String? result = _constructBreadcrumb(
-        chapterList,
+        chapter.subChapterList,
         chapterIdentifier,
         breadcrumbs: breadcrumbs,
         level: level + 1,
@@ -87,10 +103,58 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
   Future<void> goto(String destination) async {}
 
   @override
-  Future<void> nextPage() async {}
+  Future<void> nextPage() async {
+    // Get the identifier of next page.
+    final String chapterIdentifier = _pageList[++_currentPage].identifier;
+
+    // Load the content.
+    final BookContent content = await _bookRepository.getContent(
+      _bookIdentifier,
+      chapterIdentifier: chapterIdentifier,
+    );
+
+    _setStateStreamController.add(ReaderSetStateData(
+      breadcrumb: _constructBreadcrumb(
+            await _bookRepository.getChapterList(_bookIdentifier),
+            content.chapterIdentifier,
+          ) ??
+          '',
+      chapterIdentifier: content.chapterIdentifier,
+      startCfi: '',
+      chapterCurrentPage: _currentPage + 1,
+      chapterTotalPage: _pageList.length,
+      content: content.content,
+      atStart: _pageList.first.identifier == content.chapterIdentifier,
+      atEnd: _pageList.last.identifier == content.chapterIdentifier,
+    ));
+  }
 
   @override
-  Future<void> previousPage() async {}
+  Future<void> previousPage() async {
+    // Get the identifier of next page.
+    final String chapterIdentifier = _pageList[--_currentPage].identifier;
+
+    // Load the content.
+    final BookContent content = await _bookRepository.getContent(
+      _bookIdentifier,
+      chapterIdentifier: chapterIdentifier,
+    );
+
+    _setStateStreamController.add(ReaderSetStateData(
+      breadcrumb: _constructBreadcrumb(
+            await _bookRepository.getChapterList(_bookIdentifier),
+            content.chapterIdentifier,
+          ) ??
+          '',
+      chapterIdentifier: content.chapterIdentifier,
+      startCfi: '',
+      chapterCurrentPage: _currentPage + 1,
+      chapterTotalPage: _pageList.length,
+      content: content.content,
+      atStart: _pageList.first.identifier == content.chapterIdentifier,
+      atEnd: _pageList.last.identifier == content.chapterIdentifier,
+    ));
+  }
 
   @override
   void ttsPlay() {}
@@ -108,16 +172,24 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
   void searchInWholeBook(String query) {}
 
   @override
-  set fontColor(Color fontColor) {}
+  set fontColor(Color fontColor) {
+    // No-ops
+  }
 
   @override
-  set fontSize(double fontSize) {}
+  set fontSize(double fontSize) {
+    // No-ops
+  }
 
   @override
-  set lineHeight(double lineHeight) {}
+  set lineHeight(double lineHeight) {
+    // No-ops
+  }
 
   @override
-  set smoothScroll(bool smoothScroll) {}
+  set smoothScroll(bool smoothScroll) {
+    // No-ops
+  }
 
   @override
   Stream<ReaderSetStateData> get onSetState => _setStateStreamController.stream;

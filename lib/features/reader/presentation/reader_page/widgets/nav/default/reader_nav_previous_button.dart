@@ -15,13 +15,14 @@ class ReaderNavPreviousButton extends StatelessWidget {
     final ReaderCubit cubit = BlocProvider.of<ReaderCubit>(context);
     return BlocBuilder<ReaderCubit, ReaderState>(
       buildWhen: (ReaderState previous, ReaderState current) =>
-          previous.code != current.code,
+          previous.code != current.code || previous.atStart != current.atStart,
       builder: (BuildContext context, ReaderState state) {
         return BlocBuilder<ReaderTtsCubit, ReaderTtsState>(
           buildWhen: (ReaderTtsState previous, ReaderTtsState current) =>
               previous.ttsState != current.ttsState,
           builder: (BuildContext context, ReaderTtsState ttsState) {
             final bool isEnabled = state.code.isLoaded &&
+                !state.atStart &&
                 (ttsState.ttsState.isIdle || ttsState.ttsState.isInitial);
             return IconButton(
               icon: const Icon(Icons.arrow_back_ios_rounded),

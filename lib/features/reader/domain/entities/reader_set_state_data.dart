@@ -8,6 +8,8 @@ class ReaderSetStateData extends Equatable {
     required this.chapterCurrentPage,
     required this.chapterTotalPage,
     required this.content,
+    required this.atStart,
+    required this.atEnd,
   });
 
   final String? breadcrumb;
@@ -16,6 +18,8 @@ class ReaderSetStateData extends Equatable {
   final int? chapterCurrentPage;
   final int? chapterTotalPage;
   final String? content;
+  final bool? atStart;
+  final bool? atEnd;
 
   @override
   List<Object?> get props => <Object?>[
@@ -25,5 +29,7 @@ class ReaderSetStateData extends Equatable {
         chapterCurrentPage,
         chapterTotalPage,
         content,
+        atStart,
+        atEnd,
       ];
 }

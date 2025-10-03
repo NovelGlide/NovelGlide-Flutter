@@ -5,7 +5,6 @@ import '../../domain/entities/book.dart';
 import '../../domain/entities/book_chapter.dart';
 import '../../domain/entities/book_content.dart';
 import '../../domain/entities/book_cover.dart';
-import '../../domain/entities/book_page.dart';
 
 abstract class BookLocalDataSource {
   BookLocalDataSource();
@@ -35,8 +34,6 @@ abstract class BookLocalDataSource {
     String identifier, {
     String? contentHref,
   });
-
-  Future<List<BookPage>> getPageList(String identifier);
 
   // Validator
   Future<bool> isFileValid(String path);

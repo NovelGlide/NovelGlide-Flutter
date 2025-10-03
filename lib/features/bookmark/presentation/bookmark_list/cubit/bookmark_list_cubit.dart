@@ -83,11 +83,13 @@ class BookmarkListCubit extends SharedListCubit<BookmarkData> {
   }
 
   Future<void> deleteBookmark(BookmarkData data) {
-    return _deleteDataUseCase(<BookmarkData>{data});
+    return _deleteDataUseCase(<String>{data.bookIdentifier});
   }
 
   void deleteSelectedBookmarks() {
-    _deleteDataUseCase(state.selectedSet);
+    _deleteDataUseCase(state.selectedSet
+        .map((BookmarkData data) => data.bookIdentifier)
+        .toSet());
   }
 
   @override

@@ -20,6 +20,13 @@ class BookListItem extends StatelessWidget {
     return BookCoverBuilder(
       bookData: bookData,
       builder: _buildItem,
+      placeholder: Container(
+        margin: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24.0),
+          color: Theme.of(context).colorScheme.surfaceContainerLow,
+        ),
+      ),
     );
   }
 
