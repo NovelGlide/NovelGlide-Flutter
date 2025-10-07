@@ -11,7 +11,9 @@ import '../../domain/entities/reader_set_state_data.dart';
 import '../../domain/repositories/reader_core_repository.dart';
 
 class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
-  ReaderCoreHtmlRepositoryImpl(this._bookRepository);
+  ReaderCoreHtmlRepositoryImpl(
+    this._bookRepository,
+  );
 
   final BookRepository _bookRepository;
 
