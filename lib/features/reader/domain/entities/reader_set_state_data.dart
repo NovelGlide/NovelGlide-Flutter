@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../books/domain/entities/book_html_content.dart';
+
 class ReaderSetStateData extends Equatable {
   const ReaderSetStateData({
     required this.breadcrumb,
@@ -17,7 +19,7 @@ class ReaderSetStateData extends Equatable {
   final String? startCfi;
   final int? chapterCurrentPage;
   final int? chapterTotalPage;
-  final String? content;
+  final BookHtmlContent? content;
   final bool? atStart;
   final bool? atEnd;
 

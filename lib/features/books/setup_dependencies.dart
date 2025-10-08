@@ -1,4 +1,5 @@
 import '../../core/file_system/domain/repositories/file_system_repository.dart';
+import '../../core/html_parser/html_parser.dart';
 import '../../core/mime_resolver/domain/repositories/mime_repository.dart';
 import '../../core/path_provider/domain/repositories/app_path_provider.dart';
 import '../../main.dart';
@@ -40,7 +41,9 @@ void setupBookDependencies() {
   /// Register repositories
   sl.registerLazySingleton<BookRepository>(
     () => BookRepositoryImpl(
-      EpubDataSource(),
+      EpubDataSource(
+        sl<HtmlParser>(),
+      ),
       sl<AppPathProvider>(),
       sl<FileSystemRepository>(),
       sl<PickFileRepository>(),

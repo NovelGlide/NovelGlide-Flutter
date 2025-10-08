@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../books/domain/entities/book_chapter.dart';
-import '../../../books/domain/entities/book_content.dart';
+import '../../../books/domain/entities/book_html_content.dart';
 import '../../../books/domain/entities/book_page.dart';
 import '../../../books/domain/repositories/book_repository.dart';
 import '../../domain/entities/reader_search_result_data.dart';
@@ -44,7 +44,7 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
     _bookIdentifier = bookIdentifier;
 
     // Load the content.
-    final BookContent content = await _bookRepository.getContent(
+    final BookHtmlContent content = await _bookRepository.getContent(
       bookIdentifier,
       chapterIdentifier: chapterIdentifier,
     );
@@ -66,7 +66,7 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
       startCfi: '',
       chapterCurrentPage: _currentPage + 1,
       chapterTotalPage: _pageList.length,
-      content: content.content,
+      content: content,
       atStart: _pageList.first.identifier == content.chapterIdentifier,
       atEnd: _pageList.last.identifier == content.chapterIdentifier,
     ));
@@ -110,7 +110,7 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
     final String chapterIdentifier = _pageList[++_currentPage].identifier;
 
     // Load the content.
-    final BookContent content = await _bookRepository.getContent(
+    final BookHtmlContent content = await _bookRepository.getContent(
       _bookIdentifier,
       chapterIdentifier: chapterIdentifier,
     );
@@ -125,7 +125,7 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
       startCfi: '',
       chapterCurrentPage: _currentPage + 1,
       chapterTotalPage: _pageList.length,
-      content: content.content,
+      content: content,
       atStart: _pageList.first.identifier == content.chapterIdentifier,
       atEnd: _pageList.last.identifier == content.chapterIdentifier,
     ));
@@ -137,7 +137,7 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
     final String chapterIdentifier = _pageList[--_currentPage].identifier;
 
     // Load the content.
-    final BookContent content = await _bookRepository.getContent(
+    final BookHtmlContent content = await _bookRepository.getContent(
       _bookIdentifier,
       chapterIdentifier: chapterIdentifier,
     );
@@ -152,7 +152,7 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
       startCfi: '',
       chapterCurrentPage: _currentPage + 1,
       chapterTotalPage: _pageList.length,
-      content: content.content,
+      content: content,
       atStart: _pageList.first.identifier == content.chapterIdentifier,
       atEnd: _pageList.last.identifier == content.chapterIdentifier,
     ));

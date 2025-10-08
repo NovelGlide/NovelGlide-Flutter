@@ -10,6 +10,7 @@ import '../../../../bookmark/domain/use_cases/bookmark_delete_data_use_case.dart
 import '../../../../bookmark/domain/use_cases/bookmark_get_data_use_case.dart';
 import '../../../../bookmark/domain/use_cases/bookmark_update_data_use_case.dart';
 import '../../../../books/domain/entities/book.dart';
+import '../../../../books/domain/entities/book_html_content.dart';
 import '../../../../books/domain/use_cases/book_get_use_case.dart';
 import '../../../../preference/domain/entities/reader_preference_data.dart';
 import '../../../../preference/domain/use_cases/preference_get_use_cases.dart';
@@ -336,7 +337,7 @@ class ReaderCubit extends Cubit<ReaderState> {
       startCfi: data.startCfi,
       chapterCurrentPage: data.chapterCurrentPage,
       chapterTotalPage: data.chapterTotalPage,
-      content: data.content,
+      htmlContent: data.content,
       atStart: data.atStart,
       atEnd: data.atEnd,
     ));

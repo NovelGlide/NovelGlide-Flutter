@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../advertisement/domain/entities/ad_unit_id.dart';
 import '../../../../advertisement/presentation/advertisement.dart';
 import '../../../domain/entities/reader_core_type.dart';
-import '../core_html/reader_core_html.dart';
+import '../core_html/reader_core_html_wrapper.dart';
 import '../core_webview/reader_core_webview.dart';
 import '../cubit/reader_cubit.dart';
 import 'reader_breadcrumb.dart';
@@ -66,7 +66,7 @@ class ReaderScaffoldBody extends StatelessWidget {
               builder: (BuildContext context, ReaderState state) {
                 return switch (state.coreType) {
                   ReaderCoreType.webView => const ReaderCoreWebView(),
-                  ReaderCoreType.html => const ReaderCoreHtml(),
+                  ReaderCoreType.html => const ReaderCoreHtmlWrapper(),
                   null => const SizedBox.shrink(),
                 };
               },

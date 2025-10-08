@@ -2,26 +2,27 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:collection/collection.dart';
-import 'package:csslib/parser.dart' as css;
-import 'package:csslib/visitor.dart' as css;
 import 'package:epubx/epubx.dart' as epub;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:html/dom.dart';
-import 'package:html/parser.dart' as html;
 import 'package:image/image.dart' as img;
 import 'package:path/path.dart';
 
-import '../../../../core/log_system/log_system.dart';
+import '../../../../core/html_parser/domain/entities/html_document.dart';
+import '../../../../core/html_parser/html_parser.dart';
 import '../../../../core/mime_resolver/domain/entities/mime_type.dart';
 import '../../domain/entities/book.dart';
 import '../../domain/entities/book_chapter.dart';
-import '../../domain/entities/book_content.dart';
 import '../../domain/entities/book_cover.dart';
+import '../../domain/entities/book_html_content.dart';
 import '../../domain/entities/book_page.dart';
 
 class EpubDataSource {
-  EpubDataSource();
+  EpubDataSource(
+    this._htmlParser,
+  );
+
+  final HtmlParser _htmlParser;
 
   final Map<String, BookCover> _coverBytesCache = <String, BookCover>{};
 
@@ -77,7 +78,7 @@ class EpubDataSource {
         .toList();
   }
 
-  Future<BookContent> getContent(
+  Future<BookHtmlContent> getContent(
     String absolutePath, {
     String? contentHref,
   }) async {
@@ -105,39 +106,22 @@ class EpubDataSource {
 
     final String htmlContent = htmlFiles[href]?.Content ?? '';
 
-    final Document parsedContent = html.parse(htmlContent);
-
-    // Get the required stylesheets.
-    final String dirName = dirname(href ?? '');
-    final List<String> stylesheets = parsedContent.head
-            ?.getElementsByTagName('link')
-            .where((Element e) => e.attributes['rel'] == 'stylesheet')
-            .map((Element e) => normalize(join(dirName, e.attributes['href'])))
-            .toList() ??
-        <String>[];
+    final HtmlDocument htmlDocument =
+        _htmlParser.parseDocument(htmlContent, sourceUrl: href);
 
     // Load the style contents
-    final Map<String, String> styleFiles = <String, String>{};
-    for (String styleId in stylesheets) {
-      styleFiles[styleId] = cssFiles[styleId]?.Content ?? '';
+    String stylesheet = htmlDocument.inlineStyles.join('');
+    for (String stylePath in htmlDocument.stylePathList) {
+      final String styleContent = cssFiles[stylePath]?.Content ?? '';
 
-      final css.StyleSheet style = css.parse(styleFiles[styleId]!);
-
-      for (css.TreeNode node in style.topLevels) {
-        if (node is css.RuleSet) {
-          LogSystem.info((node.selectorGroup?.selectors.map((css.Selector s) {
-            return s.span?.text ?? '';
-          }).join(','))
-              .toString());
-        }
-      }
+      stylesheet += styleContent;
     }
 
-    return BookContent(
+    return BookHtmlContent(
       bookIdentifier: basename(absolutePath),
       chapterIdentifier: href ?? '',
-      styleFiles: styleFiles,
       content: htmlContent,
+      stylesheet: stylesheet,
       pageList: (spine?.Items ?? <epub.EpubSpineItemRef>[])
           .map<BookPage>((epub.EpubSpineItemRef spineItem) => BookPage(
                 identifier: manifest?.Items

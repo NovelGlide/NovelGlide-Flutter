@@ -10,7 +10,7 @@ class ReaderState extends Equatable {
     this.startCfi = '',
     this.chapterCurrentPage = 0,
     this.chapterTotalPage = 0,
-    this.content = '',
+    this.htmlContent,
     this.navigationStateCode = ReaderNavigationStateCode.defaultState,
     this.bookmarkData,
     this.readerPreference = const ReaderPreferenceData(),
@@ -28,7 +28,7 @@ class ReaderState extends Equatable {
   final String startCfi;
   final int chapterCurrentPage;
   final int chapterTotalPage;
-  final String content;
+  final BookHtmlContent? htmlContent;
   final bool atStart;
   final bool atEnd;
 
@@ -49,7 +49,7 @@ class ReaderState extends Equatable {
         chapterFileName,
         chapterCurrentPage,
         chapterTotalPage,
-        content,
+        htmlContent,
         navigationStateCode,
         bookmarkData,
         readerPreference,
@@ -66,7 +66,7 @@ class ReaderState extends Equatable {
     String? startCfi,
     int? chapterCurrentPage,
     int? chapterTotalPage,
-    String? content,
+    BookHtmlContent? htmlContent,
     ReaderNavigationStateCode? navigationStateCode,
     ValueGetter<BookmarkData?>? bookmarkDataGetter,
     ReaderPreferenceData? readerPreference,
@@ -82,7 +82,7 @@ class ReaderState extends Equatable {
       startCfi: startCfi ?? this.startCfi,
       chapterCurrentPage: chapterCurrentPage ?? this.chapterCurrentPage,
       chapterTotalPage: chapterTotalPage ?? this.chapterTotalPage,
-      content: content ?? this.content,
+      htmlContent: htmlContent ?? this.htmlContent,
       navigationStateCode: navigationStateCode ?? this.navigationStateCode,
       bookmarkData:
           bookmarkDataGetter == null ? bookmarkData : bookmarkDataGetter(),
