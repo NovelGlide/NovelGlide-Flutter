@@ -24,7 +24,12 @@ class FirebaseAnalyticsAdapter extends LogDataSource {
   }
 
   @override
-  Future<void> error(String message, {Object? error, StackTrace? stackTrace}) {
+  Future<void> error(
+    String message, {
+    Object? error,
+    StackTrace? stackTrace,
+    Iterable<Object> information = const <Object>[],
+  }) {
     return _analytics.logEvent(
       name: 'error_log',
       parameters: <String, Object>{
@@ -35,7 +40,12 @@ class FirebaseAnalyticsAdapter extends LogDataSource {
   }
 
   @override
-  Future<void> fatal(String message, {Object? error, StackTrace? stackTrace}) {
+  Future<void> fatal(
+    String message, {
+    Object? error,
+    StackTrace? stackTrace,
+    Iterable<Object> information = const <Object>[],
+  }) {
     return _analytics.logEvent(
       name: 'fatal_error',
       parameters: <String, Object>{

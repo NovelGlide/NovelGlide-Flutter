@@ -3,9 +3,19 @@ abstract class LogRepository {
 
   Future<void> warn(String message);
 
-  Future<void> error(String message, {Object? error, StackTrace? stackTrace});
+  Future<void> error(
+    String message, {
+    Object? error,
+    StackTrace? stackTrace,
+    Iterable<Object> information,
+  });
 
-  Future<void> fatal(String message, {Object? error, StackTrace? stackTrace});
+  Future<void> fatal(
+    String message, {
+    Object? error,
+    StackTrace? stackTrace,
+    Iterable<Object> information,
+  });
 
   Future<void> event(String name, {Map<String, Object>? parameters});
 }

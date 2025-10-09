@@ -32,6 +32,9 @@ class ReaderCoreHtml extends StatelessWidget {
               LogSystem.error(
                 'ReaderCoreHtml parse CSS Error',
                 error: errors,
+                information: <Object>[
+                  css,
+                ],
               );
 
               return null;

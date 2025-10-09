@@ -22,6 +22,7 @@ class LoggerAdapter extends LogDataSource {
     String message, {
     Object? error,
     StackTrace? stackTrace,
+    Iterable<Object> information = const <Object>[],
   }) async {
     return _logger.e(message, error: error, stackTrace: stackTrace);
   }
@@ -31,6 +32,7 @@ class LoggerAdapter extends LogDataSource {
     String message, {
     Object? error,
     StackTrace? stackTrace,
+    Iterable<Object> information = const <Object>[],
   }) async {
     return _logger.f(
       message,

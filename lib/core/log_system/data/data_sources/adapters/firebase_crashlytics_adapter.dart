@@ -28,12 +28,14 @@ class FirebaseCrashlyticsAdapter extends LogDataSource {
     String message, {
     Object? error,
     StackTrace? stackTrace,
+    Iterable<Object> information = const <Object>[],
   }) async {
     if (_enableLogging) {
       return _instance.recordError(
         error,
         stackTrace,
         reason: message,
+        information: information,
         fatal: false,
       );
     }
@@ -44,12 +46,14 @@ class FirebaseCrashlyticsAdapter extends LogDataSource {
     String message, {
     Object? error,
     StackTrace? stackTrace,
+    Iterable<Object> information = const <Object>[],
   }) async {
     if (_enableLogging) {
       return _instance.recordError(
         error,
         stackTrace,
         reason: message,
+        information: information,
         fatal: true,
       );
     }
