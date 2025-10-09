@@ -30,9 +30,9 @@ class ReaderCoreWebViewRepositoryImpl implements ReaderCoreRepository {
       <StreamSubscription<dynamic>>{};
 
   @override
-  Future<void> loadContent({
+  Future<void> init({
     required String bookIdentifier,
-    String? chapterIdentifier,
+    String? pageIdentifier,
     String? cfi,
   }) async {
     // Start up the local server
@@ -45,7 +45,7 @@ class ReaderCoreWebViewRepositoryImpl implements ReaderCoreRepository {
         _dataSource.send(ReaderWebMessageDto(
           route: 'main',
           data: <String, String?>{
-            'destination': cfi ?? chapterIdentifier,
+            'destination': cfi ?? pageIdentifier,
             'savedLocation': await _cacheRepository.get(bookIdentifier),
           },
         ));
@@ -77,10 +77,13 @@ class ReaderCoreWebViewRepositoryImpl implements ReaderCoreRepository {
   }
 
   @override
-  Future<void> goto(String destination) async {
+  Future<void> goto({
+    String? pageIdentifier,
+    String? cfi,
+  }) async {
     _dataSource.send(ReaderWebMessageDto(
       route: 'goto',
-      data: destination,
+      data: cfi ?? pageIdentifier,
     ));
   }
 

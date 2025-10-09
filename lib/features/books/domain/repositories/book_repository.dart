@@ -32,7 +32,7 @@ abstract class BookRepository {
 
   Future<BookHtmlContent> getContent(
     String identifier, {
-    String? chapterIdentifier,
+    String? pageIdentifier,
   });
 
   Future<void> reset();

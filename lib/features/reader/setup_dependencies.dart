@@ -141,6 +141,7 @@ void setupReaderDependencies() {
             ReaderObserveSetStateUseCase(coreRepository),
             ReaderNextPageUseCase(coreRepository),
             ReaderPreviousPageUseCase(coreRepository),
+            ReaderGotoUseCase(coreRepository),
             ReaderSetFontColorUseCase(coreRepository),
             ReaderSetFontSizeUseCase(coreRepository),
             ReaderSetLineHeightUseCase(coreRepository),

@@ -11,23 +11,30 @@ class HtmlParser {
     final String dirName = dirname(sourceUrl ?? '');
 
     // Get all stylesheets.
-    final List<String> stylePathList = parsedContent.documentElement
-            ?.getElementsByTagName('link')
-            .where((Element e) => e.attributes['rel'] == 'stylesheet')
-            .map((Element e) => normalize(join(dirName, e.attributes['href'])))
-            .toList() ??
-        <String>[];
+    final List<String>? stylePathList = parsedContent.documentElement
+        ?.getElementsByTagName('link')
+        .where((Element e) =>
+            e.attributes['rel'] == 'stylesheet' && e.attributes['href'] != null)
+        .map((Element e) => normalize(join(dirName, e.attributes['href'])))
+        .toList();
 
     // Get all inline styles
-    final List<String> inlineStyles = parsedContent.documentElement
-            ?.getElementsByTagName('style')
-            .map((Element e) => e.text)
-            .toList() ??
-        <String>[];
+    final List<String>? inlineStyles = parsedContent.documentElement
+        ?.getElementsByTagName('style')
+        .map((Element e) => e.text)
+        .toList();
+
+    // Get all images in this document.
+    final List<String>? imgSrcList = parsedContent.documentElement
+        ?.getElementsByTagName('img')
+        .where((Element e) => e.attributes['src'] != null)
+        .map((Element e) => normalize(join(dirName, e.attributes['src'])))
+        .toList();
 
     return HtmlDocument(
-      stylePathList: stylePathList,
-      inlineStyles: inlineStyles,
+      stylePathList: stylePathList ?? <String>[],
+      inlineStyles: inlineStyles ?? <String>[],
+      imgSrcList: imgSrcList ?? <String>[],
     );
   }
 }

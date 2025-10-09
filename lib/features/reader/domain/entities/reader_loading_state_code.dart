@@ -2,10 +2,12 @@ part of '../../presentation/reader_page/cubit/reader_cubit.dart';
 
 enum ReaderLoadingStateCode {
   initial,
+  // Loading codes
   preferenceLoading,
   bookLoading,
   rendering,
   pageLoading,
+  // Loaded codes.
   loaded;
 
   bool get isInitial => this == ReaderLoadingStateCode.initial;

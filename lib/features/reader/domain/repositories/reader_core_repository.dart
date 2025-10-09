@@ -4,13 +4,16 @@ import '../entities/reader_search_result_data.dart';
 import '../entities/reader_set_state_data.dart';
 
 abstract class ReaderCoreRepository {
-  Future<void> loadContent({
+  Future<void> init({
     required String bookIdentifier,
-    String? chapterIdentifier,
+    String? pageIdentifier,
     String? cfi,
   });
 
-  Future<void> goto(String destination);
+  Future<void> goto({
+    String? pageIdentifier,
+    String? cfi,
+  });
 
   Future<void> nextPage();
 

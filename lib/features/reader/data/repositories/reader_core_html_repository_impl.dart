@@ -8,6 +8,7 @@ import '../../../books/domain/entities/book_page.dart';
 import '../../../books/domain/repositories/book_repository.dart';
 import '../../domain/entities/reader_search_result_data.dart';
 import '../../domain/entities/reader_set_state_data.dart';
+import '../../domain/exceptions/reader_page_not_in_book_exception.dart';
 import '../../domain/repositories/reader_core_repository.dart';
 
 class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
@@ -34,42 +35,37 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
       _searchResultStreamController =
       StreamController<List<ReaderSearchResultData>>.broadcast();
 
+  String _normalizePageIdentifier(String pageIdentifier) {
+    // Remove fragment identifier.
+    final int hashSymbolIndex = pageIdentifier.indexOf('#');
+    return hashSymbolIndex != -1
+        ? pageIdentifier.substring(0, hashSymbolIndex)
+        : pageIdentifier;
+  }
+
   @override
-  Future<void> loadContent({
+  Future<void> init({
     required String bookIdentifier,
-    String? chapterIdentifier,
+    String? pageIdentifier,
     String? cfi,
   }) async {
     // Save the current book identifier.
     _bookIdentifier = bookIdentifier;
 
+    // Normalize page identifier
+    final String normalizedIdentifier =
+        _normalizePageIdentifier(pageIdentifier ?? '');
+
     // Load the content.
     final BookHtmlContent content = await _bookRepository.getContent(
-      bookIdentifier,
-      chapterIdentifier: chapterIdentifier,
+      _bookIdentifier,
+      pageIdentifier: normalizedIdentifier,
     );
 
     // Store the page list for page navigation.
     _pageList = content.pageList;
 
-    // Calculate the current page number.
-    _currentPage = _pageList.indexWhere(
-        (BookPage page) => page.identifier == content.chapterIdentifier);
-
-    _setStateStreamController.add(ReaderSetStateData(
-      breadcrumb: _constructBreadcrumb(
-            await _bookRepository.getChapterList(bookIdentifier),
-            content.chapterIdentifier,
-          ) ??
-          '',
-      chapterIdentifier: content.chapterIdentifier,
-      startCfi: '',
-      chapterCurrentPage: _currentPage + 1,
-      chapterTotalPage: _pageList.length,
-      content: content,
-      atStart: _pageList.first.identifier == content.chapterIdentifier,
-      atEnd: _pageList.last.identifier == content.chapterIdentifier,
-    ));
+    await _sendState(content);
   }
 
   String? _constructBreadcrumb(
@@ -102,7 +98,31 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
   }
 
   @override
-  Future<void> goto(String destination) async {}
+  Future<void> goto({
+    String? pageIdentifier,
+    String? cfi,
+  }) async {
+    // Normalize page identifier
+    final String normalizedIdentifier =
+        _normalizePageIdentifier(pageIdentifier ?? '');
+
+    final bool isInBook = _pageList
+        .any((BookPage page) => page.identifier == normalizedIdentifier);
+
+    if (isInBook) {
+      // Load the content.
+      final BookHtmlContent content = await _bookRepository.getContent(
+        _bookIdentifier,
+        pageIdentifier: normalizedIdentifier,
+      );
+
+      await _sendState(content);
+    } else {
+      throw ReaderPageNotInBookException(
+        pageIdentifier: normalizedIdentifier,
+      );
+    }
+  }
 
   @override
   Future<void> nextPage() async {
@@ -112,23 +132,10 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
     // Load the content.
     final BookHtmlContent content = await _bookRepository.getContent(
       _bookIdentifier,
-      chapterIdentifier: chapterIdentifier,
+      pageIdentifier: chapterIdentifier,
     );
 
-    _setStateStreamController.add(ReaderSetStateData(
-      breadcrumb: _constructBreadcrumb(
-            await _bookRepository.getChapterList(_bookIdentifier),
-            content.chapterIdentifier,
-          ) ??
-          '',
-      chapterIdentifier: content.chapterIdentifier,
-      startCfi: '',
-      chapterCurrentPage: _currentPage + 1,
-      chapterTotalPage: _pageList.length,
-      content: content,
-      atStart: _pageList.first.identifier == content.chapterIdentifier,
-      atEnd: _pageList.last.identifier == content.chapterIdentifier,
-    ));
+    await _sendState(content);
   }
 
   @override
@@ -139,22 +146,30 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
     // Load the content.
     final BookHtmlContent content = await _bookRepository.getContent(
       _bookIdentifier,
-      chapterIdentifier: chapterIdentifier,
+      pageIdentifier: chapterIdentifier,
     );
+
+    await _sendState(content);
+  }
+
+  Future<void> _sendState(BookHtmlContent content) async {
+    // Calculate the current page number.
+    _currentPage = _pageList.indexWhere(
+        (BookPage page) => page.identifier == content.pageIdentifier);
 
     _setStateStreamController.add(ReaderSetStateData(
       breadcrumb: _constructBreadcrumb(
             await _bookRepository.getChapterList(_bookIdentifier),
-            content.chapterIdentifier,
+            content.pageIdentifier,
           ) ??
           '',
-      chapterIdentifier: content.chapterIdentifier,
+      chapterIdentifier: content.pageIdentifier,
       startCfi: '',
       chapterCurrentPage: _currentPage + 1,
       chapterTotalPage: _pageList.length,
       content: content,
-      atStart: _pageList.first.identifier == content.chapterIdentifier,
-      atEnd: _pageList.last.identifier == content.chapterIdentifier,
+      atStart: _pageList.first.identifier == content.pageIdentifier,
+      atEnd: _pageList.last.identifier == content.pageIdentifier,
     ));
   }
 

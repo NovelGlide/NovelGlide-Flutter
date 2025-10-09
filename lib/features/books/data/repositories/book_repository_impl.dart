@@ -184,11 +184,11 @@ class BookRepositoryImpl implements BookRepository {
   @override
   Future<BookHtmlContent> getContent(
     String identifier, {
-    String? chapterIdentifier,
+    String? pageIdentifier,
   }) async {
     return _epubDataSource.getContent(
       await _getAbsolutePathFromIdentifier(identifier),
-      contentHref: chapterIdentifier,
+      contentHref: pageIdentifier,
     );
   }
 

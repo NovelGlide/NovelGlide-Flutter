@@ -84,10 +84,11 @@ class EpubDataSource {
   }) async {
     // Load the book file.
     final epub.EpubBook epubBook = await _loadEpubBook(absolutePath);
+    final epub.EpubContent? content = epubBook.Content;
     final Map<String, epub.EpubTextContentFile> htmlFiles =
-        epubBook.Content?.Html ?? <String, epub.EpubTextContentFile>{};
+        content?.Html ?? <String, epub.EpubTextContentFile>{};
     final Map<String, epub.EpubTextContentFile> cssFiles =
-        epubBook.Content?.Css ?? <String, epub.EpubTextContentFile>{};
+        content?.Css ?? <String, epub.EpubTextContentFile>{};
 
     // The information of this book.
     final epub.EpubPackage? package = epubBook.Schema?.Package;
@@ -97,6 +98,22 @@ class EpubDataSource {
     // Get the first idRef in the spine list.
     final String? idRef = spine?.Items?.firstOrNull?.IdRef;
 
+    // Get the page list
+    final List<BookPage> pageList = (spine?.Items ?? <epub.EpubSpineItemRef>[])
+        .map<BookPage>(
+          (epub.EpubSpineItemRef spineItem) {
+            return BookPage(
+              identifier: manifest?.Items
+                      ?.firstWhereOrNull((epub.EpubManifestItem item) =>
+                          item.Id == spineItem.IdRef)
+                      ?.Href ??
+                  '',
+            );
+          },
+        )
+        .where((BookPage page) => page.identifier.isNotEmpty)
+        .toList();
+
     // Use the requested href first.
     final String? href = contentHref ??
         // Find the href of the first spine.
@@ -104,8 +121,8 @@ class EpubDataSource {
             ?.firstWhereOrNull((epub.EpubManifestItem item) => item.Id == idRef)
             ?.Href;
 
+    // Parse the html document.
     final String htmlContent = htmlFiles[href]?.Content ?? '';
-
     final HtmlDocument htmlDocument =
         _htmlParser.parseDocument(htmlContent, sourceUrl: href);
 
@@ -117,21 +134,23 @@ class EpubDataSource {
       stylesheet += styleContent;
     }
 
+    // Load the image contents
+    final Map<String, Uint8List> imgFiles = <String, Uint8List>{};
+    for (String imgSrc in htmlDocument.imgSrcList) {
+      final Uint8List bytes =
+          Uint8List.fromList(content?.Images?[imgSrc]?.Content ?? <int>[]);
+      if (bytes.isNotEmpty) {
+        imgFiles[imgSrc] = bytes;
+      }
+    }
+
     return BookHtmlContent(
       bookIdentifier: basename(absolutePath),
-      chapterIdentifier: href ?? '',
+      pageIdentifier: href ?? '',
       content: htmlContent,
       stylesheet: stylesheet,
-      pageList: (spine?.Items ?? <epub.EpubSpineItemRef>[])
-          .map<BookPage>((epub.EpubSpineItemRef spineItem) => BookPage(
-                identifier: manifest?.Items
-                        ?.firstWhereOrNull((epub.EpubManifestItem item) =>
-                            item.Id == spineItem.IdRef)
-                        ?.Href ??
-                    '',
-              ))
-          .where((BookPage page) => page.identifier.isNotEmpty)
-          .toList(),
+      pageList: pageList,
+      imgFiles: imgFiles,
     );
   }
 

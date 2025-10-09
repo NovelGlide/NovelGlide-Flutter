@@ -78,7 +78,10 @@ class ReaderSearchCubit extends Cubit<ReaderSearchState> {
     );
   }
 
-  void goto(String cfi) => _dependencies._sendGotoUseCase(cfi);
+  void goto(String cfi) =>
+      _dependencies._sendGotoUseCase(ReaderGotoUseCaseParam(
+        cfi: cfi,
+      ));
 
   @override
   Future<void> close() async {

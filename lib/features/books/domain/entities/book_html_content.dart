@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:equatable/equatable.dart';
 
 import 'book_page.dart';
@@ -5,24 +7,27 @@ import 'book_page.dart';
 class BookHtmlContent extends Equatable {
   const BookHtmlContent({
     required this.bookIdentifier,
-    required this.chapterIdentifier,
+    required this.pageIdentifier,
     required this.content,
     required this.stylesheet,
     required this.pageList,
+    required this.imgFiles,
   });
 
   final String bookIdentifier;
-  final String chapterIdentifier;
+  final String pageIdentifier;
   final String content;
   final String stylesheet;
   final List<BookPage> pageList;
+  final Map<String, Uint8List> imgFiles;
 
   @override
   List<Object?> get props => <Object>[
         bookIdentifier,
-        chapterIdentifier,
+        pageIdentifier,
         content,
         stylesheet,
         pageList,
+        imgFiles,
       ];
 }

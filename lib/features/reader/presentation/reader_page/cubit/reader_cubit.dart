@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:path/path.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../../../bookmark/domain/entities/bookmark_data.dart';
@@ -26,6 +27,7 @@ import '../../../domain/use_cases/appearance_use_cases/reader_set_font_color_use
 import '../../../domain/use_cases/appearance_use_cases/reader_set_font_size_use_case.dart';
 import '../../../domain/use_cases/appearance_use_cases/reader_set_line_height_use_case.dart';
 import '../../../domain/use_cases/appearance_use_cases/reader_set_smooth_scroll_use_case.dart';
+import '../../../domain/use_cases/reader_goto_use_case.dart';
 import '../../../domain/use_cases/reader_next_page_use_case.dart';
 import '../../../domain/use_cases/reader_observe_set_state_use_case.dart';
 import '../../../domain/use_cases/reader_previous_page_use_case.dart';
@@ -43,6 +45,7 @@ class ReaderCubitDependencies {
     this._observeSetStateUseCase,
     this._nextPageUseCase,
     this._previousPageUseCase,
+    this._gotoUseCase,
     this._setFontColorUseCase,
     this._setFontSizeUseCase,
     this._setLineHeightUseCase,
@@ -66,6 +69,7 @@ class ReaderCubitDependencies {
   final ReaderObserveSetStateUseCase _observeSetStateUseCase;
   final ReaderNextPageUseCase _nextPageUseCase;
   final ReaderPreviousPageUseCase _previousPageUseCase;
+  final ReaderGotoUseCase _gotoUseCase;
   final ReaderSetFontColorUseCase _setFontColorUseCase;
   final ReaderSetFontSizeUseCase _setFontSizeUseCase;
   final ReaderSetLineHeightUseCase _setLineHeightUseCase;
@@ -179,9 +183,9 @@ class ReaderCubit extends Cubit<ReaderState> {
       ));
     }
 
-    await _dependencies._coreRepository.loadContent(
+    await _dependencies._coreRepository.init(
       bookIdentifier: bookIdentifier,
-      chapterIdentifier: chapterIdentifier,
+      pageIdentifier: chapterIdentifier,
       cfi: cfi,
     );
 
@@ -326,6 +330,23 @@ class ReaderCubit extends Cubit<ReaderState> {
     emit(state.copyWith(code: ReaderLoadingStateCode.loaded));
   }
 
+  Future<bool> goto({
+    String? pageIdentifier,
+    String? cfi,
+  }) async {
+    emit(state.copyWith(code: ReaderLoadingStateCode.pageLoading));
+
+    final ReaderGotoUseCaseResult result =
+        await _dependencies._gotoUseCase(ReaderGotoUseCaseParam(
+      chapterIdentifier: pageIdentifier,
+      cfi: cfi,
+    ));
+
+    emit(state.copyWith(code: ReaderLoadingStateCode.loaded));
+
+    return result.isSuccessful;
+  }
+
   /// *************************************************************************
   /// Communication
   /// *************************************************************************
@@ -350,6 +371,10 @@ class ReaderCubit extends Cubit<ReaderState> {
   /// *************************************************************************
   /// Miscellaneous
   /// *************************************************************************
+
+  String getInBookPath(String pageIdentifier, String path) {
+    return normalize(join(dirname(pageIdentifier), path));
+  }
 
   @override
   Future<void> close() async {
