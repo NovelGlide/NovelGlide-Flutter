@@ -38,4 +38,8 @@ abstract class BookRepository {
   Future<void> reset();
 
   Future<bool> isFileValid(String path);
+
+  void enableBookCache();
+
+  void disableBookCache();
 }

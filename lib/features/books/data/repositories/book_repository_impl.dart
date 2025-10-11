@@ -217,4 +217,14 @@ class BookRepositoryImpl implements BookRepository {
     // Check the extension is in the list.
     return mimeType.extensionList.contains(ext);
   }
+
+  @override
+  void enableBookCache() {
+    _epubDataSource.enableBookCache();
+  }
+
+  @override
+  void disableBookCache() {
+    _epubDataSource.disableBookCache();
+  }
 }

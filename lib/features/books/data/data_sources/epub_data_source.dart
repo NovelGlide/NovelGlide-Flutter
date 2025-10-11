@@ -25,6 +25,8 @@ class EpubDataSource {
   final HtmlParser _htmlParser;
 
   final Map<String, BookCover> _coverBytesCache = <String, BookCover>{};
+  final Map<String, epub.EpubBook> _bookCache = <String, epub.EpubBook>{};
+  bool _enableBookCache = false;
 
   List<String> get allowedExtensions {
     final List<String> extensions = <String>[];
@@ -154,14 +156,34 @@ class EpubDataSource {
     );
   }
 
+  void enableBookCache() {
+    _enableBookCache = true;
+  }
+
+  void disableBookCache() {
+    _enableBookCache = false;
+    _bookCache.clear();
+  }
+
   /// Loads an EpubBook asynchronously, potentially a heavy operation.
   Future<epub.EpubBook> _loadEpubBook(String filePath) async {
+    if (_enableBookCache && _bookCache.containsKey(filePath)) {
+      return _bookCache[filePath]!;
+    }
+
     final RootIsolateToken rootIsolateToken = RootIsolateToken.instance!;
-    return await compute<Map<String, dynamic>, epub.EpubBook>(
-        _loadEpubBookIsolate, <String, dynamic>{
+    final epub.EpubBook epubBook =
+        await compute<Map<String, dynamic>, epub.EpubBook>(
+            _loadEpubBookIsolate, <String, dynamic>{
       'rootIsolateToken': rootIsolateToken,
       'path': filePath,
     });
+
+    if (_enableBookCache) {
+      _bookCache[filePath] = epubBook;
+    }
+
+    return epubBook;
   }
 
   /// Isolate function to load an EpubBook.

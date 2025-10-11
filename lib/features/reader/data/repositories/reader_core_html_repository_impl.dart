@@ -56,6 +56,9 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
     final String normalizedIdentifier =
         _normalizePageIdentifier(pageIdentifier ?? '');
 
+    // Enable book cache.
+    _bookRepository.enableBookCache();
+
     // Load the content.
     final BookHtmlContent content = await _bookRepository.getContent(
       _bookIdentifier,
@@ -227,6 +230,9 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
 
   @override
   Future<void> dispose() async {
+    // Disable book cache.
+    _bookRepository.disableBookCache();
+
     await _setStateStreamController.close();
     await _ttsPlayStreamController.close();
     await _ttsStopStreamController.close();
