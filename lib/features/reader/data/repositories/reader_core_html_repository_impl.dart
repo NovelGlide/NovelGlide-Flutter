@@ -75,17 +75,18 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
     int level = 0,
   }) {
     for (BookChapter chapter in chapterList) {
-      breadcrumbs +=
-          (breadcrumbs.isNotEmpty ? ' > ' : '') + chapter.title.trim();
+      String currentBreadcrumbs = breadcrumbs;
+      currentBreadcrumbs +=
+          (currentBreadcrumbs.isNotEmpty ? ' > ' : '') + chapter.title.trim();
 
       if (chapter.identifier == chapterIdentifier) {
-        return breadcrumbs;
+        return currentBreadcrumbs;
       }
 
       final String? result = _constructBreadcrumb(
         chapter.subChapterList,
         chapterIdentifier,
-        breadcrumbs: breadcrumbs,
+        breadcrumbs: currentBreadcrumbs,
         level: level + 1,
       );
 
