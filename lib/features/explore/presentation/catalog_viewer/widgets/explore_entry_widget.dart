@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 
 import '../../../../locale_system/locale_utils.dart';
 import '../../../domain/entities/publication_author.dart';
@@ -115,7 +116,9 @@ class ExploreEntryWidget extends StatelessWidget {
     } else {
       return Padding(
         padding: const EdgeInsets.only(bottom: 8.0),
-        child: Text(entry.content!),
+        child: Html(
+          data: entry.content,
+        ),
       );
     }
   }
