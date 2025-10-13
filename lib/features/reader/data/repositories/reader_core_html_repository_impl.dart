@@ -20,7 +20,8 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
 
   late final String _bookIdentifier;
   late final List<BookPage> _pageList;
-  int _currentPage = 0;
+  int _currentPageNumber = 0;
+  late BookHtmlContent _htmlContent;
 
   /// Stream Controllers
   final StreamController<ReaderSetStateData> _setStateStreamController =
@@ -131,7 +132,7 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
   @override
   Future<void> nextPage() async {
     // Get the identifier of next page.
-    final String chapterIdentifier = _pageList[++_currentPage].identifier;
+    final String chapterIdentifier = _pageList[++_currentPageNumber].identifier;
 
     // Load the content.
     final BookHtmlContent content = await _bookRepository.getContent(
@@ -145,7 +146,7 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
   @override
   Future<void> previousPage() async {
     // Get the identifier of next page.
-    final String chapterIdentifier = _pageList[--_currentPage].identifier;
+    final String chapterIdentifier = _pageList[--_currentPageNumber].identifier;
 
     // Load the content.
     final BookHtmlContent content = await _bookRepository.getContent(
@@ -157,8 +158,11 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
   }
 
   Future<void> _sendState(BookHtmlContent content) async {
+    // Save the content
+    _htmlContent = content;
+
     // Calculate the current page number.
-    _currentPage = _pageList.indexWhere(
+    _currentPageNumber = _pageList.indexWhere(
         (BookPage page) => page.identifier == content.pageIdentifier);
 
     _setStateStreamController.add(ReaderSetStateData(
@@ -169,7 +173,7 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
           '',
       chapterIdentifier: content.pageIdentifier,
       startCfi: '',
-      chapterCurrentPage: _currentPage + 1,
+      chapterCurrentPage: _currentPageNumber + 1,
       chapterTotalPage: _pageList.length,
       content: content,
       atStart: _pageList.first.identifier == content.pageIdentifier,
