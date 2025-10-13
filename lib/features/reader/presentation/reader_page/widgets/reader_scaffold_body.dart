@@ -7,7 +7,6 @@ import '../../../domain/entities/reader_core_type.dart';
 import '../core_html/reader_core_html_wrapper.dart';
 import '../core_webview/reader_core_webview.dart';
 import '../cubit/reader_cubit.dart';
-import 'reader_breadcrumb.dart';
 import 'reader_overlap_widget.dart';
 import 'reader_pagination.dart';
 
@@ -53,7 +52,6 @@ class ReaderScaffoldBody extends StatelessWidget {
   Widget _buildReader(ReaderCubit cubit) {
     return Column(
       children: <Widget>[
-        const ReaderBreadcrumb(),
         Expanded(
           child: GestureDetector(
             behavior: HitTestBehavior.translucent,

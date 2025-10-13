@@ -16,12 +16,14 @@ class ReaderBreadcrumb extends StatelessWidget {
           padding: const EdgeInsets.symmetric(
             horizontal: 16.0,
           ),
-          child: Text(
-            state.breadcrumb,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.tertiary,
-                ),
-            overflow: TextOverflow.ellipsis,
+          child: Center(
+            child: Text(
+              state.breadcrumb,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: Theme.of(context).colorScheme.tertiary,
+                  ),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         );
       },
