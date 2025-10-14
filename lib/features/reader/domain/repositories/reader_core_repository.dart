@@ -25,9 +25,9 @@ abstract class ReaderCoreRepository {
 
   void ttsStop();
 
-  void searchInCurrentChapter(String query);
+  Future<void> searchInCurrentChapter(String query);
 
-  void searchInWholeBook(String query);
+  Future<void> searchInWholeBook(String query);
 
   set fontColor(Color fontColor);
 

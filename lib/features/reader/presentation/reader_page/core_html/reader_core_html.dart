@@ -29,7 +29,7 @@ class ReaderCoreHtml extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Html(
-        data: htmlContent.content,
+        data: htmlContent.htmlContent,
         onLinkTap: (String? href, __, ___) => _onLinkTap(
           href,
           htmlContent,

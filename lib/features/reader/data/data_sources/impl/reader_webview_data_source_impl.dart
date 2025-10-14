@@ -108,7 +108,7 @@ class ReaderWebViewDataSourceImpl implements ReaderWebViewDataSource {
               (message.data['searchResultList'] as List<dynamic>)
                   .map<ReaderSearchResultData>(
                       (dynamic e) => ReaderSearchResultData(
-                            cfi: e['cfi'],
+                            destination: e['cfi'],
                             excerpt: e['excerpt'],
                           ))
                   .toList(),

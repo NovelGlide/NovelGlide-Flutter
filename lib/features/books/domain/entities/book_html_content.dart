@@ -8,7 +8,8 @@ class BookHtmlContent extends Equatable {
   const BookHtmlContent({
     required this.bookIdentifier,
     required this.pageIdentifier,
-    required this.content,
+    required this.htmlContent,
+    required this.textContent,
     required this.stylesheet,
     required this.pageList,
     required this.imgFiles,
@@ -16,7 +17,8 @@ class BookHtmlContent extends Equatable {
 
   final String bookIdentifier;
   final String pageIdentifier;
-  final String content;
+  final String htmlContent;
+  final String textContent;
   final String stylesheet;
   final List<BookPage> pageList;
   final Map<String, Uint8List> imgFiles;
@@ -25,7 +27,8 @@ class BookHtmlContent extends Equatable {
   List<Object?> get props => <Object>[
         bookIdentifier,
         pageIdentifier,
-        content,
+        htmlContent,
+        textContent,
         stylesheet,
         pageList,
         imgFiles,

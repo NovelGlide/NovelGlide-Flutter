@@ -31,10 +31,14 @@ class HtmlParser {
         .map((Element e) => normalize(join(dirName, e.attributes['src'])))
         .toList();
 
+    // Get the text content in the body.
+    final String? textContent = parsedContent.body?.text;
+
     return HtmlDocument(
       stylePathList: stylePathList ?? <String>[],
       inlineStyles: inlineStyles ?? <String>[],
       imgSrcList: imgSrcList ?? <String>[],
+      textContent: textContent ?? '',
     );
   }
 }

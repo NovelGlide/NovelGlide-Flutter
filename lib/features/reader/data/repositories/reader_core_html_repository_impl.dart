@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 
@@ -103,7 +104,17 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
   }
 
   @override
-  Future<void> goto({
+  Future<void> goto({String? pageIdentifier, String? cfi}) async {
+    // Load the content.
+    final BookHtmlContent content = await _loadContent(
+      pageIdentifier: pageIdentifier,
+      cfi: cfi,
+    );
+
+    _sendState(content);
+  }
+
+  Future<BookHtmlContent> _loadContent({
     String? pageIdentifier,
     String? cfi,
   }) async {
@@ -116,12 +127,10 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
 
     if (isInBook) {
       // Load the content.
-      final BookHtmlContent content = await _bookRepository.getContent(
+      return await _bookRepository.getContent(
         _bookIdentifier,
         pageIdentifier: normalizedIdentifier,
       );
-
-      await _sendState(content);
     } else {
       throw ReaderPageNotInBookException(
         pageIdentifier: normalizedIdentifier,
@@ -182,19 +191,67 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
   }
 
   @override
-  void ttsPlay() {}
+  void ttsPlay() {
+    // Play the content.
+    _ttsPlayStreamController.add(_htmlContent.textContent);
+  }
 
   @override
-  void ttsNext() {}
+  void ttsNext() {
+    _ttsEndStreamController.add(null);
+  }
 
   @override
-  void ttsStop() {}
+  void ttsStop() {
+    _ttsStopStreamController.add(null);
+  }
 
   @override
-  void searchInCurrentChapter(String query) {}
+  Future<void> searchInCurrentChapter(String query) async {
+    _searchResultStreamController.add(await _searchInContent(
+      _htmlContent,
+      query,
+    ));
+  }
 
   @override
-  void searchInWholeBook(String query) {}
+  Future<void> searchInWholeBook(String query) async {
+    final List<ReaderSearchResultData> resultList = <ReaderSearchResultData>[];
+
+    for (BookPage page in _pageList) {
+      final BookHtmlContent content = await _loadContent(
+        pageIdentifier: page.identifier,
+      );
+
+      resultList.addAll(await _searchInContent(content, query));
+    }
+
+    _searchResultStreamController.add(resultList);
+  }
+
+  Future<List<ReaderSearchResultData>> _searchInContent(
+    BookHtmlContent content,
+    String query,
+  ) async {
+    final List<ReaderSearchResultData> resultList = <ReaderSearchResultData>[];
+    int startIndex = 0;
+    int targetIndex = content.textContent.indexOf(query, startIndex);
+
+    while (targetIndex != -1) {
+      final int start = max(0, targetIndex - 100);
+      final int end = min(targetIndex + 100, content.textContent.length - 1);
+      resultList.add(ReaderSearchResultData(
+        destination: content.pageIdentifier,
+        excerpt: content.textContent.substring(start, end),
+        targetIndex: targetIndex - start,
+      ));
+
+      startIndex = targetIndex + query.length;
+      targetIndex = content.textContent.indexOf(query, startIndex);
+    }
+
+    return resultList;
+  }
 
   @override
   set fontColor(Color fontColor) {

@@ -37,8 +37,10 @@ class _SearchResultList extends StatelessWidget {
                 children: <Widget>[
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8.0),
-                    child: Text(appLocalizations
-                        .readerSearchResultCount(resultList.length)),
+                    child: Text(
+                      appLocalizations
+                          .readerSearchResultCount(resultList.length),
+                    ),
                   ),
                   Expanded(
                     child: Scrollbar(
@@ -62,17 +64,46 @@ class _SearchResultList extends StatelessWidget {
 
     final String query = state.query;
     final ReaderSearchResultData result = state.resultList[index];
-    final String excerpt = result.excerpt.replaceAll(RegExp(r'\s+'), ' ');
+    final String excerpt = result.excerpt;
+    final int? targetIndex = result.targetIndex;
 
     // Highlight the keyword
+    final List<InlineSpan> children = targetIndex == null
+        ? _highlightByRegex(context, excerpt, query)
+        : _highlightByIndex(context, excerpt, targetIndex, query.length);
+
+    return ListTile(
+      onTap: () {
+        Navigator.of(context).pop();
+        cubit.goto(result.destination);
+      },
+      onLongPress: () {
+        showDialog(
+          context: context,
+          builder: (_) => _SearchItemOperationDialog(result),
+        );
+      },
+      title: Text.rich(
+        TextSpan(
+          children: children,
+        ),
+      ),
+    );
+  }
+
+  List<InlineSpan> _highlightByRegex(
+    BuildContext context,
+    String excerpt,
+    String query,
+  ) {
     final List<InlineSpan> children = <InlineSpan>[];
-    String excerptPart = excerpt;
+    String excerptPart = excerpt.replaceAll(RegExp(r'\s+'), ' ');
     while (excerptPart.contains(RegExp(query, caseSensitive: false))) {
       final int keywordIndex =
           excerptPart.indexOf(RegExp(query, caseSensitive: false));
 
       // prefix part
-      if (keywordIndex > 0) {
+      if (keywordIndex >= 0) {
         children.add(TextSpan(text: excerptPart.substring(0, keywordIndex)));
       }
 
@@ -92,22 +123,51 @@ class _SearchResultList extends StatelessWidget {
       children.add(TextSpan(text: excerptPart));
     }
 
-    return ListTile(
-      onTap: () {
-        Navigator.of(context).pop();
-        cubit.goto(result.cfi);
-      },
-      onLongPress: () {
-        showDialog(
-          context: context,
-          builder: (_) => _SearchItemOperationDialog(result),
-        );
-      },
-      title: Text.rich(
-        TextSpan(
-          children: children,
-        ),
+    return children;
+  }
+
+  List<InlineSpan> _highlightByIndex(
+    BuildContext context,
+    String excerpt,
+    int targetIndex,
+    int queryLength,
+  ) {
+    final List<InlineSpan> children = <InlineSpan>[];
+
+    // prefix part
+    if (targetIndex > 0) {
+      children.add(TextSpan(
+        text: excerpt
+            .substring(0, targetIndex)
+            .replaceAll(RegExp(r'\s+'), ' ')
+            .trimLeft(),
+      ));
+    }
+
+    // keyword part
+    final int endIndex = targetIndex + queryLength;
+    children.add(TextSpan(
+      text: excerpt
+          .substring(targetIndex, endIndex)
+          .replaceAll(RegExp(r'\s+'), ' '),
+      style: TextStyle(
+        color: Theme.of(context).colorScheme.error,
+        fontWeight: FontWeight.bold,
       ),
-    );
+    ));
+
+    // Remaining part
+    if (endIndex < excerpt.length) {
+      children.add(
+        TextSpan(
+          text: excerpt
+              .substring(endIndex)
+              .replaceAll(RegExp(r'\s+'), ' ')
+              .trimRight(),
+        ),
+      );
+    }
+
+    return children;
   }
 }

@@ -113,7 +113,7 @@ class ReaderCoreWebViewRepositoryImpl implements ReaderCoreRepository {
   }
 
   @override
-  void searchInCurrentChapter(String query) {
+  Future<void> searchInCurrentChapter(String query) async {
     _dataSource.send(ReaderWebMessageDto(
       route: 'searchInCurrentChapter',
       data: query,
@@ -121,7 +121,7 @@ class ReaderCoreWebViewRepositoryImpl implements ReaderCoreRepository {
   }
 
   @override
-  void searchInWholeBook(String query) {
+  Future<void> searchInWholeBook(String query) async {
     _dataSource.send(ReaderWebMessageDto(
       route: 'searchInWholeBook',
       data: query,
