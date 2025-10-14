@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:epubx/epubx.dart' as epub;
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
 import 'package:path/path.dart';
 
@@ -172,13 +171,8 @@ class EpubDataSource {
       return _bookCache[filePath]!;
     }
 
-    final RootIsolateToken rootIsolateToken = RootIsolateToken.instance!;
     final epub.EpubBook epubBook =
-        await compute<Map<String, dynamic>, epub.EpubBook>(
-            _loadEpubBookIsolate, <String, dynamic>{
-      'rootIsolateToken': rootIsolateToken,
-      'path': filePath,
-    });
+        await compute<String, epub.EpubBook>(_loadEpubBookIsolate, filePath);
 
     if (_enableBookCache) {
       _bookCache[filePath] = epubBook;
@@ -188,11 +182,7 @@ class EpubDataSource {
   }
 
   /// Isolate function to load an EpubBook.
-  Future<epub.EpubBook> _loadEpubBookIsolate(
-      Map<String, dynamic> message) async {
-    final RootIsolateToken rootIsolateToken = message['rootIsolateToken'];
-    final String path = message['path'];
-    BackgroundIsolateBinaryMessenger.ensureInitialized(rootIsolateToken);
+  Future<epub.EpubBook> _loadEpubBookIsolate(String path) async {
     return await epub.EpubReader.readBook(File(path).readAsBytes());
   }
 
