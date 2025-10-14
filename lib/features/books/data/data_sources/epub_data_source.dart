@@ -23,6 +23,7 @@ class EpubDataSource {
 
   final HtmlParser _htmlParser;
 
+  /// Caches
   final Map<String, BookCover> _coverBytesCache = <String, BookCover>{};
   final Map<String, epub.EpubBook> _bookCache = <String, epub.EpubBook>{};
   bool _enableBookCache = false;
@@ -39,8 +40,8 @@ class EpubDataSource {
 
   List<MimeType> get allowedMimeTypes => <MimeType>[MimeType.epub];
 
-  Future<Book> getBook(String absolutePath) async {
-    final epub.EpubBook epubBook = await _loadEpubBook(absolutePath);
+  Future<Book> _parseEpubBook(
+      String absolutePath, epub.EpubBook epubBook) async {
     final epub.Image? coverImage = _findCoverImage(epubBook);
 
     // Cache cover image
@@ -61,6 +62,11 @@ class EpubDataSource {
       coverIdentifier: bookIdentifier,
       ltr: epubBook.Schema?.Package?.Spine?.ltr ?? true,
     );
+  }
+
+  Future<Book> getBook(String absolutePath) async {
+    final epub.EpubBook epubBook = await _loadEpubBook(absolutePath);
+    return _parseEpubBook(absolutePath, epubBook);
   }
 
   Future<BookCover> getCover(String absolutePath) async {
