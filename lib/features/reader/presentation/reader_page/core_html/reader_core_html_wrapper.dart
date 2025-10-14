@@ -10,19 +10,19 @@ class ReaderCoreHtmlWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox.expand(
-      child: BlocBuilder<ReaderCubit, ReaderState>(
-        buildWhen: (ReaderState previous, ReaderState current) =>
-            previous.htmlContent != current.htmlContent ||
-            previous.readerPreference != current.readerPreference,
-        builder: (BuildContext context, ReaderState state) {
-          return Scrollbar(
-            child: SingleChildScrollView(
-              child: ReaderCoreHtml(
+      child: Scrollbar(
+        child: SingleChildScrollView(
+          child: BlocBuilder<ReaderCubit, ReaderState>(
+            buildWhen: (ReaderState previous, ReaderState current) =>
+                previous.htmlContent != current.htmlContent ||
+                previous.readerPreference != current.readerPreference,
+            builder: (BuildContext context, ReaderState state) {
+              return ReaderCoreHtml(
                 state: state,
-              ),
-            ),
-          );
-        },
+              );
+            },
+          ),
+        ),
       ),
     );
   }

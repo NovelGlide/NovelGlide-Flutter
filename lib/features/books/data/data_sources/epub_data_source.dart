@@ -149,7 +149,7 @@ class EpubDataSource {
     return BookHtmlContent(
       bookIdentifier: basename(absolutePath),
       pageIdentifier: href ?? '',
-      htmlContent: htmlContent,
+      domTree: htmlDocument.domTree,
       textContent: htmlDocument.textContent,
       stylesheet: stylesheet,
       pageList: pageList,

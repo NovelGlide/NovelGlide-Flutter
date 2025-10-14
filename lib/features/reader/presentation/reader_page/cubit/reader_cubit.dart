@@ -60,6 +60,8 @@ class ReaderCubitDependencies {
     this._savePreferenceUseCase,
     this._observePreferenceChangeUseCase,
     this._resetPreferenceUseCase,
+    // Cubits
+    this._readerSearchCubit,
   );
 
   final WebViewController? _webViewController;
@@ -87,6 +89,9 @@ class ReaderCubitDependencies {
   final ReaderSavePreferenceUseCase _savePreferenceUseCase;
   final ReaderObservePreferenceChangeUseCase _observePreferenceChangeUseCase;
   final ReaderResetPreferenceUseCase _resetPreferenceUseCase;
+
+  /// Cubits
+  final ReaderSearchCubit _readerSearchCubit;
 }
 
 class ReaderCubit extends Cubit<ReaderState> {
@@ -94,7 +99,6 @@ class ReaderCubit extends Cubit<ReaderState> {
     this._getPreferenceUseCase,
     this._dependenciesFactory,
     this.ttsCubit,
-    this.searchCubit,
   ) : super(const ReaderState());
 
   Book? bookData;
@@ -112,7 +116,9 @@ class ReaderCubit extends Cubit<ReaderState> {
 
   final ReaderGetPreferenceUseCase _getPreferenceUseCase;
   final ReaderTtsCubit ttsCubit;
-  final ReaderSearchCubit searchCubit;
+
+  /// Cubits
+  ReaderSearchCubit get searchCubit => _dependencies._readerSearchCubit;
 
   /// Stream Subscriptions
   final Set<StreamSubscription<dynamic>> _subscriptionSet =
@@ -144,9 +150,6 @@ class ReaderCubit extends Cubit<ReaderState> {
 
     // Initialize TTS cubit
     ttsCubit.init(_dependencies._coreRepository);
-
-    // Initialize search cubit
-    searchCubit.init(_dependencies._coreRepository);
 
     // Load the book data.
     emit(state.copyWith(
@@ -383,6 +386,7 @@ class ReaderCubit extends Cubit<ReaderState> {
     }
 
     await _dependencies._coreRepository.dispose();
+    await searchCubit.close();
 
     super.close();
   }

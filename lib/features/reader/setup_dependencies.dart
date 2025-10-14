@@ -24,13 +24,11 @@ import 'data/data_sources/impl/reader_webview_data_source_impl.dart';
 import 'data/repositories/reader_core_html_repository_impl.dart';
 import 'data/repositories/reader_core_webview_repository_impl.dart';
 import 'data/repositories/reader_location_cache_repository_impl.dart';
-import 'data/repositories/reader_search_repository_impl.dart';
 import 'data/repositories/reader_server_repository_impl.dart';
 import 'data/repositories/reader_tts_repository_impl.dart';
 import 'domain/entities/reader_core_type.dart';
 import 'domain/repositories/reader_core_repository.dart';
 import 'domain/repositories/reader_location_cache_repository.dart';
-import 'domain/repositories/reader_search_repository.dart';
 import 'domain/repositories/reader_server_repository.dart';
 import 'domain/repositories/reader_tts_repository.dart';
 import 'domain/use_cases/appearance_use_cases/reader_set_font_color_use_case.dart';
@@ -135,28 +133,34 @@ void setupReaderDependencies() {
           };
 
           return ReaderCubitDependencies(
-            controller,
-            coreRepository,
-            // Reader use cases
-            ReaderObserveSetStateUseCase(coreRepository),
-            ReaderNextPageUseCase(coreRepository),
-            ReaderPreviousPageUseCase(coreRepository),
-            ReaderGotoUseCase(coreRepository),
-            ReaderSetFontColorUseCase(coreRepository),
-            ReaderSetFontSizeUseCase(coreRepository),
-            ReaderSetLineHeightUseCase(coreRepository),
-            ReaderSetSmoothScrollUseCase(coreRepository),
-            // Book use cases
-            sl<BookGetUseCase>(),
-            // Bookmark use cases
-            sl<BookmarkGetDataUseCase>(),
-            sl<BookmarkUpdateDataUseCase>(),
-            sl<BookmarkDeleteDataUseCase>(),
-            // Reader preference use cases.
-            sl<ReaderSavePreferenceUseCase>(),
-            sl<ReaderObservePreferenceChangeUseCase>(),
-            sl<ReaderResetPreferenceUseCase>(),
-          );
+              controller,
+              coreRepository,
+              // Reader use cases
+              ReaderObserveSetStateUseCase(coreRepository),
+              ReaderNextPageUseCase(coreRepository),
+              ReaderPreviousPageUseCase(coreRepository),
+              ReaderGotoUseCase(coreRepository),
+              ReaderSetFontColorUseCase(coreRepository),
+              ReaderSetFontSizeUseCase(coreRepository),
+              ReaderSetLineHeightUseCase(coreRepository),
+              ReaderSetSmoothScrollUseCase(coreRepository),
+              // Book use cases
+              sl<BookGetUseCase>(),
+              // Bookmark use cases
+              sl<BookmarkGetDataUseCase>(),
+              sl<BookmarkUpdateDataUseCase>(),
+              sl<BookmarkDeleteDataUseCase>(),
+              // Reader preference use cases.
+              sl<ReaderSavePreferenceUseCase>(),
+              sl<ReaderObservePreferenceChangeUseCase>(),
+              sl<ReaderResetPreferenceUseCase>(),
+              // Cubits
+              ReaderSearchCubit(
+                ReaderSearchInCurrentChapterUseCase(coreRepository),
+                ReaderSearchInWholeBookUseCase(coreRepository),
+                ReaderObserveSearchListUseCase(coreRepository),
+                ReaderGotoUseCase(coreRepository),
+              ));
         },
         // Setup the TTS cubit.
         ReaderTtsCubit(
@@ -178,19 +182,6 @@ void setupReaderDependencies() {
               sl<TtsStopUseCase>(),
               sl<TtsPauseUseCase>(),
               sl<TtsResumeUseCase>(),
-            );
-          },
-        ),
-        ReaderSearchCubit(
-          (ReaderCoreRepository coreRepository) {
-            final ReaderSearchRepository searchRepository =
-                ReaderSearchRepositoryImpl(coreRepository);
-
-            return ReaderSearchCubitDependencies(
-              ReaderSearchInCurrentChapterUseCase(searchRepository),
-              ReaderSearchInWholeBookUseCase(searchRepository),
-              ReaderObserveSearchListUseCase(searchRepository),
-              ReaderGotoUseCase(coreRepository),
             );
           },
         ),

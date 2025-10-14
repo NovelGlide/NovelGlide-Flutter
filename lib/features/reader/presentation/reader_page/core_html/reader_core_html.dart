@@ -1,10 +1,7 @@
-import 'package:csslib/parser.dart' show Message;
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_html/flutter_html.dart';
 
-import '../../../../../core/log_system/log_system.dart';
 import '../../../../books/domain/entities/book_html_content.dart';
 import '../cubit/reader_cubit.dart';
 import 'widgets/reader_core_html_image.dart';
@@ -28,8 +25,8 @@ class ReaderCoreHtml extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: Html(
-        data: htmlContent.htmlContent,
+      child: Html.fromDom(
+        document: htmlContent.domTree,
         onLinkTap: (String? href, __, ___) => _onLinkTap(
           href,
           htmlContent,
@@ -47,22 +44,7 @@ class ReaderCoreHtml extends StatelessWidget {
           'a': Style(
             textDecoration: TextDecoration.none,
           ),
-          ...Style.fromCss(
-            htmlContent.stylesheet,
-            kReleaseMode
-                ? null
-                : (String css, List<Message> errors) {
-                    LogSystem.error(
-                      'ReaderCoreHtml parse CSS Error',
-                      error: errors,
-                      information: <Object>[
-                        css,
-                      ],
-                    );
-
-                    return null;
-                  },
-          ),
+          ...Style.fromCss(htmlContent.stylesheet, null),
         },
       ),
     );

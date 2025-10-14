@@ -15,6 +15,7 @@ import 'firebase_options.dart';
 final GetIt sl = GetIt.instance;
 
 Future<void> main() async {
+  // debugRepaintRainbowEnabled = true;
   WidgetsFlutterBinding.ensureInitialized();
 
   // Setup dependencies

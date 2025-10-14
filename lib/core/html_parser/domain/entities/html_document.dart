@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:html/dom.dart';
 
 class HtmlDocument extends Equatable {
   const HtmlDocument({
@@ -6,12 +7,14 @@ class HtmlDocument extends Equatable {
     required this.inlineStyles,
     required this.imgSrcList,
     required this.textContent,
+    required this.domTree,
   });
 
   final List<String> stylePathList;
   final List<String> inlineStyles;
   final List<String> imgSrcList;
   final String textContent;
+  final Document domTree;
 
   @override
   List<Object?> get props => <Object?>[
@@ -19,5 +22,6 @@ class HtmlDocument extends Equatable {
         inlineStyles,
         imgSrcList,
         textContent,
+        domTree,
       ];
 }

@@ -14,38 +14,26 @@ import '../../../domain/use_cases/search_use_cases/reader_search_in_whole_book_u
 part 'reader_search_range_code.dart';
 part 'reader_search_state.dart';
 
-class ReaderSearchCubitDependencies {
-  ReaderSearchCubitDependencies(
+class ReaderSearchCubit extends Cubit<ReaderSearchState> {
+  ReaderSearchCubit(
     this._searchInCurrentChapterUseCase,
     this._searchInWholeBookUseCase,
     this._observeSearchListUseCase,
     this._sendGotoUseCase,
-  );
+  ) : super(const ReaderSearchState());
 
   final ReaderSearchInCurrentChapterUseCase _searchInCurrentChapterUseCase;
   final ReaderSearchInWholeBookUseCase _searchInWholeBookUseCase;
   final ReaderObserveSearchListUseCase _observeSearchListUseCase;
   final ReaderGotoUseCase _sendGotoUseCase;
-}
-
-class ReaderSearchCubit extends Cubit<ReaderSearchState> {
-  ReaderSearchCubit(
-    this._dependenciesFactory,
-  ) : super(const ReaderSearchState());
-
-  final ReaderSearchCubitDependencies Function(
-      ReaderCoreRepository coreRepository) _dependenciesFactory;
-  late final ReaderSearchCubitDependencies _dependencies;
 
   /// Stream Subscriptions
   final Set<StreamSubscription<dynamic>> _subscriptions =
       <StreamSubscription<dynamic>>{};
 
   Future<void> init(ReaderCoreRepository coreRepository) async {
-    _dependencies = _dependenciesFactory(coreRepository);
-
     _subscriptions.addAll(<StreamSubscription<dynamic>>[
-      _dependencies._observeSearchListUseCase().listen(_setResultList),
+      _observeSearchListUseCase().listen(_setResultList),
     ]);
   }
 
@@ -53,10 +41,10 @@ class ReaderSearchCubit extends Cubit<ReaderSearchState> {
     emit(state.copyWith(code: LoadingStateCode.loading));
     switch (state.range) {
       case ReaderSearchRangeCode.currentChapter:
-        _dependencies._searchInCurrentChapterUseCase(state.query);
+        _searchInCurrentChapterUseCase(state.query);
         break;
       case ReaderSearchRangeCode.all:
-        _dependencies._searchInWholeBookUseCase(state.query);
+        _searchInWholeBookUseCase(state.query);
         break;
     }
   }
@@ -78,8 +66,7 @@ class ReaderSearchCubit extends Cubit<ReaderSearchState> {
     );
   }
 
-  void goto(String cfi) =>
-      _dependencies._sendGotoUseCase(ReaderGotoUseCaseParam(
+  void goto(String cfi) => _sendGotoUseCase(ReaderGotoUseCaseParam(
         cfi: cfi,
       ));
 

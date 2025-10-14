@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../main.dart';
 import '../../../books/domain/entities/book.dart';
-import '../search_page/cubit/reader_search_cubit.dart';
 import 'cubit/reader_cubit.dart';
 import 'cubit/reader_tts_cubit.dart';
 import 'widgets/reader_scaffold.dart';
@@ -39,9 +38,6 @@ class ReaderWidget extends StatelessWidget {
         ),
         BlocProvider<ReaderTtsCubit>(
           create: (_) => cubit.ttsCubit,
-        ),
-        BlocProvider<ReaderSearchCubit>(
-          create: (_) => cubit.searchCubit,
         ),
       ],
       child: const ReaderScaffold(),
