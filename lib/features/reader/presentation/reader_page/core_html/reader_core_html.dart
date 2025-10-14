@@ -1,4 +1,5 @@
 import 'package:csslib/parser.dart' show Message;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -48,17 +49,19 @@ class ReaderCoreHtml extends StatelessWidget {
           ),
           ...Style.fromCss(
             htmlContent.stylesheet,
-            (String css, List<Message> errors) {
-              LogSystem.error(
-                'ReaderCoreHtml parse CSS Error',
-                error: errors,
-                information: <Object>[
-                  css,
-                ],
-              );
+            kReleaseMode
+                ? null
+                : (String css, List<Message> errors) {
+                    LogSystem.error(
+                      'ReaderCoreHtml parse CSS Error',
+                      error: errors,
+                      information: <Object>[
+                        css,
+                      ],
+                    );
 
-              return null;
-            },
+                    return null;
+                  },
           ),
         },
       ),
