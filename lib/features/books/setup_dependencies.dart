@@ -17,6 +17,7 @@ import '../preference/domain/use_cases/preference_reset_use_case.dart';
 import '../preference/domain/use_cases/preference_save_use_case.dart';
 import '../reader/domain/use_cases/location_cache_use_cases/reader_clear_location_cache_use_case.dart';
 import '../reader/domain/use_cases/location_cache_use_cases/reader_delete_location_cache_use_case.dart';
+import 'data/data_sources/epub_book_loader.dart';
 import 'data/data_sources/epub_data_source.dart';
 import 'data/repositories/book_repository_impl.dart';
 import 'domain/repositories/book_repository.dart';
@@ -38,11 +39,17 @@ import 'presentation/book_list/cubit/book_list_cubit.dart';
 import 'presentation/table_of_contents_page/cubit/toc_cubit.dart';
 
 void setupBookDependencies() {
+  /// Register Book Loaders.
+  sl.registerLazySingleton<EpubBookLoader>(
+    () => EpubBookLoader(),
+  );
+
   /// Register repositories
   sl.registerLazySingleton<BookRepository>(
     () => BookRepositoryImpl(
       EpubDataSource(
         sl<HtmlParser>(),
+        sl<EpubBookLoader>(),
       ),
       sl<AppPathProvider>(),
       sl<FileSystemRepository>(),

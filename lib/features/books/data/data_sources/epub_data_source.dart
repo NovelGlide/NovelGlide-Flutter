@@ -22,12 +22,13 @@ import 'epub_book_loader.dart';
 class EpubDataSource {
   EpubDataSource(
     this._htmlParser,
+    this._bookLoader,
   );
 
   final HtmlParser _htmlParser;
+  final EpubBookLoader _bookLoader;
 
   /// Caches
-  final Map<String, BookCover> _coverBytesCache = <String, BookCover>{};
   final Map<String, epub.EpubBook> _bookCache = <String, epub.EpubBook>{};
   bool _enableBookCache = false;
 
@@ -44,20 +45,10 @@ class EpubDataSource {
   List<MimeType> get allowedMimeTypes => <MimeType>[MimeType.epub];
 
   Future<Book> _parseEpubBook(
-      String absolutePath, epub.EpubBook epubBook) async {
-    final epub.Image? coverImage = _findCoverImage(epubBook);
-
-    // Cache cover image
+    String absolutePath,
+    epub.EpubBook epubBook,
+  ) async {
     final String bookIdentifier = basename(absolutePath);
-    _coverBytesCache[absolutePath] = BookCover(
-      identifier: absolutePath,
-      width: coverImage?.width.toDouble(),
-      height: coverImage?.height.toDouble(),
-      bytes: coverImage == null
-          ? null
-          : Uint8List.fromList(img.encodePng(coverImage)),
-    );
-
     return Book(
       identifier: bookIdentifier,
       title: epubBook.Title ?? '',
@@ -73,37 +64,32 @@ class EpubDataSource {
   }
 
   Stream<Book> getBooks(Set<String> absolutePathSet) async* {
-    final EpubBookLoader loader = EpubBookLoader();
-
-    // Initialize the loader
-    await loader.initLoader();
-
-    // Add path to the loader.
-    loader.loadByPath(absolutePathSet);
-
-    int counter = 0;
-    final int taskLength = absolutePathSet.length;
-    if (counter < taskLength) {
-      await for (EpubBookLoaderResult result in loader.stream) {
-        yield await _parseEpubBook(result.absolutePath, result.epubBook);
-
-        if (++counter >= taskLength) {
-          // Task completed!
-          break;
+    final Set<String> loadingSet = absolutePathSet;
+    yield* _bookLoader
+        .loadByPathSet(absolutePathSet)
+        .transform(StreamTransformer<EpubBookLoaderResult, Book>.fromHandlers(
+      handleData: (EpubBookLoaderResult result, EventSink<Book> sink) async {
+        if (loadingSet.contains(result.absolutePath)) {
+          loadingSet.remove(result.absolutePath);
+          sink.add(await _parseEpubBook(result.absolutePath, result.epubBook));
         }
-      }
-    }
-
-    // Dispose the loader.
-    loader.dispose();
+      },
+    ));
   }
 
   Future<BookCover> getCover(String absolutePath) async {
-    if (!_coverBytesCache.containsKey(absolutePath)) {
-      // Cover was not loaded. Load the book data first.
-      await getBook(absolutePath);
-    }
-    return _coverBytesCache[absolutePath]!;
+    final epub.EpubBook epubBook = await _loadEpubBook(absolutePath);
+
+    // Cache cover image
+    final epub.Image? coverImage = _findCoverImage(epubBook);
+    return BookCover(
+      identifier: absolutePath,
+      width: coverImage?.width.toDouble(),
+      height: coverImage?.height.toDouble(),
+      bytes: coverImage == null
+          ? null
+          : Uint8List.fromList(img.encodePng(coverImage)),
+    );
   }
 
   Future<List<BookChapter>> getChapterList(String absolutePath) async {
@@ -216,9 +202,9 @@ class EpubDataSource {
       return _bookCache[filePath]!;
     }
 
-    final EpubBookLoader loader = EpubBookLoader();
-    final EpubBookLoaderResult result =
-        await loader.loadSingleBookByPath(filePath);
+    final EpubBookLoaderResult result = await _bookLoader
+        .loadByPathSet(<String>{filePath}).firstWhere(
+            (EpubBookLoaderResult result) => result.absolutePath == filePath);
 
     if (_enableBookCache) {
       _bookCache[filePath] = result.epubBook;

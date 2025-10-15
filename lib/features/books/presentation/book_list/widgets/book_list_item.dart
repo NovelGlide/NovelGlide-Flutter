@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../generated/i18n/app_localizations.dart';
+import '../../../../shared_components/animated_placeholders/ease_flash_placeholder.dart';
 import '../../../../shared_components/common_error_widgets/common_error_dialog.dart';
 import '../../../domain/entities/book.dart';
 import '../../../domain/entities/book_cover.dart';
@@ -24,8 +25,9 @@ class BookListItem extends StatelessWidget {
         margin: const EdgeInsets.all(16.0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24.0),
-          color: Theme.of(context).colorScheme.surfaceContainerLow,
         ),
+        clipBehavior: Clip.hardEdge,
+        child: const EaseFlashPlaceholder(),
       ),
     );
   }
