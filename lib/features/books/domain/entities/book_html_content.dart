@@ -1,8 +1,7 @@
-import 'dart:typed_data';
-
 import 'package:equatable/equatable.dart';
 import 'package:html/dom.dart';
 
+import '../../../../core/domain/entities/image_bytes_data.dart';
 import 'book_page.dart';
 
 class BookHtmlContent extends Equatable {
@@ -22,7 +21,7 @@ class BookHtmlContent extends Equatable {
   final String textContent;
   final String stylesheet;
   final List<BookPage> pageList;
-  final Map<String, Uint8List> imgFiles;
+  final Map<String, ImageBytesData> imgFiles;
 
   @override
   List<Object?> get props => <Object>[

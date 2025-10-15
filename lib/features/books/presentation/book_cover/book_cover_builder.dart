@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../main.dart';
-import '../../../shared_components/animation_widgets/simple_fade_switcher.dart';
+import '../../../shared_components/animated_switchers/simple_fade_switcher.dart';
 import '../../domain/entities/book.dart';
 import '../../domain/entities/book_cover.dart';
 import '../../domain/use_cases/book_get_cover_use_case.dart';

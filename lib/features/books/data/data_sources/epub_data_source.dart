@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:collection/collection.dart';
 import 'package:epubx/epubx.dart' as epub;
@@ -7,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
 import 'package:path/path.dart';
 
+import '../../../../core/domain/entities/image_bytes_data.dart';
 import '../../../../core/html_parser/domain/entities/html_document.dart';
 import '../../../../core/html_parser/html_parser.dart';
 import '../../../../core/mime_resolver/domain/entities/mime_type.dart';
@@ -169,14 +171,24 @@ class EpubDataSource {
     }
 
     // Load the image contents
-    final Map<String, Uint8List> imgFiles = <String, Uint8List>{};
-    for (String imgSrc in htmlDocument.imgSrcList) {
+    final Map<String, ImageBytesData> imgFiles = <String, ImageBytesData>{};
+
+    await Future.wait(htmlDocument.imgSrcList.map((String imgSrc) async {
       final Uint8List bytes =
           Uint8List.fromList(content?.Images?[imgSrc]?.Content ?? <int>[]);
       if (bytes.isNotEmpty) {
-        imgFiles[imgSrc] = bytes;
+        final Completer<ImageBytesData> completer = Completer<ImageBytesData>();
+        ui.decodeImageFromList(bytes, (ui.Image image) {
+          // Preload the dimension of the image.
+          completer.complete(ImageBytesData(
+            bytes: bytes,
+            width: image.width.toDouble(),
+            height: image.height.toDouble(),
+          ));
+        });
+        imgFiles[imgSrc] = await completer.future;
       }
-    }
+    }));
 
     return BookHtmlContent(
       bookIdentifier: basename(absolutePath),
