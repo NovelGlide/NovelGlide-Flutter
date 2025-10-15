@@ -11,7 +11,8 @@ class ReaderPreferenceData extends Equatable {
     this.isAutoSaving = false,
     this.isSmoothScroll = false,
     this.pageNumType = ReaderPageNumType.number,
-    this.coreType = ReaderCoreType.html,
+    // TODO(kai): Change core type manually.
+    this.coreType = ReaderCoreType.htmlWidget,
   });
 
   final double fontSize;

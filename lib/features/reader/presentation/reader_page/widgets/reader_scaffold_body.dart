@@ -64,7 +64,7 @@ class ReaderScaffoldBody extends StatelessWidget {
               builder: (BuildContext context, ReaderState state) {
                 return switch (state.coreType) {
                   ReaderCoreType.webView => const ReaderCoreWebView(),
-                  ReaderCoreType.html => const ReaderCoreHtmlWrapper(),
+                  ReaderCoreType.htmlWidget => const ReaderCoreHtmlWrapper(),
                   null => const SizedBox.shrink(),
                 };
               },

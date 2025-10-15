@@ -127,7 +127,7 @@ void setupReaderDependencies() {
                 sl<ReaderServerRepository>(),
                 sl<ReaderLocationCacheRepository>(),
               ),
-            ReaderCoreType.html => ReaderCoreHtmlRepositoryImpl(
+            ReaderCoreType.htmlWidget => ReaderCoreHtmlRepositoryImpl(
                 sl<BookRepository>(),
               ),
           };

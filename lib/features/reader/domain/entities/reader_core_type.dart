@@ -1,4 +1,4 @@
 enum ReaderCoreType {
   webView,
-  html,
+  htmlWidget,
 }
