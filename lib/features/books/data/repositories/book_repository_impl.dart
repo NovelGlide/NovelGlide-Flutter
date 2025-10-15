@@ -123,21 +123,20 @@ class BookRepositoryImpl implements BookRepository {
   @override
   Stream<Book> getBooks([Set<String>? identifierSet]) async* {
     final String libraryPath = await _pathProvider.libraryPath;
+    final Set<String> loadSet = identifierSet ?? <String>{};
 
     if (identifierSet == null) {
       // List all books
       await for (FileSystemEntity entity
           in _fileSystemRepository.listDirectory(libraryPath)) {
         if (entity is File && await isFileValid(entity.path)) {
-          yield await getBook(entity.path);
+          loadSet.add(entity.path);
         }
       }
-    } else {
-      // List specific books
-      for (String id in identifierSet) {
-        yield await getBook(id);
-      }
     }
+
+    // Load.
+    yield* _epubDataSource.getBooks(loadSet);
   }
 
   @override

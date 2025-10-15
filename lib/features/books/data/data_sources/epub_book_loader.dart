@@ -5,30 +5,48 @@ import 'dart:isolate';
 
 import 'package:epubx/epubx.dart' as epub;
 
+import '../../../../core/log_system/log_system.dart';
+
+class EpubBookLoaderResult {
+  EpubBookLoaderResult({required this.absolutePath, required this.epubBook});
+
+  final String absolutePath;
+  final epub.EpubBook epubBook;
+}
+
 class EpubBookLoader {
   static const String _closeText = '=== CLOSE ===';
 
   late final Isolate _loaderIsolate;
   final ReceivePort _receivePort = ReceivePort();
   late final SendPort _sendPort;
-  final StreamController<epub.EpubBook> _streamController =
-      StreamController<epub.EpubBook>.broadcast();
+  final StreamController<EpubBookLoaderResult> _streamController =
+      StreamController<EpubBookLoaderResult>.broadcast();
 
   final Queue<String> _waitingQueue = Queue<String>();
   bool _isLock = false;
 
-  Stream<epub.EpubBook> get stream => _streamController.stream;
+  Stream<EpubBookLoaderResult> get stream => _streamController.stream;
 
   Future<void> initLoader() async {
+    LogSystem.info('Initializing an EPUB loader...');
+    final Completer<void> completer = Completer<void>();
+
     _loaderIsolate = await Isolate.spawn<SendPort>(
       _isolatedRunner,
       _receivePort.sendPort,
     );
+
     _receivePort.listen((dynamic message) {
       if (message is SendPort) {
         // Save the send port.
         _sendPort = message;
-      } else if (message is epub.EpubBook) {
+
+        // Complete the initialization.
+        completer.complete(null);
+
+        LogSystem.info('An EPUB loader was initialized successfully.');
+      } else if (message is EpubBookLoaderResult) {
         // Send with stream.
         _streamController.add(message);
 
@@ -37,13 +55,28 @@ class EpubBookLoader {
         _startNextTask();
       }
     });
+
+    return completer.future;
   }
 
-  void loadByPath(String path) {
-    _waitingQueue.add(path);
+  void loadByPath(Set<String> pathSet) {
+    _waitingQueue.addAll(pathSet);
 
     // Try to start the task.
     _startNextTask();
+  }
+
+  Future<EpubBookLoaderResult> loadSingleBookByPath(String path) async {
+    await initLoader();
+
+    // Start loading the file.
+    loadByPath(<String>{path});
+    final EpubBookLoaderResult result = await stream.firstWhere(
+        (EpubBookLoaderResult result) => result.absolutePath == path);
+
+    // Finally.
+    dispose();
+    return result;
   }
 
   void _startNextTask() {
@@ -55,7 +88,7 @@ class EpubBookLoader {
     }
   }
 
-  void _isolatedRunner(SendPort sendPort) {
+  static void _isolatedRunner(SendPort sendPort) {
     // Create the receive port
     final ReceivePort receivePort = ReceivePort();
 
@@ -71,8 +104,10 @@ class EpubBookLoader {
         } else {
           // Load the book.
           final String path = message;
-          sendPort
-              .send(await epub.EpubReader.readBook(File(path).readAsBytes()));
+          sendPort.send(EpubBookLoaderResult(
+            absolutePath: message,
+            epubBook: await epub.EpubReader.readBook(File(path).readAsBytes()),
+          ));
         }
       }
     });
@@ -86,5 +121,7 @@ class EpubBookLoader {
 
     _streamController.close();
     _receivePort.close();
+
+    LogSystem.info('An EPUB loader was disposed.');
   }
 }
