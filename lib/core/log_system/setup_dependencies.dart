@@ -1,6 +1,5 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:logger/logger.dart';
 
 import '../../main.dart';
 import 'data/data_sources/adapters/firebase_analytics_adapter.dart';
@@ -12,8 +11,7 @@ import 'log_system.dart';
 
 void setupLogDependencies() {
   // Register Logger for console logging.
-  final Logger logger = Logger();
-  sl.registerLazySingleton<LoggerAdapter>(() => LoggerAdapter(logger));
+  sl.registerLazySingleton<LoggerAdapter>(() => LoggerAdapter());
 
   // Register FirebaseCrashlytics.
   sl.registerLazySingleton<FirebaseCrashlyticsAdapter>(

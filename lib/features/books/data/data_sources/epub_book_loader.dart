@@ -68,8 +68,6 @@ class EpubBookLoader {
         // Send with stream.
         _streamController.add(message);
 
-        LogSystem.info('Loading ${message.absolutePath} completed.');
-
         // Task Completed.
         _isLock = false;
         _startNextTask();
@@ -80,12 +78,8 @@ class EpubBookLoader {
   Stream<EpubBookLoaderResult> loadByPathSet(Set<String> pathSet) async* {
     await _bootup();
 
-    LogSystem.info('Add these path to waiting queue: $pathSet');
-
     // Start loading the file.
     _waitingQueue.addAll(pathSet);
-
-    LogSystem.info('Waiting queue: $_waitingQueue');
 
     // Try to start the task.
     _startNextTask();
@@ -94,22 +88,18 @@ class EpubBookLoader {
   }
 
   void _startNextTask() {
-    LogSystem.info('Try to start the next task.');
-
     if (_isRunning && !_isLock) {
       // No task is running.
-      LogSystem.info('No task is running.');
       if (_waitingQueue.isEmpty) {
         // No pending task.
-        LogSystem.info('No pending task.');
         _shutdown();
       } else {
         // Start the next task.
         _isLock = true;
+
         final String path = _waitingQueue.first;
         _waitingQueue.remove(path);
 
-        LogSystem.info('Start the next task. $path');
         _sendPort?.send(path);
       }
     }

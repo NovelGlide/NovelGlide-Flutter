@@ -3,9 +3,15 @@ import 'package:logger/logger.dart';
 import '../log_data_source.dart';
 
 class LoggerAdapter extends LogDataSource {
-  LoggerAdapter(this._logger);
+  LoggerAdapter();
 
-  final Logger _logger;
+  final Logger _logger = Logger(
+    printer: PrettyPrinter(
+      excludePaths: <String>[
+        'package:novel_glide/core/log_system',
+      ],
+    ),
+  );
 
   @override
   Future<void> info(String message) async {
