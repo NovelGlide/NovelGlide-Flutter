@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,16 +7,19 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:path/path.dart';
 
 import '../../../../../books/domain/entities/book_html_content.dart';
+import '../../../../../photo_viewer/presentation/photo_viewer.dart';
 import '../../cubit/reader_cubit.dart';
 
 class ReaderCoreHtmlImage extends StatelessWidget {
   const ReaderCoreHtmlImage({
     super.key,
     required this.bookHtmlContent,
+    required this.alt,
     required this.src,
   });
 
   final BookHtmlContent bookHtmlContent;
+  final String? alt;
   final String src;
 
   @override
@@ -27,11 +31,23 @@ class ReaderCoreHtmlImage extends StatelessWidget {
       // Construct the "in-book" absolute path.
       final String path =
           cubit.getInBookPath(bookHtmlContent.pageIdentifier, src);
-      if (bookHtmlContent.imgFiles[path] != null) {
-        return Image.memory(
-          bookHtmlContent.imgFiles[path]!,
-          fit: BoxFit.contain,
-          semanticLabel: src,
+      final Uint8List? bytes = bookHtmlContent.imgFiles[path];
+      if (bytes != null) {
+        return Semantics(
+          // TODO(kai): Localization.
+          onTapHint: 'Click it to open it in the photo viewer.',
+          child: GestureDetector(
+            onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
+              builder: (BuildContext context) => PhotoViewer(
+                imageBytes: bytes,
+              ),
+            )),
+            child: Image.memory(
+              bytes,
+              fit: BoxFit.contain,
+              semanticLabel: alt ?? src,
+            ),
+          ),
         );
       }
     } else if (isAbsolute(src)) {
@@ -53,6 +69,7 @@ class ReaderCoreHtmlImage extends StatelessWidget {
         } else {
           return ReaderCoreHtmlImage(
             bookHtmlContent: htmlContent,
+            alt: attributes['alt'],
             src: attributes['src']!,
           );
         }
