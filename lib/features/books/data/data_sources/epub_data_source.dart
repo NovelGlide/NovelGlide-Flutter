@@ -11,6 +11,7 @@ import 'package:path/path.dart';
 import '../../../../core/domain/entities/image_bytes_data.dart';
 import '../../../../core/html_parser/domain/entities/html_document.dart';
 import '../../../../core/html_parser/html_parser.dart';
+import '../../../../core/image_processor/image_processor.dart';
 import '../../../../core/mime_resolver/domain/entities/mime_type.dart';
 import '../../domain/entities/book.dart';
 import '../../domain/entities/book_chapter.dart';
@@ -23,10 +24,12 @@ class EpubDataSource {
   EpubDataSource(
     this._htmlParser,
     this._bookLoader,
+    this._imageProcessor,
   );
 
   final HtmlParser _htmlParser;
   final EpubBookLoader _bookLoader;
+  final ImageProcessor _imageProcessor;
 
   /// Caches
   final Map<String, epub.EpubBook> _bookCache = <String, epub.EpubBook>{};
@@ -65,16 +68,18 @@ class EpubDataSource {
 
   Stream<Book> getBooks(Set<String> absolutePathSet) async* {
     final Set<String> loadingSet = absolutePathSet;
-    yield* _bookLoader
-        .loadByPathSet(absolutePathSet)
-        .transform(StreamTransformer<EpubBookLoaderResult, Book>.fromHandlers(
-      handleData: (EpubBookLoaderResult result, EventSink<Book> sink) async {
-        if (loadingSet.contains(result.absolutePath)) {
-          loadingSet.remove(result.absolutePath);
-          sink.add(await _parseEpubBook(result.absolutePath, result.epubBook));
-        }
-      },
-    ));
+
+    await for (EpubBookLoaderResult result
+        in _bookLoader.loadByPathSet(absolutePathSet)) {
+      if (loadingSet.contains(result.absolutePath)) {
+        loadingSet.remove(result.absolutePath);
+        yield await _parseEpubBook(result.absolutePath, result.epubBook);
+      }
+
+      if (loadingSet.isEmpty) {
+        break;
+      }
+    }
   }
 
   Future<BookCover> getCover(String absolutePath) async {
@@ -82,13 +87,14 @@ class EpubDataSource {
 
     // Cache cover image
     final epub.Image? coverImage = _findCoverImage(epubBook);
+    final Uint8List? bytes = coverImage == null
+        ? null
+        : await _imageProcessor.img2PngBytes(coverImage);
     return BookCover(
       identifier: absolutePath,
       width: coverImage?.width.toDouble(),
       height: coverImage?.height.toDouble(),
-      bytes: coverImage == null
-          ? null
-          : Uint8List.fromList(img.encodePng(coverImage)),
+      bytes: bytes,
     );
   }
 

@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:get_it/get_it.dart';
 
 import 'app/app.dart';
@@ -15,7 +16,8 @@ import 'firebase_options.dart';
 final GetIt sl = GetIt.instance;
 
 Future<void> main() async {
-  // debugRepaintRainbowEnabled = true;
+  debugRepaintRainbowEnabled = false;
+
   WidgetsFlutterBinding.ensureInitialized();
 
   // Setup dependencies

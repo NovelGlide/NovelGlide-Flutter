@@ -60,10 +60,6 @@ class ReaderCoreHtmlImage extends StatelessWidget {
                   int? frame,
                   bool wasSynchronouslyLoaded,
                 ) {
-                  if (wasSynchronouslyLoaded) {
-                    return child; // Image loaded instantly, show it directly
-                  }
-
                   final bool isLoading = frame == null;
                   return SimpleFadeSwitcher(
                     child: isLoading ? const EaseFlashPlaceholder() : child,

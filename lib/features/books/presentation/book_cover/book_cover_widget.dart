@@ -26,32 +26,24 @@ class BookCoverWidget extends StatelessWidget {
         coverData.identifier,
         coverData.bytes!,
       );
-    }
-
-    // Url are not empty
-    if (coverData.url != null) {
+    } else if (coverData.url != null) {
+      // Url are not empty
       // Load the network image
       imageProvider ??= NetworkImage(coverData.url!.toString());
+    } else {
+      // There is not an image. Use the image in the asset.
+      final Brightness brightness = Theme.of(context).brightness;
+      final String fileName =
+          'book_cover_${brightness == Brightness.dark ? 'dark' : 'light'}.jpg';
+
+      imageProvider ??= AssetImage('assets/images/$fileName');
     }
 
-    // There is not an image. Use the image in the asset.
-    final Brightness brightness = Theme.of(context).brightness;
-    final String fileName =
-        'book_cover_${brightness == Brightness.dark ? 'dark' : 'light'}.jpg';
-
-    imageProvider ??= AssetImage('assets/images/$fileName');
-
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        return Image(
-          image: imageProvider!,
-          fit: BoxFit.cover,
-          gaplessPlayback: true,
-          width: constraints.maxWidth,
-          height: constraints.maxHeight,
-          semanticLabel: appLocalizations.generalBookCover,
-        );
-      },
+    return Image(
+      image: imageProvider,
+      fit: BoxFit.cover,
+      gaplessPlayback: true,
+      semanticLabel: appLocalizations.generalBookCover,
     );
   }
 }

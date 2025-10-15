@@ -24,6 +24,7 @@ import '../main.dart';
 import 'file_system/setup_dependencies.dart';
 import 'html_parser/setup_dependencies.dart';
 import 'http_client/setup_dependencies.dart';
+import 'image_processor/setup_dependencies.dart';
 import 'lifecycle/setup_dependencies.dart';
 import 'log_system/setup_dependencies.dart';
 import 'mime_resolver/setup_dependencies.dart';
@@ -61,6 +62,7 @@ void _setupExternalDependencies() {
 void _setupCoreDependencies() {
   setupFileSystemDependencies();
   setupHtmlParserDependencies();
+  setupImageProcessorDependencies();
   setupLifecycleDependencies();
   setupMimeResolverDependencies();
   setupPathProviderDependencies();
