@@ -62,7 +62,7 @@ class TocFabSection extends StatelessWidget {
                     builder: (_) => ReaderWidget(
                       bookIdentifier: bookData.identifier,
                       bookData: bookData,
-                      chapterIdentifier: state.bookmarkData?.chapterIdentifier,
+                      pageIdentifier: state.bookmarkData?.chapterIdentifier,
                       cfi: state.bookmarkData?.startCfi,
                     ),
                   ));

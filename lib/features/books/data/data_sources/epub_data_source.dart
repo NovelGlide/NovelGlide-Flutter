@@ -142,8 +142,10 @@ class EpubDataSource {
         .where((BookPage page) => page.identifier.isNotEmpty)
         .toList();
 
-    // Use the requested href first.
-    final String? href = contentHref ??
+    // Use the requested href first, and check if it's in the page list.
+    final String? href = pageList
+            .firstWhereOrNull((BookPage page) => page.identifier == contentHref)
+            ?.identifier ??
         // Find the href of the first spine.
         manifest?.Items
             ?.firstWhereOrNull((epub.EpubManifestItem item) => item.Id == idRef)

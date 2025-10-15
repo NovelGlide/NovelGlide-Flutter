@@ -54,17 +54,15 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
     // Save the current book identifier.
     _bookIdentifier = bookIdentifier;
 
-    // Normalize page identifier
-    final String normalizedIdentifier =
-        _normalizePageIdentifier(pageIdentifier ?? '');
-
     // Enable book cache.
     _bookRepository.enableBookCache();
 
     // Load the content.
     final BookHtmlContent content = await _bookRepository.getContent(
       _bookIdentifier,
-      pageIdentifier: normalizedIdentifier,
+      pageIdentifier: pageIdentifier == null
+          ? null
+          : _normalizePageIdentifier(pageIdentifier),
     );
 
     // Store the page list for page navigation.

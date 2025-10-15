@@ -12,13 +12,13 @@ class ReaderWidget extends StatelessWidget {
     super.key,
     required this.bookIdentifier,
     this.bookData,
-    this.chapterIdentifier,
+    this.pageIdentifier,
     this.cfi,
   });
 
   final String bookIdentifier;
   final Book? bookData;
-  final String? chapterIdentifier;
+  final String? pageIdentifier;
   final String? cfi;
 
   @override
@@ -31,7 +31,7 @@ class ReaderWidget extends StatelessWidget {
             ..init(
               bookData: bookData,
               bookIdentifier: bookIdentifier,
-              chapterIdentifier: chapterIdentifier,
+              pageIdentifier: pageIdentifier,
               currentTheme: Theme.of(context),
               cfi: cfi,
             ),

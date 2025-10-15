@@ -59,7 +59,7 @@ class BookmarkListItem extends StatelessWidget {
             MaterialPageRoute<void>(
               builder: (_) => ReaderWidget(
                 bookIdentifier: bookmarkData.bookIdentifier,
-                chapterIdentifier: bookmarkData.chapterIdentifier,
+                pageIdentifier: bookmarkData.chapterIdentifier,
                 cfi: bookmarkData.startCfi,
               ),
             ),

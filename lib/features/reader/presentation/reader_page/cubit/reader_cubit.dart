@@ -128,7 +128,7 @@ class ReaderCubit extends Cubit<ReaderState> {
   Future<void> init({
     required String bookIdentifier,
     required ThemeData currentTheme,
-    String? chapterIdentifier,
+    String? pageIdentifier,
     String? cfi,
     Book? bookData,
   }) async {
@@ -188,7 +188,7 @@ class ReaderCubit extends Cubit<ReaderState> {
 
     await _dependencies._coreRepository.init(
       bookIdentifier: bookIdentifier,
-      pageIdentifier: chapterIdentifier,
+      pageIdentifier: pageIdentifier,
       cfi: cfi,
     );
 
