@@ -39,6 +39,16 @@ enum MimeType {
   bmp(
     <String>['image/bmp'],
     <String>['bmp'],
+  ),
+
+  // Fonts
+  ttf(
+    <String>['font/ttf', 'font/truetype'],
+    <String>['ttf'],
+  ),
+  otf(
+    <String>['font/otf', 'font/opentype'],
+    <String>['otf'],
   );
 
   const MimeType(this.tagList, this.extensionList);
@@ -63,4 +73,6 @@ enum MimeType {
       this == MimeType.jpg ||
       this == MimeType.gif ||
       this == MimeType.bmp;
+
+  bool get isFont => this == MimeType.ttf || this == MimeType.otf;
 }

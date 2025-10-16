@@ -1,16 +1,16 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:ui' as ui;
 
 import 'package:collection/collection.dart';
 import 'package:epubx/epubx.dart' as epub;
 import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
+import 'package:novel_glide/core/domain/entities/font_file.dart';
 import 'package:path/path.dart';
 
+import '../../../../core/css_parser/domain/entities/css_document.dart';
 import '../../../../core/domain/entities/image_bytes_data.dart';
 import '../../../../core/html_parser/domain/entities/html_document.dart';
-import '../../../../core/html_parser/html_parser.dart';
 import '../../../../core/image_processor/image_processor.dart';
 import '../../../../core/mime_resolver/domain/entities/mime_type.dart';
 import '../../domain/entities/book.dart';
@@ -19,16 +19,17 @@ import '../../domain/entities/book_cover.dart';
 import '../../domain/entities/book_html_content.dart';
 import '../../domain/entities/book_page.dart';
 import 'epub_book_loader.dart';
+import 'epub_content_parser.dart';
 
 class EpubDataSource {
   EpubDataSource(
-    this._htmlParser,
     this._bookLoader,
+    this._contentParser,
     this._imageProcessor,
   );
 
-  final HtmlParser _htmlParser;
   final EpubBookLoader _bookLoader;
+  final EpubContentParser _contentParser;
   final ImageProcessor _imageProcessor;
 
   /// Caches
@@ -113,83 +114,48 @@ class EpubDataSource {
     // Load the book file.
     final epub.EpubBook epubBook = await _loadEpubBook(absolutePath);
     final epub.EpubContent? content = epubBook.Content;
-    final Map<String, epub.EpubTextContentFile> htmlFiles =
-        content?.Html ?? <String, epub.EpubTextContentFile>{};
-    final Map<String, epub.EpubTextContentFile> cssFiles =
-        content?.Css ?? <String, epub.EpubTextContentFile>{};
-
-    // The information of this book.
-    final epub.EpubPackage? package = epubBook.Schema?.Package;
-    final epub.EpubManifest? manifest = package?.Manifest;
-    final epub.EpubSpine? spine = package?.Spine;
-
-    // Get the first idRef in the spine list.
-    final String? idRef = spine?.Items?.firstOrNull?.IdRef;
+    final Map<String, epub.EpubByteContentFile> fontFiles =
+        content?.Fonts ?? <String, epub.EpubByteContentFile>{};
 
     // Get the page list
-    final List<BookPage> pageList = (spine?.Items ?? <epub.EpubSpineItemRef>[])
-        .map<BookPage>(
-          (epub.EpubSpineItemRef spineItem) {
-            return BookPage(
-              identifier: manifest?.Items
-                      ?.firstWhereOrNull((epub.EpubManifestItem item) =>
-                          item.Id == spineItem.IdRef)
-                      ?.Href ??
-                  '',
-            );
-          },
-        )
-        .where((BookPage page) => page.identifier.isNotEmpty)
-        .toList();
+    final List<BookPage> pageList = _contentParser.parsePageList(epubBook);
 
     // Use the requested href first, and check if it's in the page list.
-    final String? href = pageList
-            .firstWhereOrNull((BookPage page) => page.identifier == contentHref)
-            ?.identifier ??
-        // Find the href of the first spine.
-        manifest?.Items
-            ?.firstWhereOrNull((epub.EpubManifestItem item) => item.Id == idRef)
-            ?.Href;
+    final String href = _contentParser.getValidPageIdentifier(
+      epubBook,
+      contentHref,
+      pageList: pageList,
+    );
 
     // Parse the html document.
-    final String htmlContent = htmlFiles[href]?.Content ?? '';
     final HtmlDocument htmlDocument =
-        _htmlParser.parseDocument(htmlContent, sourceUrl: href);
+        _contentParser.parseHtmlDocument(epubBook, href);
 
     // Load the style contents
-    String stylesheet = htmlDocument.inlineStyles.join('');
-    for (String stylePath in htmlDocument.stylePathList) {
-      final String styleContent = cssFiles[stylePath]?.Content ?? '';
+    final Map<String, CssDocument> styleList = _contentParser.loadStylesheets(
+      epubBook,
+      href,
+      htmlDocument.stylePathList,
+      htmlDocument.inlineStyles.join(''),
+    );
 
-      stylesheet += styleContent;
-    }
+    // Load the fonts
+    final Set<FontFile> fonts = _contentParser.loadFonts(epubBook, styleList);
 
     // Load the image contents
-    final Map<String, ImageBytesData> imgFiles = <String, ImageBytesData>{};
-
-    await Future.wait(htmlDocument.imgSrcList.map((String imgSrc) async {
-      final Uint8List bytes =
-          Uint8List.fromList(content?.Images?[imgSrc]?.Content ?? <int>[]);
-      if (bytes.isNotEmpty) {
-        final Completer<ImageBytesData> completer = Completer<ImageBytesData>();
-        ui.decodeImageFromList(bytes, (ui.Image image) {
-          // Preload the dimension of the image.
-          completer.complete(ImageBytesData(
-            bytes: bytes,
-            width: image.width.toDouble(),
-            height: image.height.toDouble(),
-          ));
-        });
-        imgFiles[imgSrc] = await completer.future;
-      }
-    }));
+    final Map<String, ImageBytesData> imgFiles =
+        await _contentParser.loadImages(
+      epubBook,
+      htmlDocument.imgSrcList,
+    );
 
     return BookHtmlContent(
       bookIdentifier: basename(absolutePath),
-      pageIdentifier: href ?? '',
+      pageIdentifier: href,
       domTree: htmlDocument.domTree,
       textContent: htmlDocument.textContent,
-      stylesheet: stylesheet,
+      stylesheet: styleList.values.map((CssDocument d) => d.content).join(''),
+      fonts: fonts,
       pageList: pageList,
       imgFiles: imgFiles,
     );

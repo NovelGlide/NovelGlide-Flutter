@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:html/dom.dart';
 
+import '../../../../core/domain/entities/font_file.dart';
 import '../../../../core/domain/entities/image_bytes_data.dart';
 import 'book_page.dart';
 
@@ -11,6 +12,7 @@ class BookHtmlContent extends Equatable {
     required this.domTree,
     required this.textContent,
     required this.stylesheet,
+    required this.fonts,
     required this.pageList,
     required this.imgFiles,
   });
@@ -20,6 +22,7 @@ class BookHtmlContent extends Equatable {
   final Document domTree;
   final String textContent;
   final String stylesheet;
+  final Set<FontFile> fonts;
   final List<BookPage> pageList;
   final Map<String, ImageBytesData> imgFiles;
 
@@ -30,6 +33,7 @@ class BookHtmlContent extends Equatable {
         domTree,
         textContent,
         stylesheet,
+        fonts,
         pageList,
         imgFiles,
       ];

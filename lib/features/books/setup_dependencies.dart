@@ -1,3 +1,4 @@
+import '../../core/css_parser/css_parser.dart';
 import '../../core/file_system/domain/repositories/file_system_repository.dart';
 import '../../core/html_parser/html_parser.dart';
 import '../../core/image_processor/image_processor.dart';
@@ -19,6 +20,7 @@ import '../preference/domain/use_cases/preference_save_use_case.dart';
 import '../reader/domain/use_cases/location_cache_use_cases/reader_clear_location_cache_use_case.dart';
 import '../reader/domain/use_cases/location_cache_use_cases/reader_delete_location_cache_use_case.dart';
 import 'data/data_sources/epub_book_loader.dart';
+import 'data/data_sources/epub_content_parser.dart';
 import 'data/data_sources/epub_data_source.dart';
 import 'data/repositories/book_repository_impl.dart';
 import 'domain/repositories/book_repository.dart';
@@ -40,19 +42,30 @@ import 'presentation/book_list/cubit/book_list_cubit.dart';
 import 'presentation/table_of_contents_page/cubit/toc_cubit.dart';
 
 void setupBookDependencies() {
-  /// Register Book Loaders.
+  /// Register loaders and parsers.
   sl.registerLazySingleton<EpubBookLoader>(
     () => EpubBookLoader(),
+  );
+  sl.registerLazySingleton<EpubContentParser>(
+    () => EpubContentParser(
+      sl<HtmlParser>(),
+      sl<CssParser>(),
+    ),
+  );
+
+  /// Register data source.
+  sl.registerLazySingleton<EpubDataSource>(
+    () => EpubDataSource(
+      sl<EpubBookLoader>(),
+      sl<EpubContentParser>(),
+      sl<ImageProcessor>(),
+    ),
   );
 
   /// Register repositories
   sl.registerLazySingleton<BookRepository>(
     () => BookRepositoryImpl(
-      EpubDataSource(
-        sl<HtmlParser>(),
-        sl<EpubBookLoader>(),
-        sl<ImageProcessor>(),
-      ),
+      sl<EpubDataSource>(),
       sl<AppPathProvider>(),
       sl<FileSystemRepository>(),
       sl<PickFileRepository>(),

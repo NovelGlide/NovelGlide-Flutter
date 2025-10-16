@@ -21,6 +21,7 @@ import '../features/preference/setup_dependencies.dart';
 import '../features/reader/setup_dependencies.dart';
 import '../features/tts_service/setup_dependencies.dart';
 import '../main.dart';
+import 'css_parser/setup_dependencies.dart';
 import 'file_system/setup_dependencies.dart';
 import 'html_parser/setup_dependencies.dart';
 import 'http_client/setup_dependencies.dart';
@@ -60,6 +61,7 @@ void _setupExternalDependencies() {
 }
 
 void _setupCoreDependencies() {
+  setupCssParserDependencies();
   setupFileSystemDependencies();
   setupHtmlParserDependencies();
   setupImageProcessorDependencies();

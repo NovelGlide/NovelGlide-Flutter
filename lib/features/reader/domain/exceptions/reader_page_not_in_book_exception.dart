@@ -4,8 +4,8 @@ class ReaderPageNotInBookException implements Exception {
     required this.pageIdentifier,
   });
 
-  String message;
-  String? pageIdentifier;
+  final String message;
+  final String? pageIdentifier;
 
   @override
   String toString() =>
