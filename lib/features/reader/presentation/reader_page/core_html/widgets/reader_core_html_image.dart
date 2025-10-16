@@ -7,6 +7,7 @@ import 'package:path/path.dart';
 
 import '../../../../../../core/domain/entities/image_bytes_data.dart';
 import '../../../../../../core/services/cache_memory_image_provider.dart';
+import '../../../../../../generated/i18n/app_localizations.dart';
 import '../../../../../books/domain/entities/book_html_content.dart';
 import '../../../../../photo_viewer/presentation/photo_viewer.dart';
 import '../../../../../shared_components/animated_placeholders/ease_flash_placeholder.dart';
@@ -27,6 +28,7 @@ class ReaderCoreHtmlImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations appLocalizations = AppLocalizations.of(context)!;
     final ReaderCubit cubit = BlocProvider.of<ReaderCubit>(context);
 
     if (isRelative(src)) {
@@ -37,14 +39,15 @@ class ReaderCoreHtmlImage extends StatelessWidget {
       final ImageBytesData? data = bookHtmlContent.imgFiles[path];
       if (data != null) {
         return Semantics(
-          // TODO(kai): Localization.
-          onTapHint: 'Click it to open it in the photo viewer.',
-          child: InkWell(
-            onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
-              builder: (BuildContext context) => PhotoViewer(
-                imageBytes: data.bytes,
-              ),
-            )),
+          onTapHint: appLocalizations.readerClickToOpenPhotoViewer,
+          child: GestureDetector(
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute<void>(
+                builder: (BuildContext context) => PhotoViewer(
+                  imageBytes: data.bytes,
+                ),
+              ));
+            },
             child: AspectRatio(
               aspectRatio: data.width / data.height,
               child: Image(
@@ -52,6 +55,8 @@ class ReaderCoreHtmlImage extends StatelessWidget {
                   '${bookHtmlContent.bookIdentifier}_$src',
                   data.bytes,
                 ),
+                width: data.width,
+                height: data.height,
                 fit: BoxFit.contain,
                 semanticLabel: alt ?? src,
                 frameBuilder: (

@@ -28,17 +28,18 @@ class ReaderLoadingWidget extends StatelessWidget {
               // Initial state.
               ReaderLoadingStateCode.initial =>
                 appLocalizations.readerLoadingInitialize,
-              // Loading the preference. TODO(kai): Localization
+              // Loading the preference.
               ReaderLoadingStateCode.preferenceLoading =>
-                'Loading preference...',
+                appLocalizations.readerLoadingPreference,
               // Loading the book.
               ReaderLoadingStateCode.bookLoading =>
                 appLocalizations.readerLoadingBookLoading,
               // Rendering the content.
               ReaderLoadingStateCode.rendering =>
                 appLocalizations.readerLoadingRendering,
-              // Loading the page. TODO(kai): Localization
-              ReaderLoadingStateCode.pageLoading => 'Loading page...',
+              // Loading the page.
+              ReaderLoadingStateCode.pageLoading =>
+                appLocalizations.readerLoadingPage,
               ReaderLoadingStateCode.loaded => null,
             }),
           ),

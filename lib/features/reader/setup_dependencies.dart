@@ -1,5 +1,6 @@
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../../core/app_font_loader/domain/use_cases/app_font_loader_load_font.dart';
 import '../../core/file_system/domain/repositories/file_system_repository.dart';
 import '../../core/path_provider/domain/repositories/app_path_provider.dart';
 import '../../core/web_server/domain/repositories/web_server_repository.dart';
@@ -133,34 +134,38 @@ void setupReaderDependencies() {
           };
 
           return ReaderCubitDependencies(
-              controller,
-              coreRepository,
-              // Reader use cases
-              ReaderObserveSetStateUseCase(coreRepository),
-              ReaderNextPageUseCase(coreRepository),
-              ReaderPreviousPageUseCase(coreRepository),
+            // App Core use cases
+            sl<AppFontLoaderLoadCssFontUseCase>(),
+            // Controllers and reader core.
+            controller,
+            coreRepository,
+            // Reader use cases
+            ReaderObserveSetStateUseCase(coreRepository),
+            ReaderNextPageUseCase(coreRepository),
+            ReaderPreviousPageUseCase(coreRepository),
+            ReaderGotoUseCase(coreRepository),
+            ReaderSetFontColorUseCase(coreRepository),
+            ReaderSetFontSizeUseCase(coreRepository),
+            ReaderSetLineHeightUseCase(coreRepository),
+            ReaderSetSmoothScrollUseCase(coreRepository),
+            // Book use cases
+            sl<BookGetUseCase>(),
+            // Bookmark use cases
+            sl<BookmarkGetDataUseCase>(),
+            sl<BookmarkUpdateDataUseCase>(),
+            sl<BookmarkDeleteDataUseCase>(),
+            // Reader preference use cases.
+            sl<ReaderSavePreferenceUseCase>(),
+            sl<ReaderObservePreferenceChangeUseCase>(),
+            sl<ReaderResetPreferenceUseCase>(),
+            // Cubits
+            ReaderSearchCubit(
+              ReaderSearchInCurrentChapterUseCase(coreRepository),
+              ReaderSearchInWholeBookUseCase(coreRepository),
+              ReaderObserveSearchListUseCase(coreRepository),
               ReaderGotoUseCase(coreRepository),
-              ReaderSetFontColorUseCase(coreRepository),
-              ReaderSetFontSizeUseCase(coreRepository),
-              ReaderSetLineHeightUseCase(coreRepository),
-              ReaderSetSmoothScrollUseCase(coreRepository),
-              // Book use cases
-              sl<BookGetUseCase>(),
-              // Bookmark use cases
-              sl<BookmarkGetDataUseCase>(),
-              sl<BookmarkUpdateDataUseCase>(),
-              sl<BookmarkDeleteDataUseCase>(),
-              // Reader preference use cases.
-              sl<ReaderSavePreferenceUseCase>(),
-              sl<ReaderObservePreferenceChangeUseCase>(),
-              sl<ReaderResetPreferenceUseCase>(),
-              // Cubits
-              ReaderSearchCubit(
-                ReaderSearchInCurrentChapterUseCase(coreRepository),
-                ReaderSearchInWholeBookUseCase(coreRepository),
-                ReaderObserveSearchListUseCase(coreRepository),
-                ReaderGotoUseCase(coreRepository),
-              ));
+            ),
+          );
         },
         // Setup the TTS cubit.
         ReaderTtsCubit(

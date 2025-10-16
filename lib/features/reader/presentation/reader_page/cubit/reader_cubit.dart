@@ -6,6 +6,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:path/path.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../../../../../core/app_font_loader/domain/use_cases/app_font_loader_load_font.dart';
+import '../../../../../core/domain/entities/font_file.dart';
 import '../../../../bookmark/domain/entities/bookmark_data.dart';
 import '../../../../bookmark/domain/use_cases/bookmark_delete_data_use_case.dart';
 import '../../../../bookmark/domain/use_cases/bookmark_get_data_use_case.dart';
@@ -40,6 +42,9 @@ part 'reader_state.dart';
 
 class ReaderCubitDependencies {
   ReaderCubitDependencies(
+    // App Core use cases
+    this._loadFontUseCase,
+    // Controllers and reader core.
     this._webViewController,
     this._coreRepository,
     this._observeSetStateUseCase,
@@ -64,6 +69,10 @@ class ReaderCubitDependencies {
     this._readerSearchCubit,
   );
 
+  /// App Core use cases
+  final AppFontLoaderLoadCssFontUseCase _loadFontUseCase;
+
+  /// Controllers and reader core.
   final WebViewController? _webViewController;
   final ReaderCoreRepository _coreRepository;
 
@@ -369,6 +378,10 @@ class ReaderCubit extends Cubit<ReaderState> {
     if (state.readerPreference.isAutoSaving) {
       saveBookmark();
     }
+
+    if (state.coreType == ReaderCoreType.htmlWidget && data.content != null) {
+      loadFonts(data.content!.fonts);
+    }
   }
 
   /// *************************************************************************
@@ -377,6 +390,10 @@ class ReaderCubit extends Cubit<ReaderState> {
 
   String getInBookPath(String pageIdentifier, String path) {
     return normalize(join(dirname(pageIdentifier), path));
+  }
+
+  Future<void> loadFonts(Set<FontFile> fileSet) async {
+    await _dependencies._loadFontUseCase(fileSet);
   }
 
   @override

@@ -22,11 +22,9 @@ import 'epub_book_loader.dart';
 import 'epub_content_parser.dart';
 
 class EpubDataSource {
-  EpubDataSource(
-    this._bookLoader,
-    this._contentParser,
-    this._imageProcessor,
-  );
+  EpubDataSource(this._bookLoader,
+      this._contentParser,
+      this._imageProcessor,);
 
   final EpubBookLoader _bookLoader;
   final EpubContentParser _contentParser;
@@ -48,10 +46,8 @@ class EpubDataSource {
 
   List<MimeType> get allowedMimeTypes => <MimeType>[MimeType.epub];
 
-  Future<Book> _parseEpubBook(
-    String absolutePath,
-    epub.EpubBook epubBook,
-  ) async {
+  Future<Book> _parseEpubBook(String absolutePath,
+      epub.EpubBook epubBook,) async {
     final String bookIdentifier = basename(absolutePath);
     return Book(
       identifier: bookIdentifier,
@@ -71,7 +67,7 @@ class EpubDataSource {
     final Set<String> loadingSet = absolutePathSet;
 
     await for (EpubBookLoaderResult result
-        in _bookLoader.loadByPathSet(absolutePathSet)) {
+    in _bookLoader.loadByPathSet(absolutePathSet)) {
       if (loadingSet.contains(result.absolutePath)) {
         loadingSet.remove(result.absolutePath);
         yield await _parseEpubBook(result.absolutePath, result.epubBook);
@@ -107,15 +103,11 @@ class EpubDataSource {
         .toList();
   }
 
-  Future<BookHtmlContent> getContent(
-    String absolutePath, {
+  Future<BookHtmlContent> getContent(String absolutePath, {
     String? contentHref,
   }) async {
     // Load the book file.
     final epub.EpubBook epubBook = await _loadEpubBook(absolutePath);
-    final epub.EpubContent? content = epubBook.Content;
-    final Map<String, epub.EpubByteContentFile> fontFiles =
-        content?.Fonts ?? <String, epub.EpubByteContentFile>{};
 
     // Get the page list
     final List<BookPage> pageList = _contentParser.parsePageList(epubBook);
@@ -129,7 +121,7 @@ class EpubDataSource {
 
     // Parse the html document.
     final HtmlDocument htmlDocument =
-        _contentParser.parseHtmlDocument(epubBook, href);
+    _contentParser.parseHtmlDocument(epubBook, href);
 
     // Load the style contents
     final Map<String, CssDocument> styleList = _contentParser.loadStylesheets(
@@ -144,7 +136,7 @@ class EpubDataSource {
 
     // Load the image contents
     final Map<String, ImageBytesData> imgFiles =
-        await _contentParser.loadImages(
+    await _contentParser.loadImages(
       epubBook,
       htmlDocument.imgSrcList,
     );
@@ -198,13 +190,15 @@ class EpubDataSource {
     if (epubBook.Schema?.Package?.Manifest != null) {
       final epub.EpubManifest manifest = epubBook.Schema!.Package!.Manifest!;
       final epub.EpubManifestItem? coverItem = manifest.Items!.firstWhereOrNull(
-          (epub.EpubManifestItem item) =>
-              item.Href != null &&
+              (epub.EpubManifestItem item) =>
+          item.Href != null &&
               (item.Id?.toLowerCase() == 'cover' ||
                   item.Id?.toLowerCase() == 'cover-image' ||
                   item.Properties?.toLowerCase() == 'cover' ||
                   item.Properties?.toLowerCase() == 'cover-image') &&
-              MimeType.tryParse(item.MediaType?.toLowerCase())?.isImage ==
+              MimeType
+                  .tryParse(item.MediaType?.toLowerCase())
+                  ?.isImage ==
                   true);
       if (coverItem != null) {
         return _readImage(epubBook, coverItem.Href!);
