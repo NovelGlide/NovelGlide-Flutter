@@ -5,6 +5,8 @@ import 'package:path/path.dart';
 import 'domain/entities/html_document.dart';
 
 class HtmlParser {
+  HtmlParser();
+
   HtmlDocument parseDocument(String rawData, {String? sourceUrl}) {
     final Document domTree = html.parse(rawData, sourceUrl: sourceUrl);
 
@@ -31,14 +33,10 @@ class HtmlParser {
         .map((Element e) => normalize(join(dirName, e.attributes['src'])))
         .toList();
 
-    // Get the text content in the body.
-    final String? textContent = domTree.body?.text;
-
     return HtmlDocument(
       stylePathList: stylePathList ?? <String>[],
       inlineStyles: inlineStyles ?? <String>[],
       imgSrcList: imgSrcList ?? <String>[],
-      textContent: textContent ?? '',
       domTree: domTree,
     );
   }

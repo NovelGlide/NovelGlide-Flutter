@@ -6,14 +6,12 @@ class HtmlDocument extends Equatable {
     required this.stylePathList,
     required this.inlineStyles,
     required this.imgSrcList,
-    required this.textContent,
     required this.domTree,
   });
 
   final List<String> stylePathList;
   final List<String> inlineStyles;
   final List<String> imgSrcList;
-  final String textContent;
   final Document domTree;
 
   @override
@@ -21,7 +19,20 @@ class HtmlDocument extends Equatable {
         stylePathList,
         inlineStyles,
         imgSrcList,
-        textContent,
         domTree,
       ];
+
+  HtmlDocument copyWith({
+    List<String>? stylePathList,
+    List<String>? inlineStyles,
+    List<String>? imgSrcList,
+    Document? domTree,
+  }) {
+    return HtmlDocument(
+      stylePathList: stylePathList ?? this.stylePathList,
+      inlineStyles: inlineStyles ?? this.inlineStyles,
+      imgSrcList: imgSrcList ?? this.imgSrcList,
+      domTree: domTree ?? this.domTree,
+    );
+  }
 }

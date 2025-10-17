@@ -9,7 +9,6 @@ import '../../../books/domain/entities/book_page.dart';
 import '../../../books/domain/repositories/book_repository.dart';
 import '../../domain/entities/reader_search_result_data.dart';
 import '../../domain/entities/reader_set_state_data.dart';
-import '../../domain/exceptions/reader_page_not_in_book_exception.dart';
 import '../../domain/repositories/reader_core_repository.dart';
 
 class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
@@ -20,7 +19,7 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
   final BookRepository _bookRepository;
 
   late final String _bookIdentifier;
-  late final List<BookPage> _pageList;
+  late List<BookPage> _pageList;
   int _currentPageNumber = 0;
   late BookHtmlContent _htmlContent;
 
@@ -37,7 +36,11 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
       _searchResultStreamController =
       StreamController<List<ReaderSearchResultData>>.broadcast();
 
-  String _normalizePageIdentifier(String pageIdentifier) {
+  String? _normalizePageIdentifier(String? pageIdentifier) {
+    if (pageIdentifier == null) {
+      return null;
+    }
+
     // Remove fragment identifier.
     final int hashSymbolIndex = pageIdentifier.indexOf('#');
     return hashSymbolIndex != -1
@@ -57,18 +60,10 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
     // Enable book cache.
     _bookRepository.enableBookCache();
 
-    // Load the content.
-    final BookHtmlContent content = await _bookRepository.getContent(
-      _bookIdentifier,
-      pageIdentifier: pageIdentifier == null
-          ? null
-          : _normalizePageIdentifier(pageIdentifier),
+    await goto(
+      pageIdentifier: pageIdentifier,
+      cfi: cfi,
     );
-
-    // Store the page list for page navigation.
-    _pageList = content.pageList;
-
-    await _sendState(content);
   }
 
   String? _constructBreadcrumb(
@@ -116,52 +111,30 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
     String? pageIdentifier,
     String? cfi,
   }) async {
-    // Normalize page identifier
-    final String normalizedIdentifier =
-        _normalizePageIdentifier(pageIdentifier ?? '');
+    // Load the content.
+    final BookHtmlContent content = await _bookRepository.getContent(
+      _bookIdentifier,
+      pageIdentifier: _normalizePageIdentifier(pageIdentifier),
+    );
 
-    final bool isInBook = _pageList
-        .any((BookPage page) => page.identifier == normalizedIdentifier);
+    // Store the page list for page navigation.
+    _pageList = content.pageList;
 
-    if (isInBook) {
-      // Load the content.
-      return await _bookRepository.getContent(
-        _bookIdentifier,
-        pageIdentifier: normalizedIdentifier,
-      );
-    } else {
-      throw ReaderPageNotInBookException(
-        pageIdentifier: normalizedIdentifier,
-      );
-    }
+    return content;
   }
 
   @override
   Future<void> nextPage() async {
     // Get the identifier of next page.
-    final String chapterIdentifier = _pageList[++_currentPageNumber].identifier;
-
-    // Load the content.
-    final BookHtmlContent content = await _bookRepository.getContent(
-      _bookIdentifier,
-      pageIdentifier: chapterIdentifier,
-    );
-
-    await _sendState(content);
+    final String pageIdentifier = _pageList[++_currentPageNumber].identifier;
+    await goto(pageIdentifier: pageIdentifier);
   }
 
   @override
   Future<void> previousPage() async {
     // Get the identifier of next page.
-    final String chapterIdentifier = _pageList[--_currentPageNumber].identifier;
-
-    // Load the content.
-    final BookHtmlContent content = await _bookRepository.getContent(
-      _bookIdentifier,
-      pageIdentifier: chapterIdentifier,
-    );
-
-    await _sendState(content);
+    final String pageIdentifier = _pageList[--_currentPageNumber].identifier;
+    await goto(pageIdentifier: pageIdentifier);
   }
 
   Future<void> _sendState(BookHtmlContent content) async {

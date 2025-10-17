@@ -10,7 +10,6 @@ class BookHtmlContent extends Equatable {
     required this.bookIdentifier,
     required this.pageIdentifier,
     required this.domTree,
-    required this.textContent,
     required this.stylesheet,
     required this.fonts,
     required this.pageList,
@@ -20,21 +19,41 @@ class BookHtmlContent extends Equatable {
   final String bookIdentifier;
   final String pageIdentifier;
   final Document domTree;
-  final String textContent;
   final String stylesheet;
   final Set<FontFile> fonts;
   final List<BookPage> pageList;
   final Map<String, ImageBytesData> imgFiles;
+
+  String get textContent => domTree.body?.text ?? '';
 
   @override
   List<Object?> get props => <Object>[
         bookIdentifier,
         pageIdentifier,
         domTree,
-        textContent,
         stylesheet,
         fonts,
         pageList,
         imgFiles,
       ];
+
+  BookHtmlContent copyWith({
+    String? bookIdentifier,
+    String? pageIdentifier,
+    Document? domTree,
+    String? stylesheet,
+    Set<FontFile>? fonts,
+    List<BookPage>? pageList,
+    Map<String, ImageBytesData>? imgFiles,
+  }) {
+    return BookHtmlContent(
+      bookIdentifier: bookIdentifier ?? this.bookIdentifier,
+      pageIdentifier: pageIdentifier ?? this.pageIdentifier,
+      domTree: domTree ?? this.domTree,
+      stylesheet: stylesheet ?? this.stylesheet,
+      fonts: fonts ?? this.fonts,
+      pageList: pageList ?? this.pageList,
+      imgFiles: imgFiles ?? this.imgFiles,
+    );
+  }
 }

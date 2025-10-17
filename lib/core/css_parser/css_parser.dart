@@ -41,24 +41,20 @@ class CssParser {
     final int leftBracket = rule.indexOf('{');
     final int rightBracket = rule.indexOf('}');
     final String declarations = rule.substring(leftBracket + 1, rightBracket);
-    final List<String> validDeclarations = declarations
-        .split(';')
-        .where((String str) => str.contains(':'))
-        .toList();
+    final List<CssDeclaration> declarationList =
+        parseDeclarationGroup(declarations);
 
     String? fontFamily;
     FontStyle? fontStyle;
     FontWeight? fontWeight;
     String? url;
-    for (String declaration in validDeclarations) {
-      final CssDeclaration cssDeclaration = parseDeclaration(declaration);
-
-      switch (cssDeclaration.property) {
+    for (CssDeclaration declaration in declarationList) {
+      switch (declaration.property) {
         case 'font-family':
-          fontFamily = cssDeclaration.value;
+          fontFamily = declaration.value;
           break;
         case 'font-style':
-          fontStyle = switch (cssDeclaration.value) {
+          fontStyle = switch (declaration.value) {
             'normal' => FontStyle.normal,
             'initial' => FontStyle.normal,
             'italic' => FontStyle.italic,
@@ -67,7 +63,7 @@ class CssParser {
           };
           break;
         case 'font-weight':
-          fontWeight = switch (cssDeclaration.value) {
+          fontWeight = switch (declaration.value) {
             'normal' => FontWeight.normal,
             'bold' => FontWeight.bold,
             '100' => FontWeight.w100,
@@ -84,7 +80,7 @@ class CssParser {
           break;
         case 'src':
           final RegExp srcRegExp = RegExp('url\\(["\']?(.*?)["\']?\\)');
-          final RegExpMatch? match = srcRegExp.firstMatch(cssDeclaration.value);
+          final RegExpMatch? match = srcRegExp.firstMatch(declaration.value);
           if (match != null) {
             url = match.group(1)!;
           }
@@ -101,6 +97,14 @@ class CssParser {
       fontWeight: fontWeight ?? FontWeight.normal,
       url: url,
     );
+  }
+
+  List<CssDeclaration> parseDeclarationGroup(String group) {
+    return group
+        .split(';')
+        .where((String str) => str.contains(':'))
+        .map(parseDeclaration)
+        .toList();
   }
 
   CssDeclaration parseDeclaration(String declaration) {
