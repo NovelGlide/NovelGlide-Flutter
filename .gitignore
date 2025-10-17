@@ -56,3 +56,4 @@ assets/samples/**
 /lib/generated/
 /android/app/.cxx/**
 /android/fastlane/certificates/**
+._**
