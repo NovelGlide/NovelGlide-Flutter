@@ -41,7 +41,6 @@ class EpubBookLoader {
 
     // Start boot up.
     _isBooting = true;
-    final Completer<void> completer = Completer<void>();
 
     _receivePort = ReceivePort();
     await Isolate.spawn<SendPort>(
@@ -53,9 +52,6 @@ class EpubBookLoader {
       if (message is SendPort) {
         // Save the send port.
         _sendPort = message;
-
-        // Complete the initialization.
-        completer.complete(null);
 
         _isRunning = true;
         _isBooting = false;
