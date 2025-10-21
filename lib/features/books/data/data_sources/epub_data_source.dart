@@ -5,7 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:epubx/epubx.dart' as epub;
 import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
-import 'package:novel_glide/core/domain/entities/font_file.dart';
+import 'package:novel_glide/core/css_parser/domain/entities/css_font_file.dart';
 import 'package:path/path.dart';
 
 import '../../../../core/css_parser/domain/entities/css_document.dart';
@@ -136,7 +136,8 @@ class EpubDataSource {
     );
 
     // Load the fonts
-    final Set<FontFile> fonts = _contentParser.loadFonts(epubBook, styleList);
+    final Set<CssFontFile> fonts =
+        _contentParser.loadFonts(epubBook, styleList);
 
     // Load the image contents
     final Map<String, ImageFile> imgFiles = await _contentParser.loadImages(

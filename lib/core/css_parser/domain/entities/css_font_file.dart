@@ -1,10 +1,10 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 
-import '../../css_parser/domain/entities/rule_sets/css_font_face.dart';
+import 'rule_sets/css_font_face.dart';
 
-class FontFile extends Equatable {
-  const FontFile({
+class CssFontFile extends Equatable {
+  const CssFontFile({
     required this.fontFace,
     required this.bytes,
   });

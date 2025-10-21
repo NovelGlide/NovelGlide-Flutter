@@ -8,8 +8,8 @@ import 'package:path/path.dart';
 
 import '../../../../core/css_parser/css_parser.dart';
 import '../../../../core/css_parser/domain/entities/css_document.dart';
+import '../../../../core/css_parser/domain/entities/css_font_file.dart';
 import '../../../../core/css_parser/domain/entities/rule_sets/css_font_face.dart';
-import '../../../../core/domain/entities/font_file.dart';
 import '../../../../core/domain/entities/image_file.dart';
 import '../../../../core/html_parser/domain/entities/html_document.dart';
 import '../../../../core/html_parser/html_parser.dart';
@@ -123,7 +123,7 @@ class EpubContentParser {
     return imgFiles;
   }
 
-  Set<FontFile> loadFonts(
+  Set<CssFontFile> loadFonts(
     epub.EpubBook epubBook,
     Map<String, CssDocument> styleMap,
   ) {
@@ -143,7 +143,7 @@ class EpubContentParser {
       }
     }
 
-    final Set<FontFile> fontFiles = <FontFile>{};
+    final Set<CssFontFile> fontFiles = <CssFontFile>{};
 
     content?.AllFiles?.forEach((String key, epub.EpubContentFile value) {
       final MimeType? mimeType = MimeType.tryParse(value.ContentMimeType);
@@ -153,7 +153,7 @@ class EpubContentParser {
 
         if (fontFace != null && value.Content?.isNotEmpty == true) {
           // This font-face will be used.
-          fontFiles.add(FontFile(
+          fontFiles.add(CssFontFile(
             fontFace: fontFace,
             bytes: Uint8List.fromList(value.Content!),
           ));

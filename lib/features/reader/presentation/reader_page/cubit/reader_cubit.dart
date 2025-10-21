@@ -7,7 +7,7 @@ import 'package:path/path.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../../../../core/app_font_loader/domain/use_cases/app_font_loader_load_font.dart';
-import '../../../../../core/domain/entities/font_file.dart';
+import '../../../../../core/css_parser/domain/entities/css_font_file.dart';
 import '../../../../bookmark/domain/entities/bookmark_data.dart';
 import '../../../../bookmark/domain/use_cases/bookmark_delete_data_use_case.dart';
 import '../../../../bookmark/domain/use_cases/bookmark_get_data_use_case.dart';
@@ -392,7 +392,7 @@ class ReaderCubit extends Cubit<ReaderState> {
     return normalize(join(dirname(pageIdentifier), path));
   }
 
-  Future<void> loadFonts(Set<FontFile> fileSet) async {
+  Future<void> loadFonts(Set<CssFontFile> fileSet) async {
     await _dependencies._loadFontUseCase(fileSet);
   }
 
