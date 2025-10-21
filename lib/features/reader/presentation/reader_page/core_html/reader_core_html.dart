@@ -23,20 +23,6 @@ class ReaderCoreHtml extends StatelessWidget {
     }
 
     final ReaderCubit cubit = BlocProvider.of<ReaderCubit>(context);
-    final Map<String, Style> style = <String, Style>{
-      // Reader styles
-      'html': Style(
-        fontSize: FontSize(state.readerPreference.fontSize),
-        lineHeight: LineHeight(state.readerPreference.lineHeight),
-      ),
-      ..._browserDefaultStyle,
-      'a': Style(
-        color: Theme.of(context).colorScheme.brightness == Brightness.light
-            ? const Color(0xFF044C9F)
-            : const Color(0xFF99C3FF),
-      ),
-      ...Style.fromCss(htmlContent.stylesheet, null),
-    };
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -50,7 +36,20 @@ class ReaderCoreHtml extends StatelessWidget {
         extensions: <HtmlExtension>[
           ReaderCoreHtmlImage.tagExtension(htmlContent),
         ],
-        style: style,
+        style: <String, Style>{
+          // Reader styles
+          'html': Style(
+            fontSize: FontSize(state.readerPreference.fontSize),
+            lineHeight: LineHeight(state.readerPreference.lineHeight),
+          ),
+          ..._browserDefaultStyle,
+          'a': Style(
+            color: Theme.of(context).colorScheme.brightness == Brightness.light
+                ? const Color(0xFF044C9F)
+                : const Color(0xFF99C3FF),
+          ),
+          ...Style.fromCss(htmlContent.stylesheet, null),
+        },
       ),
     );
   }
