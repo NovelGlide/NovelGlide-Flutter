@@ -9,7 +9,7 @@ import 'package:novel_glide/core/domain/entities/font_file.dart';
 import 'package:path/path.dart';
 
 import '../../../../core/css_parser/domain/entities/css_document.dart';
-import '../../../../core/domain/entities/image_bytes_data.dart';
+import '../../../../core/domain/entities/image_file.dart';
 import '../../../../core/html_parser/domain/entities/html_document.dart';
 import '../../../../core/image_processor/image_processor.dart';
 import '../../../../core/mime_resolver/domain/entities/mime_type.dart';
@@ -133,15 +133,13 @@ class EpubDataSource {
       epubBook,
       href,
       htmlDocument.stylePathList,
-      htmlDocument.inlineStyles.join(''),
     );
 
     // Load the fonts
     final Set<FontFile> fonts = _contentParser.loadFonts(epubBook, styleList);
 
     // Load the image contents
-    final Map<String, ImageBytesData> imgFiles =
-        await _contentParser.loadImages(
+    final Map<String, ImageFile> imgFiles = await _contentParser.loadImages(
       epubBook,
       htmlDocument.imgSrcList,
     );
@@ -150,7 +148,8 @@ class EpubDataSource {
       bookIdentifier: basename(absolutePath),
       pageIdentifier: href,
       domTree: htmlDocument.domTree,
-      stylesheet: styleList.values.map((CssDocument d) => d.content).join(''),
+      stylesheet: styleList.values.map((CssDocument d) => d.content).join('') +
+          htmlDocument.inlineStyles.join(''),
       fonts: fonts,
       pageList: pageList,
       imgFiles: imgFiles,

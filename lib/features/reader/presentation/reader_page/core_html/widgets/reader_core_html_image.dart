@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:path/path.dart';
 
-import '../../../../../../core/domain/entities/image_bytes_data.dart';
+import '../../../../../../core/domain/entities/image_file.dart';
 import '../../../../../../core/services/cache_memory_image_provider.dart';
 import '../../../../../../generated/i18n/app_localizations.dart';
 import '../../../../../books/domain/entities/book_html_content.dart';
@@ -36,8 +36,8 @@ class ReaderCoreHtmlImage extends StatelessWidget {
       // Construct the "in-book" absolute path.
       final String path =
           cubit.getInBookPath(bookHtmlContent.pageIdentifier, src);
-      final ImageBytesData? data = bookHtmlContent.imgFiles[path];
-      if (data != null) {
+      final ImageFile? data = bookHtmlContent.imgFiles[path];
+      if (data != null && data.bytes != null) {
         return Semantics(
           onTapHint: appLocalizations.readerClickToOpenPhotoViewer,
           child: GestureDetector(
@@ -53,7 +53,7 @@ class ReaderCoreHtmlImage extends StatelessWidget {
               child: Image(
                 image: CacheMemoryImageProvider(
                   '${bookHtmlContent.bookIdentifier}_$src',
-                  data.bytes,
+                  data.bytes!,
                 ),
                 width: data.width,
                 height: data.height,

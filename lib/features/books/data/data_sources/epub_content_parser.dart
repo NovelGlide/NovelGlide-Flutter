@@ -10,7 +10,7 @@ import '../../../../core/css_parser/css_parser.dart';
 import '../../../../core/css_parser/domain/entities/css_document.dart';
 import '../../../../core/css_parser/domain/entities/rule_sets/css_font_face.dart';
 import '../../../../core/domain/entities/font_file.dart';
-import '../../../../core/domain/entities/image_bytes_data.dart';
+import '../../../../core/domain/entities/image_file.dart';
 import '../../../../core/html_parser/domain/entities/html_document.dart';
 import '../../../../core/html_parser/html_parser.dart';
 import '../../../../core/mime_resolver/domain/entities/mime_type.dart';
@@ -79,17 +79,11 @@ class EpubContentParser {
     epub.EpubBook epubBook,
     String href,
     List<String> stylePathList,
-    String inlineStyle,
   ) {
     final epub.EpubContent? content = epubBook.Content;
     final Map<String, epub.EpubTextContentFile> cssFiles =
         content?.Css ?? <String, epub.EpubTextContentFile>{};
     final Map<String, CssDocument> styleMap = <String, CssDocument>{};
-
-    // Parse the inline style
-    if (inlineStyle.isNotEmpty) {
-      styleMap[href] = _cssParser.parseDocument(inlineStyle);
-    }
 
     for (String stylePath in stylePathList) {
       final String styleContent = cssFiles[stylePath]?.Content ?? '';
@@ -102,21 +96,21 @@ class EpubContentParser {
     return styleMap;
   }
 
-  Future<Map<String, ImageBytesData>> loadImages(
+  Future<Map<String, ImageFile>> loadImages(
     epub.EpubBook epubBook,
     List<String> pathList,
   ) async {
     final epub.EpubContent? content = epubBook.Content;
-    final Map<String, ImageBytesData> imgFiles = <String, ImageBytesData>{};
+    final Map<String, ImageFile> imgFiles = <String, ImageFile>{};
 
     await Future.wait(pathList.map((String path) async {
       final Uint8List bytes =
           Uint8List.fromList(content?.Images?[path]?.Content ?? <int>[]);
       if (bytes.isNotEmpty) {
-        final Completer<ImageBytesData> completer = Completer<ImageBytesData>();
+        final Completer<ImageFile> completer = Completer<ImageFile>();
         ui.decodeImageFromList(bytes, (ui.Image image) {
           // Preload the dimension of the image.
-          completer.complete(ImageBytesData(
+          completer.complete(ImageFile(
             bytes: bytes,
             width: image.width.toDouble(),
             height: image.height.toDouble(),
