@@ -30,19 +30,23 @@ class BackupBookRestoreUseCase
   }
 
   Future<void> _runner() async {
-    // Emit creation/start step
+    // Emit download step
     _controller
-        .add(const BackupProgressData(step: BackupProgressStepCode.create));
+        .add(const BackupProgressData(step: BackupProgressStepCode.download));
+
+    // Check if the file exists
+    if (!await _bookBackupRepository.isBackupExists()) {
+      // File is not exists.
+      _controller
+          .add(const BackupProgressData(step: BackupProgressStepCode.disabled));
+      return;
+    }
 
     // Get and create a temporary directory for download and extraction
     final String tempDirectoryPath = await _tempRepository.getDirectoryPath();
     await _fileSystemRepository.createDirectory(tempDirectoryPath);
 
     try {
-      // Emit download step
-      _controller
-          .add(const BackupProgressData(step: BackupProgressStepCode.download));
-
       // Download the backup file from the cloud
       final String? zipFilePath = await _bookBackupRepository.downloadFromCloud(
         tempDirectoryPath,
