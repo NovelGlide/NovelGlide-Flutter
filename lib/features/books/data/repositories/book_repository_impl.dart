@@ -123,7 +123,7 @@ class BookRepositoryImpl implements BookRepository {
   @override
   Stream<Book> getBooks([Set<String>? identifierSet]) async* {
     final String libraryPath = await _pathProvider.libraryPath;
-    final Set<String> loadSet = identifierSet ?? <String>{};
+    final Set<String> loadSet = <String>{};
 
     if (identifierSet == null) {
       // List all books
@@ -132,6 +132,11 @@ class BookRepositoryImpl implements BookRepository {
         if (entity is File && await isFileValid(entity.path)) {
           loadSet.add(entity.path);
         }
+      }
+    } else {
+      // Convert identifier to absolute path.
+      for (String identifier in identifierSet) {
+        loadSet.add(await _getAbsolutePathFromIdentifier(identifier));
       }
     }
 

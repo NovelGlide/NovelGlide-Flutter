@@ -13,6 +13,7 @@ import '../../../books/presentation/book_widget/book_widget.dart';
 import '../../../books/presentation/table_of_contents_page/table_of_contents.dart';
 import '../../../shared_components/common_error_widgets/common_error_widget.dart';
 import '../../../shared_components/common_loading_widgets/common_loading_widget.dart';
+import '../../../shared_components/shared_list/presentation/widgets/shared_list_item_placeholder.dart';
 import '../../domain/entities/collection_data.dart';
 import 'cubit/collection_viewer_cubit.dart';
 

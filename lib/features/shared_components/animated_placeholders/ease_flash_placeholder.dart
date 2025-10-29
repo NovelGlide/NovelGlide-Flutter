@@ -21,7 +21,7 @@ class EaseFlashPlaceholder extends StatefulWidget {
 }
 
 class _EaseFlashPlaceholderState extends State<EaseFlashPlaceholder> {
-  static const Duration _defaultDuration = Duration(seconds: 1);
+  static const Duration _defaultDuration = Duration(milliseconds: 600);
   bool _isVisible = true;
   Timer? _timer;
 

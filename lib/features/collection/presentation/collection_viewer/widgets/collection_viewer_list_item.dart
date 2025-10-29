@@ -12,6 +12,8 @@ class CollectionViewerListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final CollectionViewerCubit cubit =
+        BlocProvider.of<CollectionViewerCubit>(context);
     return BlocBuilder<CollectionViewerCubit, CollectionViewerState>(
       buildWhen:
           (CollectionViewerState previous, CollectionViewerState current) =>
@@ -26,6 +28,9 @@ class CollectionViewerListItem extends StatelessWidget {
           builder: (_, BookCover coverData) {
             return _buildGestureListener(context, state, coverData);
           },
+          placeholder: SharedListItemPlaceholder(
+            listType: cubit.state.listType,
+          ),
         );
       },
     );
