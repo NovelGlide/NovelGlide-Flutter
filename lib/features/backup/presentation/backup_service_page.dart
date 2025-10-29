@@ -19,12 +19,13 @@ class BackupServicePage extends StatelessWidget {
         child: Scrollbar(
           child: CustomScrollView(
             slivers: <Widget>[
-              SliverGrid.extent(
-                maxCrossAxisExtent: WindowSize.compact.maxWidth,
-                childAspectRatio: 0.9,
-                children: const <Widget>[
-                  BackupServiceGoogleDrive(),
-                ],
+              SliverToBoxAdapter(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: WindowSize.compact.maxWidth,
+                  ),
+                  child: const BackupServiceGoogleDrive(),
+                ),
               ),
             ],
           ),
