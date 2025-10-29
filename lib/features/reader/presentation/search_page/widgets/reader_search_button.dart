@@ -14,6 +14,8 @@ class ReaderSearchButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppLocalizations appLocalizations = AppLocalizations.of(context)!;
+    final ReaderCubit cubit = BlocProvider.of<ReaderCubit>(context);
+
     return BlocBuilder<ReaderCubit, ReaderState>(
       buildWhen: (ReaderState previous, ReaderState current) =>
           previous.code != current.code,
@@ -27,7 +29,9 @@ class ReaderSearchButton extends StatelessWidget {
             return IconButton(
               icon: const Icon(Icons.search),
               tooltip: appLocalizations.readerSearch,
-              onPressed: isEnabled ? () => _onPressed(context) : null,
+              onPressed: isEnabled
+                  ? () => _onPressed(context, cubit.searchCubit)
+                  : null,
             );
           },
         );
@@ -35,8 +39,7 @@ class ReaderSearchButton extends StatelessWidget {
     );
   }
 
-  void _onPressed(BuildContext context) {
-    final ReaderSearchCubit cubit = BlocProvider.of<ReaderSearchCubit>(context);
+  void _onPressed(BuildContext context, ReaderSearchCubit cubit) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => BlocProvider<ReaderSearchCubit>.value(
