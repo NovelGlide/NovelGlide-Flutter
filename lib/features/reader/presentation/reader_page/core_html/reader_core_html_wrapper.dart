@@ -18,6 +18,7 @@ class _ReaderCoreHtmlWrapperState extends State<ReaderCoreHtmlWrapper> {
   Widget build(BuildContext context) {
     return SizedBox.expand(
       child: Scrollbar(
+        controller: _scrollController,
         child: SingleChildScrollView(
           controller: _scrollController,
           child: BlocConsumer<ReaderCubit, ReaderState>(
