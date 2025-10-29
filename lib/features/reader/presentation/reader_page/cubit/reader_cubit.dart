@@ -321,8 +321,9 @@ class ReaderCubit extends Cubit<ReaderState> {
   /// *************************************************************************
 
   Future<void> previousPage() async {
-    if (state.atStart) {
+    if (state.atStart || !ttsCubit.state.ttsState.isIdle) {
       // There's not a previous page.
+      // TTS is not idle.
       return;
     }
 
@@ -332,8 +333,9 @@ class ReaderCubit extends Cubit<ReaderState> {
   }
 
   Future<void> nextPage() async {
-    if (state.atEnd) {
+    if (state.atEnd || !ttsCubit.state.ttsState.isIdle) {
       // There's not a next page.
+      // TTS is not idle.
       return;
     }
 
