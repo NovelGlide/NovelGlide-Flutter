@@ -25,8 +25,10 @@ class SharedManualContent extends StatelessWidget {
 
           case LoadingStateCode.loaded:
             if (state.markdown != null) {
-              return MarkdownWidget(
-                data: state.markdown!,
+              return Scrollbar(
+                child: MarkdownWidget(
+                  data: state.markdown!,
+                ),
               );
             }
             break;
