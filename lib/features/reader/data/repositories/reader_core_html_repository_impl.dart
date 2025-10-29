@@ -205,20 +205,28 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
     String query,
   ) async {
     final List<ReaderSearchResultData> resultList = <ReaderSearchResultData>[];
+    final String optimalContent =
+        content.textContent.replaceAll(RegExp(r'\s+'), ' ');
     int startIndex = 0;
-    int targetIndex = content.textContent.indexOf(query, startIndex);
+    int targetIndex = optimalContent.indexOf(query, startIndex);
 
     while (targetIndex != -1) {
       final int start = max(0, targetIndex - 100);
-      final int end = min(targetIndex + 100, content.textContent.length - 1);
+      final int end = min(targetIndex + 100, optimalContent.length - 1);
+
+      final bool hasPrevious = start > 0;
+      final bool hasNext = end < optimalContent.length - 1;
+
       resultList.add(ReaderSearchResultData(
         destination: content.pageIdentifier,
-        excerpt: content.textContent.substring(start, end),
-        targetIndex: targetIndex - start,
+        excerpt: (hasPrevious ? '...' : '') +
+            optimalContent.substring(start, end) +
+            (hasNext ? '...' : ''),
+        targetIndex: targetIndex - start + (hasPrevious ? 3 : 0),
       ));
 
       startIndex = targetIndex + query.length;
-      targetIndex = content.textContent.indexOf(query, startIndex);
+      targetIndex = optimalContent.indexOf(query, startIndex);
     }
 
     return resultList;
