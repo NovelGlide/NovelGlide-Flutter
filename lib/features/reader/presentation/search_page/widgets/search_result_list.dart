@@ -146,10 +146,6 @@ class _SearchResultList extends StatelessWidget {
 
     // keyword part
     final int endIndex = targetIndex + queryLength;
-    // print(targetIndex);
-    // print(queryLength);
-    // print(endIndex);
-    // print(excerpt.substring(targetIndex, endIndex));
     children.add(TextSpan(
       text: excerpt
           .substring(targetIndex, endIndex)
