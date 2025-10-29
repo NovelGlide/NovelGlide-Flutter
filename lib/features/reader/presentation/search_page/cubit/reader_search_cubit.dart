@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../enum/loading_state_code.dart';
 import '../../../domain/entities/reader_search_result_data.dart';
-import '../../../domain/repositories/reader_core_repository.dart';
 import '../../../domain/use_cases/reader_goto_use_case.dart';
 import '../../../domain/use_cases/search_use_cases/reader_observe_search_list_use_case.dart';
 import '../../../domain/use_cases/search_use_cases/reader_search_in_current_chapter_use_case.dart';
@@ -15,27 +14,38 @@ part 'reader_search_range_code.dart';
 part 'reader_search_state.dart';
 
 class ReaderSearchCubit extends Cubit<ReaderSearchState> {
-  ReaderSearchCubit(
+  factory ReaderSearchCubit(
+    ReaderSearchInCurrentChapterUseCase searchInCurrentChapterUseCase,
+    ReaderSearchInWholeBookUseCase searchInWholeBookUseCase,
+    ReaderObserveSearchListUseCase observeSearchListUseCase,
+    ReaderGotoUseCase sendGotoUseCase,
+  ) {
+    final ReaderSearchCubit cubit = ReaderSearchCubit._(
+      searchInCurrentChapterUseCase,
+      searchInWholeBookUseCase,
+      sendGotoUseCase,
+    );
+
+    cubit._subscriptions.addAll(<StreamSubscription<dynamic>>[
+      observeSearchListUseCase().listen(cubit._setResultList),
+    ]);
+
+    return cubit;
+  }
+
+  ReaderSearchCubit._(
     this._searchInCurrentChapterUseCase,
     this._searchInWholeBookUseCase,
-    this._observeSearchListUseCase,
     this._sendGotoUseCase,
   ) : super(const ReaderSearchState());
 
   final ReaderSearchInCurrentChapterUseCase _searchInCurrentChapterUseCase;
   final ReaderSearchInWholeBookUseCase _searchInWholeBookUseCase;
-  final ReaderObserveSearchListUseCase _observeSearchListUseCase;
   final ReaderGotoUseCase _sendGotoUseCase;
 
   /// Stream Subscriptions
   final Set<StreamSubscription<dynamic>> _subscriptions =
       <StreamSubscription<dynamic>>{};
-
-  Future<void> init(ReaderCoreRepository coreRepository) async {
-    _subscriptions.addAll(<StreamSubscription<dynamic>>[
-      _observeSearchListUseCase().listen(_setResultList),
-    ]);
-  }
 
   void startSearch() {
     emit(state.copyWith(code: LoadingStateCode.loading));
