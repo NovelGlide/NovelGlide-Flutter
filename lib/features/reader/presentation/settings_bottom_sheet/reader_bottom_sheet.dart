@@ -13,6 +13,7 @@ import '../reader_page/cubit/reader_cubit.dart';
 
 part 'settings_reset_button.dart';
 part 'widgets/auto_save_switch.dart';
+part 'widgets/engine_selector.dart';
 part 'widgets/font_size_slider.dart';
 part 'widgets/line_height_slider.dart';
 part 'widgets/page_num_selector.dart';
@@ -67,6 +68,14 @@ class ReaderBottomSheet extends StatelessWidget {
                 child: Column(
                   children: <Widget>[
                     _PageNumSelector(),
+                  ],
+                ),
+              ),
+              const SettingsCard(
+                margin: EdgeInsets.fromLTRB(24.0, 0.0, 24.0, 24.0),
+                child: Column(
+                  children: <Widget>[
+                    _EngineSelector(),
                   ],
                 ),
               ),
