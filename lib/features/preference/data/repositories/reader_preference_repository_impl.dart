@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import '../../../reader/domain/entities/reader_core_type.dart';
 import '../../../reader/domain/entities/reader_page_num_type.dart';
 import '../../domain/entities/preference_keys.dart';
 import '../../domain/entities/reader_preference_data.dart';
@@ -33,9 +34,8 @@ class ReaderPreferenceRepositoryImpl implements ReaderPreferenceRepository {
           await _localDataSource.tryGetBool(PreferenceKeys.readerSmoothScroll),
       pageNumType:
           pageNumIndex == null ? null : ReaderPageNumType.values[pageNumIndex],
-      // TODO(kai): Uncomment in future.
-      // coreType:
-      //     coreTypeIndex == null ? null : ReaderCoreType.values[coreTypeIndex],
+      coreType:
+          coreTypeIndex == null ? null : ReaderCoreType.values[coreTypeIndex],
     );
   }
 
