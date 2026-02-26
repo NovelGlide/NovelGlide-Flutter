@@ -31,8 +31,8 @@ linter:
     - annotate_overrides
     # - avoid_annotating_with_dynamic # conflicts with always_specify_types
     # - avoid_bool_literals_in_conditional_expressions # not yet tested
-    # - avoid_catches_without_on_clauses # we do this commonly
-    # - avoid_catching_errors # we do this commonly
+    - avoid_catches_without_on_clauses # we do this commonly
+    - avoid_catching_errors # we do this commonly
     - avoid_classes_with_only_static_members
     # - avoid_double_and_int_checks # only useful when targeting JS runtime
     - avoid_empty_else
@@ -92,13 +92,13 @@ linter:
     - overridden_fields
     - package_names
     - package_prefixed_library_names
-    # - parameter_assignments # we do this commonly
+    - parameter_assignments # we do this commonly
     - prefer_adjacent_string_concatenation
     - prefer_asserts_in_initializer_lists
     - prefer_collection_literals
     - prefer_conditional_assignment
     - prefer_const_constructors  # Increases apk size but speeds up build since const widgets are created at compile time
-    # - prefer_const_constructors_in_immutables
+    - prefer_const_constructors_in_immutables
     - prefer_const_declarations
     - prefer_const_literals_to_create_immutables
     # - prefer_constructors_over_static_methods # not yet tested
@@ -125,7 +125,6 @@ linter:
     - sort_constructors_first
     - sort_pub_dependencies
     - sort_unnamed_constructors_first
-    # - super_goes_last # no longer needed w/ Dart 2
     - test_types_in_equals
     - throw_in_finally
     # - type_annotate_public_apis # subset of always_specify_types

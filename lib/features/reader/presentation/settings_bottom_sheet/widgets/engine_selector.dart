@@ -24,8 +24,7 @@ class _EngineSelectorState extends State<_EngineSelector> {
 
   void _onEngineChanged(ReaderCoreType? value) {
     if (value == null) return;
-    if (value ==
-        context.read<ReaderCubit>().state.readerPreference.coreType) {
+    if (value == context.read<ReaderCubit>().state.readerPreference.coreType) {
       return; // Same value, do nothing
     }
 
@@ -34,19 +33,19 @@ class _EngineSelectorState extends State<_EngineSelector> {
   }
 
   void _showConfirmationDialog(ReaderCoreType newEngine) {
-    final l10n = AppLocalizations.of(context)!;
-    final engineName = newEngine == ReaderCoreType.webView
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
+    final String engineName = newEngine == ReaderCoreType.webView
         ? l10n.readerEngineWebView
         : l10n.readerEngineHtmlWidget;
 
     showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (BuildContext context) => AlertDialog(
         title: Text(l10n.readerEngineSwitchTitle),
         content: Text(
-          l10n.readerEngineSwitchContent(engine: engineName),
+          l10n.readerEngineSwitchContent(engineName),
         ),
-        actions: [
+        actions: <Widget>[
           TextButton(
             onPressed: () {
               setState(() => _selected =
@@ -64,7 +63,7 @@ class _EngineSelectorState extends State<_EngineSelector> {
           ),
         ],
       ),
-    ).then((confirmed) {
+    ).then((bool? confirmed) {
       if (confirmed != true) {
         setState(() => _selected =
             context.read<ReaderCubit>().state.readerPreference.coreType);
@@ -73,7 +72,7 @@ class _EngineSelectorState extends State<_EngineSelector> {
   }
 
   void _saveEnginePreference(ReaderCoreType newEngine) {
-    final cubit = context.read<ReaderCubit>();
+    final ReaderCubit cubit = context.read<ReaderCubit>();
 
     // Update the preference
     cubit.emit(cubit.state.copyWith(
@@ -91,31 +90,32 @@ class _EngineSelectorState extends State<_EngineSelector> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!.readerEngineChangedSnackbar),
+          content:
+              Text(AppLocalizations.of(context)!.readerEngineChangedSnackbar),
         ),
       );
     }
   }
 
   void _showInfoDialog() {
-    final l10n = AppLocalizations.of(context)!;
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (BuildContext context) => AlertDialog(
         title: Text(l10n.readerEngineInfoTitle),
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
-            children: [
+            children: <Widget>[
               _EngineInfoSection(
                 title: l10n.readerEngineHtmlWidget,
-                pros: [
+                pros: <String>[
                   l10n.readerEngineHtmlWidgetPro1,
                   l10n.readerEngineHtmlWidgetPro2,
                   l10n.readerEngineHtmlWidgetPro3,
                 ],
-                cons: [
+                cons: <String>[
                   l10n.readerEngineHtmlWidgetCon1,
                   l10n.readerEngineHtmlWidgetCon2,
                 ],
@@ -123,12 +123,12 @@ class _EngineSelectorState extends State<_EngineSelector> {
               const SizedBox(height: 16),
               _EngineInfoSection(
                 title: l10n.readerEngineWebView,
-                pros: [
+                pros: <String>[
                   l10n.readerEngineWebViewPro1,
                   l10n.readerEngineWebViewPro2,
                   l10n.readerEngineWebViewPro3,
                 ],
-                cons: [
+                cons: <String>[
                   l10n.readerEngineWebViewCon1,
                   l10n.readerEngineWebViewCon2,
                 ],
@@ -136,7 +136,7 @@ class _EngineSelectorState extends State<_EngineSelector> {
             ],
           ),
         ),
-        actions: [
+        actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(l10n.readerEngineInfoOk),
@@ -148,14 +148,14 @@ class _EngineSelectorState extends State<_EngineSelector> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
-      children: [
+      children: <Widget>[
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
+          children: <Widget>[
             Text(l10n.readerEngineTitle),
             IconButton(
               icon: const Icon(Icons.info_outline),
@@ -168,7 +168,7 @@ class _EngineSelectorState extends State<_EngineSelector> {
         DropdownMenu<ReaderCoreType>(
           initialSelection: _selected,
           onSelected: _onEngineChanged,
-          dropdownMenuEntries: [
+          dropdownMenuEntries: <DropdownMenuEntry<ReaderCoreType>>[
             DropdownMenuEntry(
               value: ReaderCoreType.htmlWidget,
               label: l10n.readerEngineHtmlWidget,
@@ -199,14 +199,14 @@ class _EngineInfoSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+      children: <Widget>[
         Text(
           title,
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 8),
-        ...pros.map((pro) => _buildItem(context, pro, true)),
-        ...cons.map((con) => _buildItem(context, con, false)),
+        ...pros.map((String pro) => _buildItem(context, pro, true)),
+        ...cons.map((String con) => _buildItem(context, con, false)),
       ],
     );
   }
@@ -216,7 +216,7 @@ class _EngineInfoSection extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+        children: <Widget>[
           Text(isPro ? '✓' : '✗'),
           const SizedBox(width: 8),
           Expanded(child: Text(text)),
