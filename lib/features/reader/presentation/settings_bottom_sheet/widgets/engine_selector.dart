@@ -1,5 +1,11 @@
 part of '../reader_bottom_sheet.dart';
 
+/// Widget that allows users to switch between Flutter Native and Web View
+/// reader engines from the reader settings bottom sheet.
+///
+/// Displays engine options in a dropdown with an info button that shows
+/// pros/cons for each engine. Changes require confirmation and take effect
+/// on next book open.
 class _EngineSelector extends StatefulWidget {
   const _EngineSelector({Key? key}) : super(key: key);
 
@@ -22,9 +28,19 @@ class _EngineSelectorState extends State<_EngineSelector> {
     _selected = context.read<ReaderCubit>().state.readerPreference.coreType;
   }
 
+  /// Handles engine selection from the dropdown menu.
+  ///
+  /// If the selected engine is different from the saved one, shows a
+  /// confirmation dialog. Updates the local [_selected] state and calls
+  /// [_showConfirmationDialog] if needed.
   void _onEngineChanged(ReaderCoreType? value) {
-    if (value == null) return;
-    if (value == context.read<ReaderCubit>().state.readerPreference.coreType) {
+    if (value == null) {
+      return;
+    }
+
+    final ReaderCoreType savedEngine =
+        context.read<ReaderCubit>().state.readerPreference.coreType;
+    if (value == savedEngine) {
       return; // Same value, do nothing
     }
 
@@ -32,6 +48,11 @@ class _EngineSelectorState extends State<_EngineSelector> {
     _showConfirmationDialog(value);
   }
 
+  /// Shows a confirmation dialog before switching engines.
+  ///
+  /// Displays the engine name and prompts the user to confirm the switch.
+  /// On confirmation, saves the preference and closes the bottom sheet.
+  /// On cancellation, reverts the [_selected] state visually.
   void _showConfirmationDialog(ReaderCoreType newEngine) {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
     final String engineName = newEngine == ReaderCoreType.webView
@@ -43,13 +64,14 @@ class _EngineSelectorState extends State<_EngineSelector> {
       builder: (BuildContext context) => AlertDialog(
         title: Text(l10n.readerEngineSwitchTitle),
         content: Text(
-          l10n.readerEngineSwitchContent(engineName),
+          l10n.readerEngineSwitchContent(engine: engineName),
         ),
         actions: <Widget>[
           TextButton(
             onPressed: () {
-              setState(() => _selected =
-                  context.read<ReaderCubit>().state.readerPreference.coreType);
+              final ReaderCoreType savedEngine =
+                  context.read<ReaderCubit>().state.readerPreference.coreType;
+              setState(() => _selected = savedEngine);
               Navigator.pop(context, false);
             },
             child: Text(l10n.readerEngineSwitchCancel),
@@ -65,12 +87,17 @@ class _EngineSelectorState extends State<_EngineSelector> {
       ),
     ).then((bool? confirmed) {
       if (confirmed != true) {
-        setState(() => _selected =
-            context.read<ReaderCubit>().state.readerPreference.coreType);
+        final ReaderCoreType savedEngine =
+            context.read<ReaderCubit>().state.readerPreference.coreType;
+        setState(() => _selected = savedEngine);
       }
     });
   }
 
+  /// Saves the new engine preference and shows a snackbar notification.
+  ///
+  /// Updates the cubit state with the new engine, persists to storage,
+  /// closes the bottom sheet, and displays a confirmation snackbar.
   void _saveEnginePreference(ReaderCoreType newEngine) {
     final ReaderCubit cubit = context.read<ReaderCubit>();
 
@@ -97,6 +124,10 @@ class _EngineSelectorState extends State<_EngineSelector> {
     }
   }
 
+  /// Shows an info dialog with pros and cons for both reader engines.
+  ///
+  /// Displays detailed information about Flutter Native and Web View engines
+  /// to help users make an informed decision about which engine to use.
   void _showInfoDialog() {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
     showDialog(
@@ -184,16 +215,26 @@ class _EngineSelectorState extends State<_EngineSelector> {
   }
 }
 
+/// Widget that displays the pros and cons of a single reader engine.
+///
+/// Used in the info dialog to show comparisons between Flutter Native
+/// and Web View engines.
 class _EngineInfoSection extends StatelessWidget {
-  final String title;
-  final List<String> pros;
-  final List<String> cons;
-
+  /// Creates a new engine info section.
   const _EngineInfoSection({
     required this.title,
     required this.pros,
     required this.cons,
   });
+
+  /// The name of the engine (e.g. "Flutter Native" or "Web View").
+  final String title;
+
+  /// List of advantages for this engine.
+  final List<String> pros;
+
+  /// List of disadvantages for this engine.
+  final List<String> cons;
 
   @override
   Widget build(BuildContext context) {
@@ -211,7 +252,15 @@ class _EngineInfoSection extends StatelessWidget {
     );
   }
 
-  Widget _buildItem(BuildContext context, String text, bool isPro) {
+  /// Builds a single pro/con item with a checkmark or X icon.
+  ///
+  /// Displays [text] with a leading checkmark (✓) if [isPro] is true,
+  /// or an X mark (✗) if [isPro] is false.
+  Widget _buildItem(
+    BuildContext context,
+    String text,
+    bool isPro,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
