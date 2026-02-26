@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import '../entities/book.dart';
 import '../entities/book_chapter.dart';
 import '../entities/book_cover.dart';
+import '../entities/book_html_content.dart';
 import '../entities/book_pick_file_data.dart';
 
 abstract class BookRepository {
@@ -29,9 +30,16 @@ abstract class BookRepository {
 
   Future<List<BookChapter>> getChapterList(String identifier);
 
-  Future<void> clearTemporaryPickedBooks();
+  Future<BookHtmlContent> getContent(
+    String identifier, {
+    String? pageIdentifier,
+  });
 
   Future<void> reset();
 
   Future<bool> isFileValid(String path);
+
+  void enableBookCache();
+
+  void disableBookCache();
 }

@@ -51,7 +51,7 @@ class HomepageNavigationRail extends StatelessWidget {
     return NavigationRail(
       selectedIndex: HomepageNavigationItem.values.indexOf(state.navItem),
       indicatorColor: Colors.transparent,
-      backgroundColor: colorScheme.surfaceContainer,
+      backgroundColor: Colors.transparent,
       labelType: NavigationRailLabelType.all,
       destinations: <NavigationRailDestination>[
         NavigationRailDestination(

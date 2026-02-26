@@ -17,18 +17,19 @@ class ReaderNavBookmarkButton extends StatelessWidget {
       buildWhen: (ReaderState previous, ReaderState current) =>
           previous.code != current.code ||
           previous.bookmarkData != current.bookmarkData ||
+          previous.chapterFileName != current.chapterFileName ||
           previous.startCfi != current.startCfi ||
           previous.readerPreference.isAutoSaving !=
               current.readerPreference.isAutoSaving,
       builder: (BuildContext context, ReaderState state) {
+        // Can the current page be bookmarked?
+        final bool isEnabled =
+            state.code.isLoaded && !state.readerPreference.isAutoSaving;
+
         // Was the current page bookmarked?
         final bool isBookmarked = !state.readerPreference.isAutoSaving &&
-            state.bookmarkData?.startCfi == state.startCfi;
-
-        // Can the current page be bookmarked?
-        final bool isEnabled = state.code.isLoaded &&
-            !state.readerPreference.isAutoSaving &&
-            state.bookmarkData?.startCfi != state.startCfi;
+            state.bookmarkData?.startCfi == state.startCfi &&
+            state.bookmarkData?.chapterIdentifier == state.chapterFileName;
 
         return IconButton(
           icon: Icon(
@@ -38,9 +39,12 @@ class ReaderNavBookmarkButton extends StatelessWidget {
           ),
           tooltip: appLocalizations.readerBookmark,
           style: IconButton.styleFrom(
-            disabledForegroundColor: isBookmarked ? colorScheme.error : null,
+            foregroundColor: isBookmarked ? colorScheme.error : null,
           ),
-          onPressed: isEnabled ? () => cubit.saveBookmark() : null,
+          onPressed: isEnabled
+              ? () =>
+                  isBookmarked ? cubit.removeBookmark() : cubit.saveBookmark()
+              : null,
         );
       },
     );

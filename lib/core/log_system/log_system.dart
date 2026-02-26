@@ -10,11 +10,31 @@ class LogSystem {
 
   void _warn(String message) => _repository.warn(message);
 
-  void _error(String message, {Object? error, StackTrace? stackTrace}) =>
-      _repository.error(message, error: error, stackTrace: stackTrace);
+  void _error(
+    String message, {
+    Object? error,
+    StackTrace? stackTrace,
+    Iterable<Object> information = const <Object>[],
+  }) =>
+      _repository.error(
+        message,
+        error: error,
+        stackTrace: stackTrace,
+        information: information,
+      );
 
-  void _fatal(String message, {Object? error, StackTrace? stackTrace}) =>
-      _repository.fatal(message, error: error, stackTrace: stackTrace);
+  void _fatal(
+    String message, {
+    Object? error,
+    StackTrace? stackTrace,
+    Iterable<Object> information = const <Object>[],
+  }) =>
+      _repository.fatal(
+        message,
+        error: error,
+        stackTrace: stackTrace,
+        information: information,
+      );
 
   void _event(String name, {Map<String, Object>? parameters}) =>
       _repository.event(name, parameters: parameters);
@@ -25,11 +45,31 @@ class LogSystem {
 
   static void warn(String message) => sl<LogSystem>()._warn(message);
 
-  static void error(String message, {Object? error, StackTrace? stackTrace}) =>
-      sl<LogSystem>()._error(message, error: error, stackTrace: stackTrace);
+  static void error(
+    String message, {
+    Object? error,
+    StackTrace? stackTrace,
+    Iterable<Object> information = const <Object>[],
+  }) =>
+      sl<LogSystem>()._error(
+        message,
+        error: error,
+        stackTrace: stackTrace,
+        information: information,
+      );
 
-  static void fatal(String message, {Object? error, StackTrace? stackTrace}) =>
-      sl<LogSystem>()._fatal(message, error: error, stackTrace: stackTrace);
+  static void fatal(
+    String message, {
+    Object? error,
+    StackTrace? stackTrace,
+    Iterable<Object> information = const <Object>[],
+  }) =>
+      sl<LogSystem>()._fatal(
+        message,
+        error: error,
+        stackTrace: stackTrace,
+        information: information,
+      );
 
   static void event(String name, {Map<String, Object>? parameters}) =>
       sl<LogSystem>()._event(name, parameters: parameters);

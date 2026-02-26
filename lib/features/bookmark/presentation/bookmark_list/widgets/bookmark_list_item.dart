@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../generated/i18n/app_localizations.dart';
-import '../../../../reader/domain/entities/reader_destination_type.dart';
 import '../../../../reader/presentation/reader_page/reader.dart';
 import '../../../domain/entities/bookmark_data.dart';
 import '../cubit/bookmark_list_cubit.dart';
@@ -60,8 +59,8 @@ class BookmarkListItem extends StatelessWidget {
             MaterialPageRoute<void>(
               builder: (_) => ReaderWidget(
                 bookIdentifier: bookmarkData.bookIdentifier,
-                destinationType: ReaderDestinationType.bookmark,
-                destination: bookmarkData.startCfi,
+                pageIdentifier: bookmarkData.chapterIdentifier,
+                cfi: bookmarkData.startCfi,
               ),
             ),
           )

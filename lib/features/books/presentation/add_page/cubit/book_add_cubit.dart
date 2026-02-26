@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../pick_file/domain/use_cases/pick_file_clear_temp_use_case.dart';
 import '../../../domain/entities/book_pick_file_data.dart';
 import '../../../domain/use_cases/book_add_use_case.dart';
-import '../../../domain/use_cases/book_clear_temporary_picked_files_use_case.dart';
 import '../../../domain/use_cases/book_get_allowed_extensions_use_case.dart';
 import '../../../domain/use_cases/book_pick_use_case.dart';
 import 'book_add_state.dart';
@@ -11,15 +11,15 @@ import 'book_add_state.dart';
 class BookAddCubit extends Cubit<BookAddState> {
   BookAddCubit(
     this._addBooksUseCase,
-    this._clearTemporaryPickedBooksUseCase,
     this._getBookAllowedExtensionsUseCase,
     this._pickBooksUseCase,
+    this._pickFileClearTempUseCase,
   ) : super(const BookAddState());
 
   final BookAddUseCase _addBooksUseCase;
-  final BookClearTemporaryPickedFilesUseCase _clearTemporaryPickedBooksUseCase;
   final BookGetAllowedExtensionsUseCase _getBookAllowedExtensionsUseCase;
   final BookPickUseCase _pickBooksUseCase;
+  final PickFileClearTempUseCase _pickFileClearTempUseCase;
 
   List<String> get allowedExtensions => _getBookAllowedExtensionsUseCase();
 
@@ -65,7 +65,7 @@ class BookAddCubit extends Cubit<BookAddState> {
   @override
   Future<void> close() async {
     // Clear temporary files.
-    _clearTemporaryPickedBooksUseCase();
+    await _pickFileClearTempUseCase();
     return super.close();
   }
 }

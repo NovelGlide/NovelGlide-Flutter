@@ -14,26 +14,38 @@ part 'reader_search_range_code.dart';
 part 'reader_search_state.dart';
 
 class ReaderSearchCubit extends Cubit<ReaderSearchState> {
-  ReaderSearchCubit(
+  factory ReaderSearchCubit(
+    ReaderSearchInCurrentChapterUseCase searchInCurrentChapterUseCase,
+    ReaderSearchInWholeBookUseCase searchInWholeBookUseCase,
+    ReaderObserveSearchListUseCase observeSearchListUseCase,
+    ReaderGotoUseCase sendGotoUseCase,
+  ) {
+    final ReaderSearchCubit cubit = ReaderSearchCubit._(
+      searchInCurrentChapterUseCase,
+      searchInWholeBookUseCase,
+      sendGotoUseCase,
+    );
+
+    cubit._subscriptions.addAll(<StreamSubscription<dynamic>>[
+      observeSearchListUseCase().listen(cubit._setResultList),
+    ]);
+
+    return cubit;
+  }
+
+  ReaderSearchCubit._(
     this._searchInCurrentChapterUseCase,
     this._searchInWholeBookUseCase,
-    this._observeSearchListUseCase,
     this._sendGotoUseCase,
   ) : super(const ReaderSearchState());
 
   final ReaderSearchInCurrentChapterUseCase _searchInCurrentChapterUseCase;
   final ReaderSearchInWholeBookUseCase _searchInWholeBookUseCase;
-  final ReaderObserveSearchListUseCase _observeSearchListUseCase;
   final ReaderGotoUseCase _sendGotoUseCase;
 
   /// Stream Subscriptions
-  late final StreamSubscription<List<ReaderSearchResultData>>
-      _resultListSubscription;
-
-  Future<void> init() async {
-    _resultListSubscription =
-        _observeSearchListUseCase().listen(_setResultList);
-  }
+  final Set<StreamSubscription<dynamic>> _subscriptions =
+      <StreamSubscription<dynamic>>{};
 
   void startSearch() {
     emit(state.copyWith(code: LoadingStateCode.loading));
@@ -64,11 +76,16 @@ class ReaderSearchCubit extends Cubit<ReaderSearchState> {
     );
   }
 
-  void goto(String cfi) => _sendGotoUseCase(cfi);
+  void goto(String cfi) => _sendGotoUseCase(ReaderGotoUseCaseParam(
+        cfi: cfi,
+      ));
 
   @override
   Future<void> close() async {
-    await _resultListSubscription.cancel();
+    for (StreamSubscription<dynamic> subscription in _subscriptions) {
+      await subscription.cancel();
+    }
+
     super.close();
   }
 }

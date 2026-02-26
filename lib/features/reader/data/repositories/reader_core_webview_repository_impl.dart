@@ -6,19 +6,21 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../../../core/utils/color_extension.dart';
 import '../../domain/entities/reader_search_result_data.dart';
+import '../../domain/repositories/reader_core_repository.dart';
 import '../../domain/repositories/reader_location_cache_repository.dart';
 import '../../domain/repositories/reader_server_repository.dart';
-import '../../domain/repositories/reader_webview_repository.dart';
 import '../data_sources/reader_webview_data_source.dart';
 import '../data_transfer_objects/reader_web_message_dto.dart';
 
-class ReaderWebViewRepositoryImpl implements ReaderWebViewRepository {
-  ReaderWebViewRepositoryImpl(
+class ReaderCoreWebViewRepositoryImpl implements ReaderCoreRepository {
+  ReaderCoreWebViewRepositoryImpl(
+    this._controller,
     this._dataSource,
     this._serverRepository,
     this._cacheRepository,
   );
 
+  final WebViewController _controller;
   final ReaderWebViewDataSource _dataSource;
   final ReaderServerRepository _serverRepository;
   final ReaderLocationCacheRepository _cacheRepository;
@@ -28,24 +30,22 @@ class ReaderWebViewRepositoryImpl implements ReaderWebViewRepository {
       <StreamSubscription<dynamic>>{};
 
   @override
-  WebViewController get webViewController => _dataSource.webViewController;
-
-  @override
-  Future<void> startLoading({
+  Future<void> init({
     required String bookIdentifier,
-    String? destination,
+    String? pageIdentifier,
+    String? cfi,
   }) async {
     // Start up the local server
     final Uri serverUri = await _serverRepository.start(bookIdentifier);
 
     // Setup the navigation delegate.
-    webViewController.setNavigationDelegate(NavigationDelegate(
+    _controller.setNavigationDelegate(NavigationDelegate(
       onPageFinished: (String url) async {
         _dataSource.setChannel();
         _dataSource.send(ReaderWebMessageDto(
           route: 'main',
           data: <String, String?>{
-            'destination': destination,
+            'destination': cfi ?? pageIdentifier,
             'savedLocation': await _cacheRepository.get(bookIdentifier),
           },
         ));
@@ -62,39 +62,38 @@ class ReaderWebViewRepositoryImpl implements ReaderWebViewRepository {
     ));
 
     // Setup Listeners
-    _subscriptionSet.add(
-      // Load done.
-      _dataSource.onLoadDone.listen((void _) async {
-        // Stop the local web server.
-        await _serverRepository.stop();
-      }),
-    );
-    _subscriptionSet.add(
+    _subscriptionSet.addAll(<StreamSubscription<dynamic>>[
       // Save location.
       _dataSource.onSaveLocation.listen((String location) async {
         await _cacheRepository.store(bookIdentifier, location);
       }),
-    );
+    ]);
 
     // Load the page.
-    webViewController.loadRequest(serverUri);
+    await _dataSource.loadPage(serverUri);
+
+    // Page loading completed. Stop the local web server.
+    await _serverRepository.stop();
   }
 
   @override
-  void goto(String destination) {
+  Future<void> goto({
+    String? pageIdentifier,
+    String? cfi,
+  }) async {
     _dataSource.send(ReaderWebMessageDto(
       route: 'goto',
-      data: destination,
+      data: cfi ?? pageIdentifier,
     ));
   }
 
   @override
-  void nextPage() {
+  Future<void> nextPage() async {
     _dataSource.send(const ReaderWebMessageDto(route: 'nextPage'));
   }
 
   @override
-  void previousPage() {
+  Future<void> previousPage() async {
     _dataSource.send(const ReaderWebMessageDto(route: 'prevPage'));
   }
 
@@ -114,7 +113,7 @@ class ReaderWebViewRepositoryImpl implements ReaderWebViewRepository {
   }
 
   @override
-  void searchInCurrentChapter(String query) {
+  Future<void> searchInCurrentChapter(String query) async {
     _dataSource.send(ReaderWebMessageDto(
       route: 'searchInCurrentChapter',
       data: query,
@@ -122,7 +121,7 @@ class ReaderWebViewRepositoryImpl implements ReaderWebViewRepository {
   }
 
   @override
-  void searchInWholeBook(String query) {
+  Future<void> searchInWholeBook(String query) async {
     _dataSource.send(ReaderWebMessageDto(
       route: 'searchInWholeBook',
       data: query,
@@ -160,9 +159,6 @@ class ReaderWebViewRepositoryImpl implements ReaderWebViewRepository {
       data: smoothScroll,
     ));
   }
-
-  @override
-  Stream<void> get onLoadDone => _dataSource.onLoadDone;
 
   @override
   Stream<ReaderSetStateData> get onSetState => _dataSource.onSetState;

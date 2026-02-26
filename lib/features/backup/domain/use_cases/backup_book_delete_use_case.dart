@@ -22,24 +22,20 @@ class BackupBookDeleteUseCase
   }
 
   Future<void> _runner() async {
+    // Start deleting the backup file
+    _controller
+        .add(const BackupProgressData(step: BackupProgressStepCode.delete));
+
+    // Check if backup exists
+    final bool backupExists = await _bookBackupRepository.isBackupExists();
+    if (!backupExists) {
+      _controller
+          .add(const BackupProgressData(step: BackupProgressStepCode.disabled));
+      await _controller.close();
+      return;
+    }
+
     try {
-      // Initial state
-      _controller
-          .add(const BackupProgressData(step: BackupProgressStepCode.create));
-
-      // Check if backup exists
-      final bool backupExists = await _bookBackupRepository.isBackupExists();
-      if (!backupExists) {
-        _controller.add(
-            const BackupProgressData(step: BackupProgressStepCode.disabled));
-        await _controller.close();
-        return;
-      }
-
-      // Start deleting the backup file
-      _controller
-          .add(const BackupProgressData(step: BackupProgressStepCode.delete));
-
       // Delete the backup file from cloud
       final bool isSuccessful = await _bookBackupRepository.deleteFromCloud();
 

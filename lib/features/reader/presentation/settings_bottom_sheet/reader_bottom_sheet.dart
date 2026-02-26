@@ -7,6 +7,7 @@ import '../../../../enum/common_button_state_code.dart';
 import '../../../../generated/i18n/app_localizations.dart';
 import '../../../preference/domain/entities/reader_preference_data.dart';
 import '../../../settings_page/presentation/widgets/settings_card.dart';
+import '../../domain/entities/reader_core_type.dart';
 import '../../domain/entities/reader_page_num_type.dart';
 import '../reader_page/cubit/reader_cubit.dart';
 
@@ -23,6 +24,9 @@ class ReaderBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ReaderCubit cubit = BlocProvider.of<ReaderCubit>(context);
+    final ReaderCoreType? coreType = cubit.state.coreType;
+
     return DraggableScrollableSheet(
       initialChildSize: 0.5,
       minChildSize: 0.25,
@@ -33,9 +37,9 @@ class ReaderBottomSheet extends StatelessWidget {
       builder: (BuildContext context, ScrollController scrollController) {
         return SingleChildScrollView(
           controller: scrollController,
-          child: const Column(
+          child: Column(
             children: <Widget>[
-              SettingsCard(
+              const SettingsCard(
                 margin: EdgeInsets.fromLTRB(24.0, 0.0, 24.0, 24.0),
                 child: Column(
                   children: <Widget>[
@@ -45,15 +49,20 @@ class ReaderBottomSheet extends StatelessWidget {
                 ),
               ),
               SettingsCard(
-                margin: EdgeInsets.fromLTRB(24.0, 0.0, 24.0, 24.0),
+                margin: const EdgeInsets.fromLTRB(24.0, 0.0, 24.0, 24.0),
                 child: Column(
-                  children: <Widget>[
-                    _AutoSaveSwitch(),
-                    _SmoothScrollSwitch(),
-                  ],
+                  children: <Widget?>[
+                    const _AutoSaveSwitch(),
+
+                    // Show the smooth scroll switcher only in WebView mode.
+                    switch (coreType) {
+                      ReaderCoreType.webView => const _SmoothScrollSwitch(),
+                      _ => null,
+                    },
+                  ].whereType<Widget>().toList(),
                 ),
               ),
-              SettingsCard(
+              const SettingsCard(
                 margin: EdgeInsets.fromLTRB(24.0, 0.0, 24.0, 24.0),
                 child: Column(
                   children: <Widget>[
@@ -61,7 +70,7 @@ class ReaderBottomSheet extends StatelessWidget {
                   ],
                 ),
               ),
-              SettingsCard(
+              const SettingsCard(
                 margin: EdgeInsets.fromLTRB(24.0, 0.0, 24.0, 24.0),
                 child: Column(
                   children: <Widget>[

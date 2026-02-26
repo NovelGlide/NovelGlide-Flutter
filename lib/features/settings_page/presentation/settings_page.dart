@@ -90,6 +90,8 @@ class SettingsPage extends StatelessWidget {
                       '1FAIpQLScMbqxt1GTgz3-VyGpSk8avoPgWxvB9crIFvgdYrGZYbtE2zg',
                     const AppLocale('zh') =>
                       '1FAIpQLSdo77Am6qvaoIz9K9FWmySt21p9VnLiikUv0KfxWKV1jf01jQ',
+                    const AppLocale('zh', 'Hant', 'TW') =>
+                      '1FAIpQLSdo77Am6qvaoIz9K9FWmySt21p9VnLiikUv0KfxWKV1jf01jQ',
                     const AppLocale('zh', 'Hans', 'CN') =>
                       '1FAIpQLSdlDoVsZdyt9GBEivAUxNcv7ohDOKaEv5OornD-DMTxiQWm7g',
                     const AppLocale('ja') =>

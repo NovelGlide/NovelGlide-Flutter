@@ -14,15 +14,12 @@ class BookmarkLocalJsonDataSourceImpl extends BookmarkLocalJsonDataSource
   final JsonRepository _jsonRepository;
 
   @override
-  Future<void> deleteData(Set<BookmarkData> dataSet) async {
+  Future<void> deleteData(Set<String> identifierSet) async {
     // Load the data
     final Map<String, dynamic> json = await _loadData();
 
     // Process the data set
-    for (BookmarkData data in dataSet) {
-      // Get the identifier of the book
-      final String identifier = data.bookIdentifier;
-
+    for (String identifier in identifierSet) {
       if (json.containsKey(identifier)) {
         json.remove(identifier);
       }

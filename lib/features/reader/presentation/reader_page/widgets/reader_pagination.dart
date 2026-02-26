@@ -1,4 +1,8 @@
-part of '../reader.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../domain/entities/reader_page_num_type.dart';
+import '../cubit/reader_cubit.dart';
 
 class ReaderPagination extends StatelessWidget {
   const ReaderPagination({super.key});
@@ -18,14 +22,20 @@ class ReaderPagination extends StatelessWidget {
             return const SizedBox();
 
           case ReaderPageNumType.number:
-            return Text(
-                '${state.chapterCurrentPage} / ${state.chapterTotalPage}');
+            return Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Text(
+                  '${state.chapterCurrentPage} / ${state.chapterTotalPage}'),
+            );
 
           case ReaderPageNumType.percentage:
             final num percentage =
                 (state.chapterCurrentPage / state.chapterTotalPage * 100)
                     .clamp(0, 100);
-            return Text('${percentage.toStringAsFixed(1)}%');
+            return Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Text('${percentage.toStringAsFixed(1)}%'),
+            );
 
           case ReaderPageNumType.progressBar:
             final double percentage =

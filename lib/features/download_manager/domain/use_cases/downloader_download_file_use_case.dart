@@ -34,9 +34,8 @@ class DownloaderDownloadFileUseCase
         await _repository.getTaskByIdentifier(identifier);
 
     if (task != null) {
-      await for (double _ in task.onDownloadStream) {
-        // File downloading.
-      }
+      // File downloading.
+      await task.onDownloadStream.drain();
       // File downloaded.
       await parameter.onSuccess(task);
     } else {

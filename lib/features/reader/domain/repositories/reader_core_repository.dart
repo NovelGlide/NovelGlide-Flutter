@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 import '../entities/reader_search_result_data.dart';
 import '../entities/reader_set_state_data.dart';
 
-abstract class ReaderWebViewRepository {
-  WebViewController get webViewController;
-
-  Future<void> startLoading({
+abstract class ReaderCoreRepository {
+  Future<void> init({
     required String bookIdentifier,
-    String? destination,
+    String? pageIdentifier,
+    String? cfi,
   });
 
-  void goto(String destination);
+  Future<void> goto({
+    String? pageIdentifier,
+    String? cfi,
+  });
 
-  void nextPage();
+  Future<void> nextPage();
 
-  void previousPage();
+  Future<void> previousPage();
 
   void ttsPlay();
 
@@ -24,9 +25,9 @@ abstract class ReaderWebViewRepository {
 
   void ttsStop();
 
-  void searchInCurrentChapter(String query);
+  Future<void> searchInCurrentChapter(String query);
 
-  void searchInWholeBook(String query);
+  Future<void> searchInWholeBook(String query);
 
   set fontColor(Color fontColor);
 
@@ -35,8 +36,6 @@ abstract class ReaderWebViewRepository {
   set lineHeight(double lineHeight);
 
   set smoothScroll(bool smoothScroll);
-
-  Stream<void> get onLoadDone;
 
   Stream<ReaderSetStateData> get onSetState;
 

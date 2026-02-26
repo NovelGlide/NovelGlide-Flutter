@@ -16,6 +16,7 @@ class HomepageMediumView extends StatelessWidget {
               margin: const EdgeInsets.fromLTRB(8.0, 0.0, 16.0, 8.0),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(36.0),
+                color: Theme.of(context).colorScheme.surfaceContainer,
                 boxShadow: <BoxShadow>[
                   BoxShadow(
                     color: Theme.of(context).colorScheme.shadow.withAlpha(50),

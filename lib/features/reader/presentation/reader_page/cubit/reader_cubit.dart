@@ -3,29 +3,34 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:path/path.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../../../../../core/app_font_loader/domain/use_cases/app_font_loader_load_font.dart';
+import '../../../../../core/css_parser/domain/entities/css_font_file.dart';
 import '../../../../bookmark/domain/entities/bookmark_data.dart';
+import '../../../../bookmark/domain/use_cases/bookmark_delete_data_use_case.dart';
 import '../../../../bookmark/domain/use_cases/bookmark_get_data_use_case.dart';
 import '../../../../bookmark/domain/use_cases/bookmark_update_data_use_case.dart';
 import '../../../../books/domain/entities/book.dart';
+import '../../../../books/domain/entities/book_html_content.dart';
 import '../../../../books/domain/use_cases/book_get_use_case.dart';
 import '../../../../preference/domain/entities/reader_preference_data.dart';
 import '../../../../preference/domain/use_cases/preference_get_use_cases.dart';
 import '../../../../preference/domain/use_cases/preference_observe_change_use_case.dart';
 import '../../../../preference/domain/use_cases/preference_reset_use_case.dart';
 import '../../../../preference/domain/use_cases/preference_save_use_case.dart';
-import '../../../domain/entities/reader_destination_type.dart';
+import '../../../domain/entities/reader_core_type.dart';
 import '../../../domain/entities/reader_navigation_state_code.dart';
 import '../../../domain/entities/reader_page_num_type.dart';
 import '../../../domain/entities/reader_set_state_data.dart';
-import '../../../domain/repositories/reader_webview_repository.dart';
+import '../../../domain/repositories/reader_core_repository.dart';
 import '../../../domain/use_cases/appearance_use_cases/reader_set_font_color_use_case.dart';
 import '../../../domain/use_cases/appearance_use_cases/reader_set_font_size_use_case.dart';
 import '../../../domain/use_cases/appearance_use_cases/reader_set_line_height_use_case.dart';
 import '../../../domain/use_cases/appearance_use_cases/reader_set_smooth_scroll_use_case.dart';
+import '../../../domain/use_cases/reader_goto_use_case.dart';
 import '../../../domain/use_cases/reader_next_page_use_case.dart';
-import '../../../domain/use_cases/reader_observe_load_done_use_case.dart';
 import '../../../domain/use_cases/reader_observe_set_state_use_case.dart';
 import '../../../domain/use_cases/reader_previous_page_use_case.dart';
 import '../../search_page/cubit/reader_search_cubit.dart';
@@ -35,14 +40,17 @@ part '../../../domain/entities/reader_loading_state_code.dart';
 part 'reader_gesture_handler.dart';
 part 'reader_state.dart';
 
-class ReaderCubit extends Cubit<ReaderState> {
-  ReaderCubit(
-    this._webViewRepository,
-    // Reader use cases
-    this._observeLoadDoneUseCase,
+class ReaderCubitDependencies {
+  ReaderCubitDependencies(
+    // App Core use cases
+    this._loadFontUseCase,
+    // Controllers and reader core.
+    this._webViewController,
+    this._coreRepository,
     this._observeSetStateUseCase,
     this._nextPageUseCase,
     this._previousPageUseCase,
+    this._gotoUseCase,
     this._setFontColorUseCase,
     this._setFontSizeUseCase,
     this._setLineHeightUseCase,
@@ -52,36 +60,27 @@ class ReaderCubit extends Cubit<ReaderState> {
     // Bookmark use cases
     this._bookmarkGetDataUseCase,
     this._bookmarkUpdateDataUseCase,
+    this._bookmarkDeleteDataUseCase,
     // Reader preference use cases
-    this._getPreferenceUseCase,
     this._savePreferenceUseCase,
     this._observePreferenceChangeUseCase,
     this._resetPreferenceUseCase,
-    // Dependencies
-    this.searchCubit,
-    this.ttsCubit,
-  ) : super(const ReaderState());
+    // Cubits
+    this._readerSearchCubit,
+  );
 
-  Book? bookData;
-  late ThemeData currentTheme;
+  /// App Core use cases
+  final AppFontLoaderLoadCssFontUseCase _loadFontUseCase;
 
-  final ReaderSearchCubit searchCubit;
-  final ReaderTtsCubit ttsCubit;
-
-  late final ReaderGestureHandler gestureHandler =
-      ReaderGestureHandler(onSwipeLeft: previousPage, onSwipeRight: nextPage);
-
-  WebViewController get webViewController =>
-      _webViewRepository.webViewController;
-
-  /// Dependencies
-  final ReaderWebViewRepository _webViewRepository;
+  /// Controllers and reader core.
+  final WebViewController? _webViewController;
+  final ReaderCoreRepository _coreRepository;
 
   /// Reader use cases
-  final ReaderObserveLoadDoneUseCase _observeLoadDoneUseCase;
   final ReaderObserveSetStateUseCase _observeSetStateUseCase;
   final ReaderNextPageUseCase _nextPageUseCase;
   final ReaderPreviousPageUseCase _previousPageUseCase;
+  final ReaderGotoUseCase _gotoUseCase;
   final ReaderSetFontColorUseCase _setFontColorUseCase;
   final ReaderSetFontSizeUseCase _setFontSizeUseCase;
   final ReaderSetLineHeightUseCase _setLineHeightUseCase;
@@ -93,48 +92,96 @@ class ReaderCubit extends Cubit<ReaderState> {
   /// Bookmark use cases
   final BookmarkGetDataUseCase _bookmarkGetDataUseCase;
   final BookmarkUpdateDataUseCase _bookmarkUpdateDataUseCase;
+  final BookmarkDeleteDataUseCase _bookmarkDeleteDataUseCase;
 
   /// Reader preference use cases
-  final ReaderGetPreferenceUseCase _getPreferenceUseCase;
   final ReaderSavePreferenceUseCase _savePreferenceUseCase;
   final ReaderObservePreferenceChangeUseCase _observePreferenceChangeUseCase;
   final ReaderResetPreferenceUseCase _resetPreferenceUseCase;
 
-  /// Stream Subscriptions
-  late final StreamSubscription<void> _loadDoneStreamSubscription;
-  late final StreamSubscription<ReaderSetStateData> _setStateStreamSubscription;
+  /// Cubits
+  final ReaderSearchCubit _readerSearchCubit;
+}
 
-  /// Preference Stream Subscription
-  late final StreamSubscription<ReaderPreferenceData> _preferenceSubscription =
-      _observePreferenceChangeUseCase().listen(_refreshPreference);
+class ReaderCubit extends Cubit<ReaderState> {
+  ReaderCubit(
+    this._getPreferenceUseCase,
+    this._dependenciesFactory,
+    this.ttsCubit,
+  ) : super(const ReaderState());
+
+  Book? bookData;
+  late ThemeData currentTheme;
+
+  final ReaderCubitDependencies Function(ReaderCoreType) _dependenciesFactory;
+  late final ReaderCubitDependencies _dependencies;
+
+  late final ReaderGestureHandler gestureHandler = ReaderGestureHandler(
+    onSwipeLeft: previousPage,
+    onSwipeRight: nextPage,
+  );
+
+  WebViewController? get webViewController => _dependencies._webViewController;
+
+  final ReaderGetPreferenceUseCase _getPreferenceUseCase;
+  final ReaderTtsCubit ttsCubit;
+
+  /// Cubits
+  ReaderSearchCubit get searchCubit => _dependencies._readerSearchCubit;
+
+  /// Stream Subscriptions
+  final Set<StreamSubscription<dynamic>> _subscriptionSet =
+      <StreamSubscription<dynamic>>{};
 
   /// Initialize from widgets.
-  Future<void> initAsync({
+  Future<void> init({
     required String bookIdentifier,
     required ThemeData currentTheme,
-    required ReaderDestinationType destinationType,
-    String? destination,
+    String? pageIdentifier,
+    String? cfi,
     Book? bookData,
   }) async {
     // Initialize members
     this.currentTheme = currentTheme;
     this.bookData = bookData;
 
-    // Initialize
+    // Load preference first. To determine the core type.
     emit(state.copyWith(
       bookName: bookData?.title,
+      code: ReaderLoadingStateCode.preferenceLoading,
+    ));
+
+    final ReaderPreferenceData readerSettingsData =
+        await _getPreferenceUseCase();
+
+    // Load the dependencies of the cubit
+    _dependencies = _dependenciesFactory(readerSettingsData.coreType);
+
+    // Initialize TTS cubit
+    ttsCubit.init(_dependencies._coreRepository);
+
+    // Load the book data.
+    emit(state.copyWith(
+      coreType: readerSettingsData.coreType,
       code: ReaderLoadingStateCode.bookLoading,
     ));
 
-    // Start loading the data of book, reader settings, and bookmarks.
-    late ReaderPreferenceData readerSettingsData;
+    // Register Listeners
+    _subscriptionSet.addAll(<StreamSubscription<dynamic>>[
+      _dependencies._observeSetStateUseCase().listen(_receiveSetState),
+      _dependencies
+          ._observePreferenceChangeUseCase()
+          .listen(_refreshPreference),
+    ]);
+
+    // Start loading the data of book, and bookmarks.
     late BookmarkData? bookmarkData;
     await Future.wait<void>(<Future<void>>[
-      _bookGetUseCase(bookIdentifier)
+      _dependencies
+          ._bookGetUseCase(bookIdentifier)
           .then((Book value) => this.bookData = value),
-      _getPreferenceUseCase()
-          .then((ReaderPreferenceData value) => readerSettingsData = value),
-      _bookmarkGetDataUseCase(bookIdentifier)
+      _dependencies
+          ._bookmarkGetDataUseCase(bookIdentifier)
           .then((BookmarkData? data) => bookmarkData = data),
     ]);
 
@@ -143,21 +190,30 @@ class ReaderCubit extends Cubit<ReaderState> {
       emit(state.copyWith(
         code: ReaderLoadingStateCode.rendering,
         bookName: this.bookData?.title,
-        bookmarkData: bookmarkData,
+        bookmarkDataGetter: () => bookmarkData,
         readerPreference: readerSettingsData,
       ));
     }
 
-    // Register Listeners
-    _loadDoneStreamSubscription =
-        _observeLoadDoneUseCase().listen(_receiveLoadDone);
-    _setStateStreamSubscription =
-        _observeSetStateUseCase().listen(_receiveSetState);
-
-    await _webViewRepository.startLoading(
+    await _dependencies._coreRepository.init(
       bookIdentifier: bookIdentifier,
-      destination: destination,
+      pageIdentifier: pageIdentifier,
+      cfi: cfi,
     );
+
+    if (!isClosed) {
+      // Loading completed.
+      emit(state.copyWith(
+        code: ReaderLoadingStateCode.loaded,
+      ));
+    }
+
+    // Send theme data after the page is loaded.
+    sendThemeData();
+
+    // Set smooth scroll.
+    _dependencies
+        ._setSmoothScrollUseCase(state.readerPreference.isSmoothScroll);
   }
 
   void setNavState(ReaderNavigationStateCode code) {
@@ -167,9 +223,9 @@ class ReaderCubit extends Cubit<ReaderState> {
   void sendThemeData([ThemeData? newTheme]) {
     currentTheme = newTheme ?? currentTheme;
     if (state.code.isLoaded) {
-      _setFontColorUseCase(currentTheme.colorScheme.onSurface);
-      _setFontSizeUseCase(state.readerPreference.fontSize);
-      _setLineHeightUseCase(state.readerPreference.lineHeight);
+      _dependencies._setFontColorUseCase(currentTheme.colorScheme.onSurface);
+      _dependencies._setFontSizeUseCase(state.readerPreference.fontSize);
+      _dependencies._setLineHeightUseCase(state.readerPreference.lineHeight);
     }
   }
 
@@ -210,7 +266,7 @@ class ReaderCubit extends Cubit<ReaderState> {
         isSmoothScroll: value,
       ),
     ));
-    _setSmoothScrollUseCase(value);
+    _dependencies._setSmoothScrollUseCase(value);
   }
 
   set pageNumType(ReaderPageNumType value) {
@@ -221,10 +277,11 @@ class ReaderCubit extends Cubit<ReaderState> {
     ));
   }
 
-  void savePreference() => _savePreferenceUseCase(state.readerPreference);
+  void savePreference() =>
+      _dependencies._savePreferenceUseCase(state.readerPreference);
 
   Future<void> resetPreference() async {
-    await _resetPreferenceUseCase();
+    await _dependencies._resetPreferenceUseCase();
   }
 
   Future<void> _refreshPreference(ReaderPreferenceData data) async {
@@ -248,36 +305,65 @@ class ReaderCubit extends Cubit<ReaderState> {
       savedTime: DateTime.now(),
     );
 
-    _bookmarkUpdateDataUseCase(<BookmarkData>{data});
+    _dependencies._bookmarkUpdateDataUseCase(<BookmarkData>{data});
 
-    emit(state.copyWith(bookmarkData: data));
+    emit(state.copyWith(bookmarkDataGetter: () => data));
+  }
+
+  void removeBookmark() {
+    _dependencies._bookmarkDeleteDataUseCase(<String>{bookData!.identifier});
+
+    emit(state.copyWith(bookmarkDataGetter: () => null));
   }
 
   /// *************************************************************************
   /// Page Navigation
   /// *************************************************************************
 
-  void previousPage() {
-    _previousPageUseCase();
+  Future<void> previousPage() async {
+    if (state.atStart || !ttsCubit.state.ttsState.isIdle) {
+      // There's not a previous page.
+      // TTS is not idle.
+      return;
+    }
+
+    emit(state.copyWith(code: ReaderLoadingStateCode.pageLoading));
+    await _dependencies._previousPageUseCase();
+    emit(state.copyWith(code: ReaderLoadingStateCode.loaded));
   }
 
-  void nextPage() {
-    _nextPageUseCase();
+  Future<void> nextPage() async {
+    if (state.atEnd || !ttsCubit.state.ttsState.isIdle) {
+      // There's not a next page.
+      // TTS is not idle.
+      return;
+    }
+
+    emit(state.copyWith(code: ReaderLoadingStateCode.pageLoading));
+    await _dependencies._nextPageUseCase();
+    emit(state.copyWith(code: ReaderLoadingStateCode.loaded));
+  }
+
+  Future<bool> goto({
+    String? pageIdentifier,
+    String? cfi,
+  }) async {
+    emit(state.copyWith(code: ReaderLoadingStateCode.pageLoading));
+
+    final ReaderGotoUseCaseResult result =
+        await _dependencies._gotoUseCase(ReaderGotoUseCaseParam(
+      chapterIdentifier: pageIdentifier,
+      cfi: cfi,
+    ));
+
+    emit(state.copyWith(code: ReaderLoadingStateCode.loaded));
+
+    return result.isSuccessful;
   }
 
   /// *************************************************************************
   /// Communication
   /// *************************************************************************
-
-  void _receiveLoadDone(void _) {
-    emit(state.copyWith(code: ReaderLoadingStateCode.loaded));
-
-    // Send theme data after the page is loaded.
-    sendThemeData();
-
-    // Set smooth scroll.
-    _setSmoothScrollUseCase(state.readerPreference.isSmoothScroll);
-  }
 
   void _receiveSetState(ReaderSetStateData data) {
     emit(state.copyWith(
@@ -286,10 +372,17 @@ class ReaderCubit extends Cubit<ReaderState> {
       startCfi: data.startCfi,
       chapterCurrentPage: data.chapterCurrentPage,
       chapterTotalPage: data.chapterTotalPage,
+      htmlContent: data.content,
+      atStart: data.atStart,
+      atEnd: data.atEnd,
     ));
 
     if (state.readerPreference.isAutoSaving) {
       saveBookmark();
+    }
+
+    if (state.coreType == ReaderCoreType.htmlWidget && data.content != null) {
+      loadFonts(data.content!.fonts);
     }
   }
 
@@ -297,12 +390,23 @@ class ReaderCubit extends Cubit<ReaderState> {
   /// Miscellaneous
   /// *************************************************************************
 
+  String getInBookPath(String pageIdentifier, String path) {
+    return normalize(join(dirname(pageIdentifier), path));
+  }
+
+  Future<void> loadFonts(Set<CssFontFile> fileSet) async {
+    await _dependencies._loadFontUseCase(fileSet);
+  }
+
   @override
   Future<void> close() async {
-    await _preferenceSubscription.cancel();
-    await _loadDoneStreamSubscription.cancel();
-    await _setStateStreamSubscription.cancel();
-    await _webViewRepository.dispose();
+    for (StreamSubscription<dynamic> subscription in _subscriptionSet) {
+      await subscription.cancel();
+    }
+
+    await _dependencies._coreRepository.dispose();
+    await searchCubit.close();
+
     super.close();
   }
 }

@@ -1,13 +1,25 @@
 enum MimeType {
+  // Archives
   epub(
     <String>['application/epub+zip'],
     <String>['epub'],
   ),
-  zip(<String>['application/zip'], <String>['zip']),
+  zip(
+    <String>['application/zip'],
+    <String>['zip'],
+  ),
+
+  // XML
   atomFeed(
     <String>['application/atom+xml'],
     <String>[],
   ),
+  xhtml(
+    <String>['application/xhtml+xml'],
+    <String>['xhtml'],
+  ),
+
+  // Images
   pdf(
     <String>['application/pdf'],
     <String>['pdf'],
@@ -20,22 +32,47 @@ enum MimeType {
     <String>['image/png'],
     <String>['png'],
   ),
-  unknown(
-    <String>[],
-    <String>[],
+  gif(
+    <String>['image/gif'],
+    <String>['gif'],
+  ),
+  bmp(
+    <String>['image/bmp'],
+    <String>['bmp'],
+  ),
+
+  // Fonts
+  ttf(
+    <String>['font/ttf', 'font/truetype'],
+    <String>['ttf'],
+  ),
+  otf(
+    <String>['font/otf', 'font/opentype'],
+    <String>['otf'],
   );
 
   const MimeType(this.tagList, this.extensionList);
 
-  factory MimeType.fromString(String typeString) {
-    for (MimeType type in values) {
-      if (type.tagList.any((String tag) => tag == typeString)) {
-        return type;
+  static MimeType? tryParse(String? typeString) {
+    if (typeString?.isNotEmpty == true) {
+      for (MimeType type in values) {
+        if (type.tagList.any((String tag) => tag == typeString)) {
+          return type;
+        }
       }
     }
-    return MimeType.unknown;
+
+    return null;
   }
 
   final List<String> tagList;
   final List<String> extensionList;
+
+  bool get isImage =>
+      this == MimeType.png ||
+      this == MimeType.jpg ||
+      this == MimeType.gif ||
+      this == MimeType.bmp;
+
+  bool get isFont => this == MimeType.ttf || this == MimeType.otf;
 }

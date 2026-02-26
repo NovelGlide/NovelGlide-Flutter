@@ -51,8 +51,7 @@ class OpdsDataSourceImpl implements ExploreDataSource {
     final String? rel = link.rel?.trim();
     final List<String>? typeList = link.type?.split(';');
     final String? mimeString = typeList?.first.trim();
-    final MimeType? mimeType =
-        mimeString == null ? null : MimeType.fromString(mimeString);
+    final MimeType? mimeType = MimeType.tryParse(mimeString);
     return PublicationLink(
       href: href,
       rel: switch (rel) {

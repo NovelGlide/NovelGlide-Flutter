@@ -1,4 +1,7 @@
-part of '../reader.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../cubit/reader_cubit.dart';
 
 class ReaderBreadcrumb extends StatelessWidget {
   const ReaderBreadcrumb({super.key});
@@ -13,12 +16,14 @@ class ReaderBreadcrumb extends StatelessWidget {
           padding: const EdgeInsets.symmetric(
             horizontal: 16.0,
           ),
-          child: Text(
-            state.breadcrumb,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.tertiary,
-                ),
-            overflow: TextOverflow.ellipsis,
+          child: Center(
+            child: Text(
+              state.breadcrumb,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: Theme.of(context).colorScheme.tertiary,
+                  ),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         );
       },

@@ -10,6 +10,6 @@ class MimeRepositoryImpl implements MimeRepository {
   @override
   Future<MimeType?> lookupAll(String path) async {
     final String? tag = await _localSource.lookupAll(path);
-    return tag == null ? null : MimeType.fromString(tag);
+    return MimeType.tryParse(tag);
   }
 }

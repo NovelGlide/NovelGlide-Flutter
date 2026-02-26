@@ -1,4 +1,7 @@
-part of '../reader.dart';
+import 'package:flutter/material.dart';
+
+import '../../search_page/widgets/reader_search_button.dart';
+import 'reader_breadcrumb.dart';
 
 class ReaderAppBar extends StatelessWidget implements PreferredSizeWidget {
   const ReaderAppBar({super.key});
@@ -9,13 +12,7 @@ class ReaderAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: BlocBuilder<ReaderCubit, ReaderState>(
-        buildWhen: (ReaderState previous, ReaderState current) =>
-            previous.bookName != current.bookName,
-        builder: (BuildContext context, ReaderState state) {
-          return Text(state.bookName);
-        },
-      ),
+      title: const ReaderBreadcrumb(),
       actions: const <Widget>[
         ReaderSearchButton(),
       ],

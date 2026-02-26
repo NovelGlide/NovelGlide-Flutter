@@ -1,4 +1,14 @@
-part of '../reader.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../../advertisement/domain/entities/ad_unit_id.dart';
+import '../../../../advertisement/presentation/advertisement.dart';
+import '../../../domain/entities/reader_core_type.dart';
+import '../core_html/reader_core_html_wrapper.dart';
+import '../core_webview/reader_core_webview.dart';
+import '../cubit/reader_cubit.dart';
+import 'reader_overlap_widget.dart';
+import 'reader_pagination.dart';
 
 class ReaderScaffoldBody extends StatelessWidget {
   const ReaderScaffoldBody({super.key});
@@ -42,7 +52,6 @@ class ReaderScaffoldBody extends StatelessWidget {
   Widget _buildReader(ReaderCubit cubit) {
     return Column(
       children: <Widget>[
-        const ReaderBreadcrumb(),
         Expanded(
           child: GestureDetector(
             behavior: HitTestBehavior.translucent,
@@ -51,14 +60,13 @@ class ReaderScaffoldBody extends StatelessWidget {
             onHorizontalDragStart: cubit.gestureHandler.onStart,
             onHorizontalDragEnd: cubit.gestureHandler.onEnd,
             onHorizontalDragCancel: cubit.gestureHandler.onCancel,
-            child: WebViewWidget(
-              controller: cubit.webViewController,
-              gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
-                Factory<LongPressGestureRecognizer>(
-                  () => LongPressGestureRecognizer(
-                    duration: const Duration(milliseconds: 100),
-                  ),
-                ),
+            child: BlocBuilder<ReaderCubit, ReaderState>(
+              builder: (BuildContext context, ReaderState state) {
+                return switch (state.coreType) {
+                  ReaderCoreType.webView => const ReaderCoreWebView(),
+                  ReaderCoreType.htmlWidget => const ReaderCoreHtmlWrapper(),
+                  null => const SizedBox.shrink(),
+                };
               },
             ),
           ),

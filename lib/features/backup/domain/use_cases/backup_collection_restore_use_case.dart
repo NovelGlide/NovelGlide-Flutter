@@ -36,6 +36,10 @@ class BackupCollectionRestoreUseCase
   }
 
   Future<void> _runner() async {
+    // Start the download process
+    _controller
+        .add(const BackupProgressData(step: BackupProgressStepCode.download));
+
     // Check if the backup exists
     if (!(await _repository.isBackupExists())) {
       _controller.add(const BackupProgressData(
@@ -46,11 +50,6 @@ class BackupCollectionRestoreUseCase
 
     // Get a temporary work directory
     final String tempDirectoryPath = await _tempRepository.getDirectoryPath();
-
-    // Start the download process
-    _controller.add(const BackupProgressData(
-      step: BackupProgressStepCode.download,
-    ));
 
     // Download the file
     final String? jsonFilePath = await _repository.downloadFromCloud(

@@ -4,10 +4,10 @@ import '../entities/web_server_response.dart';
 
 abstract class WebServerRepository {
   Future<void> start(
-    AppLocalWebServer port,
+    AppLocalWebServer server,
     Map<String, Future<WebServerResponse> Function(WebServerRequest request)>
         routes,
   );
 
-  Future<void> stop(AppLocalWebServer port);
+  Future<void> stop(AppLocalWebServer server);
 }

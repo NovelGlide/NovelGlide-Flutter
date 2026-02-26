@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -83,9 +84,17 @@ class FileSystemRepositoryImpl implements FileSystemRepository {
     int? end,
   }) async* {
     final File entry = File(path);
-    await for (List<int> chunk in entry.openRead(start, end)) {
-      yield Uint8List.fromList(chunk);
-    }
+    yield* entry.openRead(start, end).transform(
+      StreamTransformer<List<int>, Uint8List>.fromHandlers(
+        handleData: (List<int> chunk, EventSink<Uint8List> sink) {
+          // Convert the List<int> chunk to Uint8List
+          final Uint8List uint8ListChunk = Uint8List.fromList(chunk);
+
+          // Add the converted chunk to the output stream
+          sink.add(uint8ListChunk);
+        },
+      ),
+    );
   }
 
   @override
@@ -126,9 +135,7 @@ class FileSystemRepositoryImpl implements FileSystemRepository {
       throw FileSystemException('Directory not found', path);
     }
 
-    await for (FileSystemEntity entity in directory.list()) {
-      yield entity;
-    }
+    yield* directory.list();
   }
 
   @override

@@ -11,14 +11,14 @@ import '../../data_transfer_objects/reader_web_message_dto.dart';
 import '../reader_webview_data_source.dart';
 
 class ReaderWebViewDataSourceImpl implements ReaderWebViewDataSource {
-  factory ReaderWebViewDataSourceImpl() {
+  factory ReaderWebViewDataSourceImpl(WebViewController controller) {
     final ReaderWebViewDataSourceImpl instance =
-        ReaderWebViewDataSourceImpl._();
+        ReaderWebViewDataSourceImpl._(controller);
 
-    instance.webViewController.enableZoom(false);
-    instance.webViewController.setBackgroundColor(Colors.transparent);
-    instance.webViewController.setJavaScriptMode(JavaScriptMode.unrestricted);
-    instance.webViewController.addJavaScriptChannel(
+    controller.enableZoom(false);
+    controller.setBackgroundColor(Colors.transparent);
+    controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+    controller.addJavaScriptChannel(
       _channelName,
       onMessageReceived: instance._receive,
     );
@@ -26,15 +26,14 @@ class ReaderWebViewDataSourceImpl implements ReaderWebViewDataSource {
     return instance;
   }
 
-  ReaderWebViewDataSourceImpl._();
+  ReaderWebViewDataSourceImpl._(this._controller);
 
   static const String _channelName = 'appApi';
 
-  final WebViewController _controller = WebViewController();
+  final WebViewController _controller;
+  final Completer<void> _loadDoneCompleter = Completer<void>();
 
   /// ========== Messages Stream Controllers ==========
-  final StreamController<void> _loadDoneStreamController =
-      StreamController<void>.broadcast();
   final StreamController<String> _saveLocationStreamController =
       StreamController<String>.broadcast();
   final StreamController<ReaderSetStateData> _setStateStreamController =
@@ -63,7 +62,7 @@ class ReaderWebViewDataSourceImpl implements ReaderWebViewDataSource {
       // Dispatch messages
       switch (message.route) {
         case 'loadDone':
-          _loadDoneStreamController.add(null);
+          _loadDoneCompleter.complete();
           break;
 
         case 'saveLocation':
@@ -74,8 +73,18 @@ class ReaderWebViewDataSourceImpl implements ReaderWebViewDataSource {
 
         case 'setState':
           if (message.data is Map<String, dynamic>) {
-            _setStateStreamController
-                .add(ReaderSetStateData.fromJson(message.data));
+            _setStateStreamController.add(ReaderSetStateData(
+              breadcrumb: message.data['breadcrumb'],
+              chapterIdentifier: message.data['chapterIdentifier'],
+              startCfi: message.data['startCfi'],
+              chapterCurrentPage: message.data['chapterCurrentPage'],
+              chapterTotalPage: message.data['chapterTotalPage'],
+              // Content will processed by JavaScript.
+              content: null,
+              // They're not supported.
+              atStart: false,
+              atEnd: false,
+            ));
           }
           break;
 
@@ -99,7 +108,7 @@ class ReaderWebViewDataSourceImpl implements ReaderWebViewDataSource {
               (message.data['searchResultList'] as List<dynamic>)
                   .map<ReaderSearchResultData>(
                       (dynamic e) => ReaderSearchResultData(
-                            cfi: e['cfi'],
+                            destination: e['cfi'],
                             excerpt: e['excerpt'],
                           ))
                   .toList(),
@@ -111,7 +120,10 @@ class ReaderWebViewDataSourceImpl implements ReaderWebViewDataSource {
   }
 
   @override
-  WebViewController get webViewController => _controller;
+  Future<void> loadPage(Uri uri) {
+    _controller.loadRequest(uri);
+    return _loadDoneCompleter.future;
+  }
 
   @override
   void send(ReaderWebMessageDto message) {
@@ -125,9 +137,6 @@ class ReaderWebViewDataSourceImpl implements ReaderWebViewDataSource {
     _controller.runJavaScript(
         'window.communicationService.setChannel(window.$_channelName)');
   }
-
-  @override
-  Stream<void> get onLoadDone => _loadDoneStreamController.stream;
 
   @override
   Stream<String> get onSaveLocation => _saveLocationStreamController.stream;
@@ -150,7 +159,6 @@ class ReaderWebViewDataSourceImpl implements ReaderWebViewDataSource {
 
   @override
   Future<void> dispose() async {
-    await _loadDoneStreamController.close();
     await _saveLocationStreamController.close();
     await _setStateStreamController.close();
     await _ttsPlayStreamController.close();

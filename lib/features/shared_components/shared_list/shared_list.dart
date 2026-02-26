@@ -8,7 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../enum/loading_state_code.dart';
 import '../../../enum/sort_order_code.dart';
 import '../../../generated/i18n/app_localizations.dart';
-import '../animation_widgets/simple_fade_switcher.dart';
+import '../animated_switchers/simple_fade_switcher.dart';
 import '../random_shock_emoticon_text.dart';
 
 part 'presentation/button/shared_list_delete_button.dart';

@@ -33,24 +33,60 @@ class LogRepositoryImpl extends LogRepository {
   }
 
   @override
-  Future<void> error(String message, {Object? error, StackTrace? stackTrace}) {
+  Future<void> error(
+    String message, {
+    Object? error,
+    StackTrace? stackTrace,
+    Iterable<Object> information = const <Object>[],
+  }) {
     return Future.wait(<Future<void>>[
-      _loggerAdapter.error(message, error: error, stackTrace: stackTrace),
-      _firebaseCrashlyticsAdapter.error(message,
-          error: error, stackTrace: stackTrace),
-      _firebaseAnalyticsAdapter.error(message,
-          error: error, stackTrace: stackTrace),
+      _loggerAdapter.error(
+        message,
+        error: error,
+        stackTrace: stackTrace,
+        information: information,
+      ),
+      _firebaseCrashlyticsAdapter.error(
+        message,
+        error: error,
+        stackTrace: stackTrace,
+        information: information,
+      ),
+      _firebaseAnalyticsAdapter.error(
+        message,
+        error: error,
+        stackTrace: stackTrace,
+        information: information,
+      ),
     ]);
   }
 
   @override
-  Future<void> fatal(String message, {Object? error, StackTrace? stackTrace}) {
+  Future<void> fatal(
+    String message, {
+    Object? error,
+    StackTrace? stackTrace,
+    Iterable<Object> information = const <Object>[],
+  }) {
     return Future.wait(<Future<void>>[
-      _loggerAdapter.fatal(message, error: error, stackTrace: stackTrace),
-      _firebaseCrashlyticsAdapter.fatal(message,
-          error: error, stackTrace: stackTrace),
-      _firebaseAnalyticsAdapter.fatal(message,
-          error: error, stackTrace: stackTrace),
+      _loggerAdapter.fatal(
+        message,
+        error: error,
+        stackTrace: stackTrace,
+        information: information,
+      ),
+      _firebaseCrashlyticsAdapter.fatal(
+        message,
+        error: error,
+        stackTrace: stackTrace,
+        information: information,
+      ),
+      _firebaseAnalyticsAdapter.fatal(
+        message,
+        error: error,
+        stackTrace: stackTrace,
+        information: information,
+      ),
     ]);
   }
 

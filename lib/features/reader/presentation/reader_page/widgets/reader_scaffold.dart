@@ -1,4 +1,10 @@
-part of '../reader.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../../../enum/window_size.dart';
+import '../cubit/reader_cubit.dart';
+import '../views/reader_compact_view.dart';
+import '../views/reader_medium_view.dart';
 
 class ReaderScaffold extends StatelessWidget {
   const ReaderScaffold({super.key});
@@ -11,46 +17,9 @@ class ReaderScaffold extends StatelessWidget {
 
     cubit.sendThemeData(Theme.of(context));
 
-    switch (windowClass) {
-      case WindowSize.compact:
-        return const _CompactView();
-
-      default:
-        return const _MediumView();
-    }
-  }
-}
-
-class _CompactView extends StatelessWidget {
-  const _CompactView();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      appBar: ReaderAppBar(),
-      body: SafeArea(
-        child: ReaderScaffoldBody(),
-      ),
-      bottomNavigationBar: SafeArea(child: ReaderNavigationBar()),
-    );
-  }
-}
-
-class _MediumView extends StatelessWidget {
-  const _MediumView();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      appBar: ReaderAppBar(),
-      body: SafeArea(
-        child: Row(
-          children: <Widget>[
-            ReaderNavigationRail(),
-            Expanded(child: ReaderScaffoldBody()),
-          ],
-        ),
-      ),
-    );
+    return switch (windowClass) {
+      WindowSize.compact => const ReaderCompactView(),
+      _ => const ReaderMediumView(),
+    };
   }
 }

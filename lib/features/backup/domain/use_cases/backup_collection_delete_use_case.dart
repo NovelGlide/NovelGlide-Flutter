@@ -23,6 +23,11 @@ class BackupCollectionDeleteUseCase
   }
 
   Future<void> _runner() async {
+    // Start the delete process
+    _controller.add(const BackupProgressData(
+      step: BackupProgressStepCode.delete,
+    ));
+
     // Check if the backup exists
     if (!(await _repository.isBackupExists())) {
       _controller.add(const BackupProgressData(
@@ -30,11 +35,6 @@ class BackupCollectionDeleteUseCase
       ));
       return;
     }
-
-    // Start the delete process
-    _controller.add(const BackupProgressData(
-      step: BackupProgressStepCode.delete,
-    ));
 
     // Request the deleting operation
     final bool result = await _repository.deleteFromCloud();

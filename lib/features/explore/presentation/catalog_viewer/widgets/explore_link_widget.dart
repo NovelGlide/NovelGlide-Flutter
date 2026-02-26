@@ -33,23 +33,25 @@ class ExploreLinkWidget extends StatelessWidget {
       return null;
     }
 
-    switch (link.type) {
-      case MimeType.atomFeed:
-        return () => onVisit?.call(link.href!);
-      case MimeType.jpg:
-      case MimeType.png:
-        return () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (BuildContext context) => PhotoViewer(
-                  imageUrl: link.href!.toString(),
-                ),
+    if (link.type == MimeType.atomFeed) {
+      // It's an atom feed link.
+      return () => onVisit?.call(link.href!);
+    }
+
+    if (link.type?.isImage == true) {
+      // It's an image link.
+      return () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (BuildContext context) => PhotoViewer(
+                imageUrl: link.href!.toString(),
               ),
-            );
-      default:
+            ),
+          );
     }
 
     if (link.rel == PublicationLinkRelationship.acquisition &&
         link.type == MimeType.epub) {
+      // It's a supported book link.
       return () => onDownload?.call(link.href!);
     }
 
@@ -69,20 +71,26 @@ class ExploreLinkWidget extends StatelessWidget {
       return link.title!;
     }
 
-    switch (link.type) {
-      case MimeType.atomFeed:
-        return appLocalizations.exploreBrowserViewIt;
-      case MimeType.epub:
-        return appLocalizations.exploreBrowserDownloadIt;
-      default:
+    if (link.type == MimeType.atomFeed) {
+      // It's an atom feed link.
+      return appLocalizations.exploreBrowserViewIt;
     }
 
-    switch (link.rel) {
-      case PublicationLinkRelationship.thumbnail:
-        return appLocalizations.generalThumbnail;
-      case PublicationLinkRelationship.cover:
-        return appLocalizations.generalBookCover;
-      default:
+    if (link.type?.isImage == true) {
+      // It's an image link.
+      switch (link.rel) {
+        case PublicationLinkRelationship.thumbnail:
+          return appLocalizations.generalThumbnail;
+        case PublicationLinkRelationship.cover:
+          return appLocalizations.generalBookCover;
+        default:
+      }
+    }
+
+    if (link.rel == PublicationLinkRelationship.acquisition &&
+        link.type == MimeType.epub) {
+      // It's a supported book link.
+      return appLocalizations.exploreBrowserDownloadIt;
     }
 
     return appLocalizations.exploreBrowserUnknownLink;
