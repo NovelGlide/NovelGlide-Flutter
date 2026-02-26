@@ -232,24 +232,49 @@ class ReaderCoreHtmlRepositoryImpl implements ReaderCoreRepository {
     return resultList;
   }
 
+  // ---------------------------------------------------------------------------
+  // Appearance setters
+  //
+  // The HTML Widget engine does NOT use imperative style setters. Instead,
+  // all appearance changes are driven reactively through Flutter's state
+  // management:
+  //
+  //   - fontSize & lineHeight: ReaderCubit emits a new ReaderPreferenceData
+  //     state, which causes ReaderCoreHtmlWrapper to rebuild. ReaderCoreHtml
+  //     reads fontSize and lineHeight directly from the state and passes them
+  //     to flutter_html's Style API.
+  //
+  //   - fontColor: The HTML Widget inherits text color from the surrounding
+  //     Flutter theme (Theme.of(context).colorScheme.onSurface) automatically.
+  //     Font color is NOT user-configurable — ReaderCubit.sendThemeData() calls
+  //     this setter only to keep parity with the WebView engine interface, which
+  //     requires an explicit color push over the JS bridge.
+  //
+  //   - smoothScroll: Not applicable. Scroll behavior is controlled by Flutter's
+  //     SingleChildScrollView and is not a toggleable property in this engine.
+  // ---------------------------------------------------------------------------
+
   @override
   set fontColor(Color fontColor) {
-    // No-ops
+    // No-op: font color is inherited from the Flutter theme automatically.
+    // See note above.
   }
 
   @override
   set fontSize(double fontSize) {
-    // No-ops
+    // No-op: font size is applied reactively via ReaderCoreHtml rebuilding
+    // on ReaderPreferenceData state changes. See note above.
   }
 
   @override
   set lineHeight(double lineHeight) {
-    // No-ops
+    // No-op: line height is applied reactively via ReaderCoreHtml rebuilding
+    // on ReaderPreferenceData state changes. See note above.
   }
 
   @override
   set smoothScroll(bool smoothScroll) {
-    // No-ops
+    // No-op: not applicable for SingleChildScrollView. See note above.
   }
 
   @override
