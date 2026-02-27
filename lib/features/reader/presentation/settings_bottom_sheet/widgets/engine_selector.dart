@@ -110,7 +110,7 @@ class _EngineSelectorState extends State<_EngineSelector> {
     // Close bottom sheet
     Navigator.pop(context);
 
-    // Show snackbar
+    // Show snack bar
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -194,14 +194,16 @@ class _EngineSelectorState extends State<_EngineSelector> {
         ),
         const SizedBox(height: 8),
         DropdownMenu<ReaderCoreType>(
+          expandedInsets: EdgeInsets.zero,
+          label: Text(l10n.readerEngineInfoTitle),
           initialSelection: _selected,
           onSelected: _onEngineChanged,
           dropdownMenuEntries: <DropdownMenuEntry<ReaderCoreType>>[
-            DropdownMenuEntry(
+            DropdownMenuEntry<ReaderCoreType>(
               value: ReaderCoreType.htmlWidget,
               label: l10n.readerEngineHtmlWidget,
             ),
-            DropdownMenuEntry(
+            DropdownMenuEntry<ReaderCoreType>(
               value: ReaderCoreType.webView,
               label: l10n.readerEngineWebView,
             ),
