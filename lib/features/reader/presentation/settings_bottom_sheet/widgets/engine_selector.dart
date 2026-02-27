@@ -7,7 +7,7 @@ part of '../reader_bottom_sheet.dart';
 /// pros/cons for each engine. Changes require confirmation and take effect
 /// on next book open.
 class _EngineSelector extends StatefulWidget {
-  const _EngineSelector({Key? key}) : super(key: key);
+  const _EngineSelector();
 
   @override
   State<_EngineSelector> createState() => _EngineSelectorState();
@@ -94,10 +94,10 @@ class _EngineSelectorState extends State<_EngineSelector> {
     });
   }
 
-  /// Saves the new engine preference and shows a snackbar notification.
+  /// Saves the new engine preference and shows a snack bar notification.
   ///
   /// Updates the cubit state with the new engine, persists to storage,
-  /// closes the bottom sheet, and displays a confirmation snackbar.
+  /// closes the bottom sheet, and displays a confirmation snack bar.
   void _saveEnginePreference(ReaderCoreType newEngine) {
     final ReaderCubit cubit = context.read<ReaderCubit>();
 
