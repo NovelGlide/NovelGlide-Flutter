@@ -64,7 +64,7 @@ class _EngineSelectorState extends State<_EngineSelector> {
       builder: (BuildContext context) => AlertDialog(
         title: Text(l10n.readerEngineSwitchTitle),
         content: Text(
-          l10n.readerEngineSwitchContent(engine: engineName),
+          l10n.readerEngineSwitchContent(engineName),
         ),
         actions: <Widget>[
           TextButton(
@@ -101,11 +101,8 @@ class _EngineSelectorState extends State<_EngineSelector> {
   void _saveEnginePreference(ReaderCoreType newEngine) {
     final ReaderCubit cubit = context.read<ReaderCubit>();
 
-    // Update the preference
-    cubit.emit(cubit.state.copyWith(
-      readerPreference:
-          cubit.state.readerPreference.copyWith(coreType: newEngine),
-    ));
+    // Update the preference using the cubit setter
+    cubit.coreType = newEngine;
 
     // Save to storage
     cubit.savePreference();

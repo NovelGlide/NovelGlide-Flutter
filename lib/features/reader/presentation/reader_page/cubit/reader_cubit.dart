@@ -277,6 +277,14 @@ class ReaderCubit extends Cubit<ReaderState> {
     ));
   }
 
+  set coreType(ReaderCoreType value) {
+    emit(state.copyWith(
+      readerPreference: state.readerPreference.copyWith(
+        coreType: value,
+      ),
+    ));
+  }
+
   void savePreference() =>
       _dependencies._savePreferenceUseCase(state.readerPreference);
 
