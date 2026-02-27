@@ -38,15 +38,17 @@ class _EngineSelector extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             DropdownMenu<ReaderCoreType>(
+              expandedInsets: EdgeInsets.zero,
+              label: Text(l10n.readerEngineInfoTitle),
               initialSelection: state.readerPreference.coreType,
               onSelected: (ReaderCoreType? value) =>
                   _onEngineChanged(context, value),
               dropdownMenuEntries: <DropdownMenuEntry<ReaderCoreType>>[
-                DropdownMenuEntry(
+                DropdownMenuEntry<ReaderCoreType>(
                   value: ReaderCoreType.htmlWidget,
                   label: l10n.readerEngineHtmlWidget,
                 ),
-                DropdownMenuEntry(
+                DropdownMenuEntry<ReaderCoreType>(
                   value: ReaderCoreType.webView,
                   label: l10n.readerEngineWebView,
                 ),
@@ -142,7 +144,7 @@ class _EngineSelector extends StatelessWidget {
     // Close bottom sheet
     Navigator.pop(context);
 
-    // Show snackbar
+    // Show snack bar
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
