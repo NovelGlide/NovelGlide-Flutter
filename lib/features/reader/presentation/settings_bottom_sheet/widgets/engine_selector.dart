@@ -98,23 +98,25 @@ class _EngineSelector extends StatelessWidget {
         ? l10n.readerEngineWebView
         : l10n.readerEngineHtmlWidget;
 
-    showDialog<bool>(
+    // We don't need to return the result. Set it to void.
+    showDialog<void>(
       context: context,
-      builder: (BuildContext context) => AlertDialog(
+      // Use dialogContext here. If use context, the _saveEnginePreference
+      // will use the context of this dialog, which will cause it unable to
+      // get the reader cubit by context.read.
+      builder: (BuildContext dialogContext) => AlertDialog(
         title: Text(l10n.readerEngineSwitchTitle),
         content: Text(
           l10n.readerEngineSwitchContent(engineName),
         ),
         actions: <Widget>[
           TextButton(
-            onPressed: () {
-              Navigator.pop(context, false);
-            },
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: Text(l10n.readerEngineSwitchCancel),
           ),
           FilledButton(
             onPressed: () {
-              Navigator.pop(context, true);
+              Navigator.of(dialogContext).pop();
               _saveEnginePreference(context, newEngine);
             },
             child: Text(l10n.readerEngineSwitchConfirm),
