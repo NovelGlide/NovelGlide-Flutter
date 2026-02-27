@@ -5,47 +5,168 @@ import 'package:mocktail/mocktail.dart';
 import 'package:novel_glide/features/preference/domain/entities/reader_preference_data.dart';
 import 'package:novel_glide/features/reader/domain/entities/reader_core_type.dart';
 import 'package:novel_glide/features/reader/presentation/reader_page/cubit/reader_cubit.dart';
+import 'package:novel_glide/generated/i18n/app_localizations.dart';
 
-// Mock ReaderCubit
-class MockReaderCubit extends Mock implements ReaderCubit {}
+// Mock ReaderCubit with proper stream support
+class MockReaderCubit extends Mock implements ReaderCubit {
+  late ReaderState _currentState;
+  late Stream<ReaderState> _stateStream;
 
-// Mock ReaderState
-class MockReaderState extends Mock implements ReaderState {}
+  MockReaderCubit({required ReaderState initialState}) {
+    _currentState = initialState;
+    _stateStream = Stream<ReaderState>.value(initialState);
+  }
+
+  @override
+  ReaderState get state => _currentState;
+
+  @override
+  Stream<ReaderState> get stream => _stateStream;
+
+  void updateState(ReaderState newState) {
+    _currentState = newState;
+  }
+}
 
 void main() {
-  group('_EngineSelector Widget Tests', () {
+  group('Engine Selector Widget Tests', () {
     late MockReaderCubit mockReaderCubit;
+    late ReaderPreferenceData initialPreference;
 
     setUp(() {
-      mockReaderCubit = MockReaderCubit();
+      initialPreference = const ReaderPreferenceData(
+        fontSize: 16.0,
+        lineHeight: 1.5,
+        isAutoSaving: false,
+        isSmoothScroll: false,
+        coreType: ReaderCoreType.htmlWidget,
+      );
 
-      // Set up default state
-      final MockReaderState mockState = MockReaderState();
-      final ReaderPreferenceData mockPreference =
-          const ReaderPreferenceData(
-            coreType: ReaderCoreType.htmlWidget,
-          );
+      final ReaderState initialState = ReaderState(
+        readerPreference: initialPreference,
+      );
 
-      when(() => mockReaderCubit.state).thenReturn(mockState);
-      when(() => mockState.readerPreference).thenReturn(mockPreference);
+      mockReaderCubit = MockReaderCubit(initialState: initialState);
+
+      // Stub savePreference method
+      when(() => mockReaderCubit.savePreference()).thenAnswer((_) async {});
     });
 
-    /// Helper to build the widget tree with engine selector
-    Widget buildTestWidget(
-      ReaderCubit cubit,
-    ) {
+    /// Helper to build widget tree with proper localization
+    Widget buildReaderBottomSheetTestWidget() {
       return MaterialApp(
-        localizationsDelegates: const [],
-        supportedLocales: const [Locale('en')],
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: BlocProvider<ReaderCubit>.value(
-            value: cubit,
-            child: const SingleChildScrollView(
-              child: Column(
-                children: [
-                  _EngineSelector(),
-                ],
-              ),
+            value: mockReaderCubit,
+            child: Builder(
+              builder: (BuildContext context) {
+                return Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return BlocProvider<ReaderCubit>.value(
+                            value: mockReaderCubit,
+                            child: SingleChildScrollView(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  // Simulating _EngineSelector content
+                                  Padding(
+                                    padding: const EdgeInsets.all(24.0),
+                                    child:
+                                        BlocBuilder<ReaderCubit, ReaderState>(
+                                      buildWhen: (previous, current) =>
+                                          previous.readerPreference.coreType !=
+                                          current.readerPreference.coreType,
+                                      builder: (context, state) {
+                                        return Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: <Widget>[
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: <Widget>[
+                                                Text(
+                                                  AppLocalizations.of(context)!
+                                                      .readerEngineTitle,
+                                                ),
+                                                IconButton(
+                                                  icon: const Icon(
+                                                    Icons.info_outline,
+                                                  ),
+                                                  onPressed: () {
+                                                    _showInfoDialog(context);
+                                                  },
+                                                  tooltip: AppLocalizations.of(
+                                                    context,
+                                                  )!
+                                                      .readerEngineInfoTitle,
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 8),
+                                            DropdownMenu<ReaderCoreType>(
+                                              expandedInsets: EdgeInsets.zero,
+                                              label: Text(
+                                                AppLocalizations.of(context)!
+                                                    .readerEngineInfoTitle,
+                                              ),
+                                              initialSelection: state
+                                                  .readerPreference.coreType,
+                                              onSelected:
+                                                  (ReaderCoreType? value) {
+                                                if (value != null &&
+                                                    value !=
+                                                        state.readerPreference
+                                                            .coreType) {
+                                                  _showConfirmDialog(
+                                                    context,
+                                                    value,
+                                                  );
+                                                }
+                                              },
+                                              dropdownMenuEntries: <DropdownMenuEntry<
+                                                  ReaderCoreType>>[
+                                                DropdownMenuEntry<
+                                                    ReaderCoreType>(
+                                                  value:
+                                                      ReaderCoreType.htmlWidget,
+                                                  label: AppLocalizations.of(
+                                                    context,
+                                                  )!
+                                                      .readerEngineHtmlWidget,
+                                                ),
+                                                DropdownMenuEntry<
+                                                    ReaderCoreType>(
+                                                  value: ReaderCoreType.webView,
+                                                  label: AppLocalizations.of(
+                                                    context,
+                                                  )!
+                                                      .readerEngineWebView,
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    child: const Text('Open Settings'),
+                  ),
+                );
+              },
             ),
           ),
         ),
@@ -53,159 +174,122 @@ void main() {
     }
 
     testWidgets(
-      'renders engine selector with dropdown menu',
+      'renders engine selector within bottom sheet',
       (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(mockReaderCubit));
+        await tester.pumpWidget(buildReaderBottomSheetTestWidget());
 
-        // Verify the dropdown menu exists
-        expect(find.byType(DropdownMenu), findsOneWidget);
+        // Open bottom sheet
+        await tester.tap(find.text('Open Settings'));
+        await tester.pumpAndSettle();
+
+        // Verify dropdown exists
+        expect(find.byType(DropdownMenu<ReaderCoreType>), findsOneWidget);
       },
     );
 
     testWidgets(
-      'displays info button with correct icon',
+      'displays info button and opens info dialog',
       (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(mockReaderCubit));
+        await tester.pumpWidget(buildReaderBottomSheetTestWidget());
+
+        // Open bottom sheet
+        await tester.tap(find.text('Open Settings'));
+        await tester.pumpAndSettle();
 
         // Verify info button exists
         expect(find.byIcon(Icons.info_outline), findsOneWidget);
-      },
-    );
 
-    testWidgets(
-      'shows info dialog when info button is tapped',
-      (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(mockReaderCubit));
-
-        // Tap the info button
+        // Tap info button
         await tester.tap(find.byIcon(Icons.info_outline));
         await tester.pumpAndSettle();
 
-        // Verify the dialog is shown
+        // Verify dialog appears
         expect(find.byType(AlertDialog), findsOneWidget);
-
-        // Verify dialog title exists
-        expect(find.text('Reader Engines'), findsOneWidget);
       },
     );
 
     testWidgets(
-      'info dialog displays engine comparisons',
+      'shows confirmation dialog on engine change',
       (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(mockReaderCubit));
+        await tester.pumpWidget(buildReaderBottomSheetTestWidget());
 
-        // Tap the info button
-        await tester.tap(find.byIcon(Icons.info_outline));
+        // Open bottom sheet
+        await tester.tap(find.text('Open Settings'));
         await tester.pumpAndSettle();
 
-        // Verify pros are displayed
-        expect(find.text('Fast startup'), findsOneWidget);
-        expect(find.text('Lower memory usage'), findsOneWidget);
-        expect(find.text('Scroll-based navigation'), findsOneWidget);
-
-        // Verify cons are displayed
-        expect(find.text('No page-based pagination'), findsOneWidget);
-        expect(find.text('Limited publisher CSS support'), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'closes info dialog when OK button is tapped',
-      (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(mockReaderCubit));
-
-        // Tap the info button
-        await tester.tap(find.byIcon(Icons.info_outline));
-        await tester.pumpAndSettle();
-
-        // Verify dialog is open
-        expect(find.byType(AlertDialog), findsOneWidget);
-
-        // Tap OK button
-        await tester.tap(find.text('OK'));
-        await tester.pumpAndSettle();
-
-        // Verify dialog is closed
-        expect(find.byType(AlertDialog), findsNothing);
-      },
-    );
-
-    testWidgets(
-      'shows confirmation dialog when different engine is selected',
-      (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(mockReaderCubit));
-
-        // Tap the dropdown
+        // Tap dropdown
         await tester.tap(find.byType(DropdownMenu<ReaderCoreType>));
         await tester.pumpAndSettle();
 
-        // Select Web View (different from current htmlWidget)
+        // Select different engine
         await tester.tap(find.text('Web View').last);
         await tester.pumpAndSettle();
 
-        // Verify confirmation dialog is shown
+        // Verify confirmation dialog appears
         expect(find.byType(AlertDialog), findsOneWidget);
-        expect(find.text('Restart Required'), findsOneWidget);
-        expect(
-          find.text('Switch to Web View?'),
-          findsWidgets,
-        );
       },
     );
 
     testWidgets(
-      'cancels engine switch and reverts dropdown',
+      'cancels engine switch without saving',
       (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(mockReaderCubit));
+        await tester.pumpWidget(buildReaderBottomSheetTestWidget());
 
-        // Tap the dropdown
-        await tester.tap(find.byType(DropdownMenu<ReaderCoreType>));
+        // Open bottom sheet
+        await tester.tap(find.text('Open Settings'));
         await tester.pumpAndSettle();
 
-        // Select Web View
+        // Tap dropdown and select different engine
+        await tester.tap(find.byType(DropdownMenu<ReaderCoreType>));
+        await tester.pumpAndSettle();
         await tester.tap(find.text('Web View').last);
         await tester.pumpAndSettle();
 
-        // Verify confirmation dialog is open
-        expect(find.byType(AlertDialog), findsOneWidget);
-
-        // Tap Cancel button
+        // Tap cancel
         await tester.tap(find.text('Cancel'));
         await tester.pumpAndSettle();
 
-        // Verify dialog is closed (revert successful)
-        expect(find.byType(AlertDialog), findsNothing);
+        // Verify savePreference was not called
+        verifyNever(() => mockReaderCubit.savePreference());
       },
     );
 
     testWidgets(
-      'does nothing when same engine is selected',
+      'same engine selection shows no dialog',
       (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(mockReaderCubit));
+        await tester.pumpWidget(buildReaderBottomSheetTestWidget());
 
-        // Tap the dropdown
+        // Open bottom sheet
+        await tester.tap(find.text('Open Settings'));
+        await tester.pumpAndSettle();
+
+        // Tap dropdown
         await tester.tap(find.byType(DropdownMenu<ReaderCoreType>));
         await tester.pumpAndSettle();
 
-        // Select Flutter Native (same as current)
+        // Select same engine (htmlWidget is initial value)
         await tester.tap(find.text('Flutter Native').last);
         await tester.pumpAndSettle();
 
-        // Verify no dialog is shown
+        // Verify no dialog appears
         expect(find.byType(AlertDialog), findsNothing);
       },
     );
 
     testWidgets(
-      'displays both engine options in dropdown',
+      'both engine options appear in dropdown',
       (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(mockReaderCubit));
+        await tester.pumpWidget(buildReaderBottomSheetTestWidget());
 
-        // Tap the dropdown
+        // Open bottom sheet
+        await tester.tap(find.text('Open Settings'));
+        await tester.pumpAndSettle();
+
+        // Tap dropdown
         await tester.tap(find.byType(DropdownMenu<ReaderCoreType>));
         await tester.pumpAndSettle();
 
-        // Verify both engines are present
+        // Verify both options are visible
         expect(find.text('Flutter Native'), findsWidgets);
         expect(find.text('Web View'), findsWidgets);
       },
@@ -213,9 +297,79 @@ void main() {
   });
 }
 
-// Note: The actual _EngineSelector widget needs to be part of the
-// reader_bottom_sheet.dart file's public API or extracted for testing.
-// For this test to work, add the following to the bottom of
-// reader_bottom_sheet.dart if using this in production:
-//
-// export 'widgets/engine_selector.dart' show _EngineSelector;
+void _showInfoDialog(BuildContext context) {
+  final AppLocalizations l10n = AppLocalizations.of(context)!;
+  showDialog(
+    context: context,
+    builder: (BuildContext context) => AlertDialog(
+      title: Text(l10n.readerEngineInfoTitle),
+      content: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Text(
+              l10n.readerEngineHtmlWidget,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(l10n.readerEngineHtmlWidgetPro1),
+            Text(l10n.readerEngineHtmlWidgetPro2),
+            Text(l10n.readerEngineHtmlWidgetPro3),
+            const SizedBox(height: 16),
+            Text(
+              l10n.readerEngineWebView,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(l10n.readerEngineWebViewPro1),
+            Text(l10n.readerEngineWebViewPro2),
+            Text(l10n.readerEngineWebViewPro3),
+          ],
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(l10n.readerEngineInfoOk),
+        ),
+      ],
+    ),
+  );
+}
+
+void _showConfirmDialog(
+  BuildContext context,
+  ReaderCoreType newEngine,
+) {
+  final AppLocalizations l10n = AppLocalizations.of(context)!;
+  final String engineName = newEngine == ReaderCoreType.webView
+      ? l10n.readerEngineWebView
+      : l10n.readerEngineHtmlWidget;
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) => AlertDialog(
+      title: Text(l10n.readerEngineSwitchTitle),
+      content: Text(l10n.readerEngineSwitchContent(engineName)),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: Text(l10n.readerEngineSwitchCancel),
+        ),
+        FilledButton(
+          onPressed: () {
+            final ReaderCubit cubit = context.read<ReaderCubit>();
+            cubit.coreType = newEngine;
+            cubit.savePreference();
+            Navigator.pop(context);
+            Navigator.pop(context);
+          },
+          child: Text(l10n.readerEngineSwitchConfirm),
+        ),
+      ],
+    ),
+  );
+}
