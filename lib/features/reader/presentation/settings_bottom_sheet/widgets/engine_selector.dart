@@ -7,36 +7,67 @@ part of '../reader_bottom_sheet.dart';
 /// pros/cons for each engine. Changes require confirmation and take effect
 /// on next book open.
 ///
-/// Uses StatefulWidget with local state for dialog flow + BlocListener
-/// to sync when preferences load asynchronously.
-class _EngineSelector extends StatefulWidget {
+/// Uses BlocBuilder to listen to cubit state changes and automatically
+/// update the dropdown value when preferences are loaded or changed.
+class _EngineSelector extends StatelessWidget {
+  /// Creates a new engine selector.
   const _EngineSelector();
 
   @override
-  State<_EngineSelector> createState() => _EngineSelectorState();
-}
+  Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
 
-class _EngineSelectorState extends State<_EngineSelector> {
-  late ReaderCoreType _selected;
-
-  @override
-  void initState() {
-    super.initState();
-    _selected = context.read<ReaderCubit>().state.readerPreference.coreType;
-  }
-
-  @override
-  void didUpdateWidget(covariant _EngineSelector oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _selected = context.read<ReaderCubit>().state.readerPreference.coreType;
+    return BlocBuilder<ReaderCubit, ReaderState>(
+      buildWhen: (ReaderState previous, ReaderState current) =>
+          previous.readerPreference.coreType !=
+          current.readerPreference.coreType,
+      builder: (BuildContext context, ReaderState state) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Text(l10n.readerEngineTitle),
+                IconButton(
+                  icon: const Icon(Icons.info_outline),
+                  onPressed: () => _showInfoDialog(context),
+                  tooltip: l10n.readerEngineInfoTitle,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            DropdownMenu<ReaderCoreType>(
+              initialSelection: state.readerPreference.coreType,
+              onSelected: (ReaderCoreType? value) =>
+                  _onEngineChanged(context, value),
+              dropdownMenuEntries: <DropdownMenuEntry<ReaderCoreType>>[
+                DropdownMenuEntry(
+                  value: ReaderCoreType.htmlWidget,
+                  label: l10n.readerEngineHtmlWidget,
+                ),
+                DropdownMenuEntry(
+                  value: ReaderCoreType.webView,
+                  label: l10n.readerEngineWebView,
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
   }
 
   /// Handles engine selection from the dropdown menu.
   ///
   /// If the selected engine is different from the saved one, shows a
-  /// confirmation dialog. Updates the local [_selected] state to show
-  /// the new value in the dropdown while the dialog is open.
-  void _onEngineChanged(ReaderCoreType? value) {
+  /// confirmation dialog. On confirmation, saves the preference.
+  /// On cancellation, the BlocBuilder will automatically revert the
+  /// dropdown to the saved value via [buildWhen].
+  void _onEngineChanged(
+    BuildContext context,
+    ReaderCoreType? value,
+  ) {
     if (value == null) {
       return;
     }
@@ -47,16 +78,19 @@ class _EngineSelectorState extends State<_EngineSelector> {
       return; // Same value, do nothing
     }
 
-    setState(() => _selected = value);
-    _showConfirmationDialog(value);
+    _showConfirmationDialog(context, value);
   }
 
   /// Shows a confirmation dialog before switching engines.
   ///
   /// Displays the engine name and prompts the user to confirm the switch.
   /// On confirmation, saves the preference and closes the bottom sheet.
-  /// On cancellation, reverts the [_selected] state visually.
-  void _showConfirmationDialog(ReaderCoreType newEngine) {
+  /// On cancellation, the dialog closes and the dropdown reverts
+  /// automatically via BlocBuilder.
+  void _showConfirmationDialog(
+    BuildContext context,
+    ReaderCoreType newEngine,
+  ) {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
     final String engineName = newEngine == ReaderCoreType.webView
         ? l10n.readerEngineWebView
@@ -72,9 +106,6 @@ class _EngineSelectorState extends State<_EngineSelector> {
         actions: <Widget>[
           TextButton(
             onPressed: () {
-              final ReaderCoreType savedEngine =
-                  context.read<ReaderCubit>().state.readerPreference.coreType;
-              setState(() => _selected = savedEngine);
               Navigator.pop(context, false);
             },
             child: Text(l10n.readerEngineSwitchCancel),
@@ -82,19 +113,13 @@ class _EngineSelectorState extends State<_EngineSelector> {
           FilledButton(
             onPressed: () {
               Navigator.pop(context, true);
-              _saveEnginePreference(newEngine);
+              _saveEnginePreference(context, newEngine);
             },
             child: Text(l10n.readerEngineSwitchConfirm),
           ),
         ],
       ),
-    ).then((bool? confirmed) {
-      if (confirmed != true) {
-        final ReaderCoreType savedEngine =
-            context.read<ReaderCubit>().state.readerPreference.coreType;
-        setState(() => _selected = savedEngine);
-      }
-    });
+    );
   }
 
   /// Saves the new engine preference and shows a snackbar notification.
@@ -102,7 +127,10 @@ class _EngineSelectorState extends State<_EngineSelector> {
   /// Updates the cubit state with the new engine using the coreType setter,
   /// persists to storage via [savePreference], closes the bottom sheet,
   /// and displays a confirmation snackbar.
-  void _saveEnginePreference(ReaderCoreType newEngine) {
+  void _saveEnginePreference(
+    BuildContext context,
+    ReaderCoreType newEngine,
+  ) {
     final ReaderCubit cubit = context.read<ReaderCubit>();
 
     // Update the preference using the cubit setter
@@ -115,21 +143,20 @@ class _EngineSelectorState extends State<_EngineSelector> {
     Navigator.pop(context);
 
     // Show snackbar
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content:
-              Text(AppLocalizations.of(context)!.readerEngineChangedSnackbar),
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          AppLocalizations.of(context)!.readerEngineChangedSnackbar,
         ),
-      );
-    }
+      ),
+    );
   }
 
   /// Shows an info dialog with pros and cons for both reader engines.
   ///
   /// Displays detailed information about Flutter Native and Web View engines
   /// to help users make an informed decision about which engine to use.
-  void _showInfoDialog() {
+  void _showInfoDialog(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
@@ -172,52 +199,6 @@ class _EngineSelectorState extends State<_EngineSelector> {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(l10n.readerEngineInfoOk),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final AppLocalizations l10n = AppLocalizations.of(context)!;
-
-    return BlocListener<ReaderCubit, ReaderState>(
-      listenWhen: (ReaderState previous, ReaderState current) =>
-          previous.readerPreference.coreType !=
-          current.readerPreference.coreType,
-      listener: (BuildContext context, ReaderState state) {
-        // Sync local state when cubit state changes (e.g., from async loading)
-        setState(() => _selected = state.readerPreference.coreType);
-      },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Text(l10n.readerEngineTitle),
-              IconButton(
-                icon: const Icon(Icons.info_outline),
-                onPressed: _showInfoDialog,
-                tooltip: l10n.readerEngineInfoTitle,
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          DropdownMenu<ReaderCoreType>(
-            initialSelection: _selected,
-            onSelected: _onEngineChanged,
-            dropdownMenuEntries: <DropdownMenuEntry<ReaderCoreType>>[
-              DropdownMenuEntry(
-                value: ReaderCoreType.htmlWidget,
-                label: l10n.readerEngineHtmlWidget,
-              ),
-              DropdownMenuEntry(
-                value: ReaderCoreType.webView,
-                label: l10n.readerEngineWebView,
-              ),
-            ],
           ),
         ],
       ),
