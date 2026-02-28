@@ -5,8 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:novel_glide/features/book_storage/data/repositories/cloud_book_storage.dart';
 import 'package:novel_glide/features/book_storage/domain/entities/book_metadata.dart';
-import 'package:novel_glide/features/book_storage/domain/entities/reading_state.dart';
 import 'package:novel_glide/features/book_storage/domain/entities/bookmark_entry.dart';
+import 'package:novel_glide/features/book_storage/domain/entities/reading_state.dart';
 import 'package:novel_glide/features/book_storage/domain/repositories/book_storage.dart';
 import 'package:novel_glide/features/cloud/domain/entities/cloud_file.dart';
 import 'package:novel_glide/features/cloud/domain/entities/cloud_providers.dart';
@@ -22,8 +22,7 @@ void main() {
 
     const String bookId = 'test-book-id-123';
     const String booksPath = 'books';
-    final String bookFolderPath = '$booksPath/$bookId';
-    final String historyFolderPath = '$booksPath/$bookId/history';
+    const String bookFolderPath = '$booksPath/$bookId';
 
     setUp(() {
       mockCloudRepository = MockCloudRepository();
@@ -48,7 +47,7 @@ void main() {
     group('Book content operations', () {
       group('exists', () {
         test('returns true when book.epub exists in folder', () async {
-          final mockMetadata = DriveFileMetadata(
+          final DriveFileMetadata mockMetadata = DriveFileMetadata(
             fileId: 'file-123',
             name: 'book.epub',
             mimeType: 'application/epub+zip',
@@ -56,11 +55,13 @@ void main() {
           );
 
           when(() => mockCloudRepository.listFolderContents(
-                CloudProviders.google,
-                bookFolderPath,
-              )).thenAnswer((_) => Future.value([mockMetadata]));
+                    CloudProviders.google,
+                    bookFolderPath,
+                  ))
+              .thenAnswer(
+                  (_) => Future.value(<DriveFileMetadata>[mockMetadata]));
 
-          final result = await cloudBookStorage.exists(bookId);
+          final bool result = await cloudBookStorage.exists(bookId);
 
           expect(result, true);
           verify(() => mockCloudRepository.listFolderContents(
@@ -73,9 +74,9 @@ void main() {
           when(() => mockCloudRepository.listFolderContents(
                 CloudProviders.google,
                 bookFolderPath,
-              )).thenAnswer((_) => Future.value([]));
+              )).thenAnswer((_) => Future.value(<DriveFileMetadata>[]));
 
-          final result = await cloudBookStorage.exists(bookId);
+          final bool result = await cloudBookStorage.exists(bookId);
 
           expect(result, false);
         });
@@ -86,7 +87,7 @@ void main() {
                 bookFolderPath,
               )).thenThrow(Exception('Folder not found'));
 
-          final result = await cloudBookStorage.exists(bookId);
+          final bool result = await cloudBookStorage.exists(bookId);
 
           expect(result, false);
         });
@@ -106,8 +107,8 @@ void main() {
 
       group('readBytes', () {
         test('reads book bytes successfully', () async {
-          final testBytes = Uint8List.fromList([1, 2, 3, 4, 5]);
-          final mockMetadata = DriveFileMetadata(
+          final Uint8List testBytes = Uint8List.fromList(<int>[1, 2, 3, 4, 5]);
+          final DriveFileMetadata mockMetadata = DriveFileMetadata(
             fileId: 'file-123',
             name: 'book.epub',
             mimeType: 'application/epub+zip',
@@ -115,17 +116,19 @@ void main() {
           );
 
           when(() => mockCloudRepository.listFolderContents(
-                CloudProviders.google,
-                bookFolderPath,
-              )).thenAnswer((_) => Future.value([mockMetadata]));
+                    CloudProviders.google,
+                    bookFolderPath,
+                  ))
+              .thenAnswer(
+                  (_) => Future.value(<DriveFileMetadata>[mockMetadata]));
           when(() => mockCloudRepository.downloadFile(
                 CloudProviders.google,
                 any(),
               )).thenAnswer(
-                (_) => Stream.fromIterable([testBytes]),
-              );
+            (_) => Stream.fromIterable(<Uint8List>[testBytes]),
+          );
 
-          final result = await cloudBookStorage.readBytes(bookId);
+          final List<int> result = await cloudBookStorage.readBytes(bookId);
 
           expect(result, testBytes);
         });
@@ -134,7 +137,7 @@ void main() {
           when(() => mockCloudRepository.listFolderContents(
                 CloudProviders.google,
                 bookFolderPath,
-              )).thenAnswer((_) => Future.value([]));
+              )).thenAnswer((_) => Future.value(<DriveFileMetadata>[]));
 
           expect(
             () => cloudBookStorage.readBytes(bookId),
@@ -161,9 +164,9 @@ void main() {
                 CloudProviders.google,
                 any(),
                 bookFolderPath,
-              )).thenAnswer((_) => Future.value(null));
+              )).thenAnswer((_) async => '');
 
-          await cloudBookStorage.writeBytes(bookId, [1, 2, 3, 4, 5]);
+          await cloudBookStorage.writeBytes(bookId, <int>[1, 2, 3, 4, 5]);
 
           verify(() => mockCloudRepository.uploadFileToPath(
                 CloudProviders.google,
@@ -177,15 +180,15 @@ void main() {
                 CloudProviders.google,
                 any(),
                 bookFolderPath,
-              )).thenAnswer((_) => Future.value(null));
+              )).thenAnswer((_) async => '');
 
-          final changes = cloudBookStorage.changeStream();
-          final bookIds = <BookId>[];
+          final Stream<BookId> changes = cloudBookStorage.changeStream();
+          final List<BookId> bookIds = <BookId>[];
 
-          final subscription =
-              changes.listen((bookIdValue) => bookIds.add(bookIdValue));
+          final StreamSubscription<BookId> subscription =
+              changes.listen((BookId bookIdValue) => bookIds.add(bookIdValue));
 
-          await cloudBookStorage.writeBytes(bookId, [1, 2, 3]);
+          await cloudBookStorage.writeBytes(bookId, <int>[1, 2, 3]);
 
           await Future.delayed(const Duration(milliseconds: 100));
 
@@ -202,7 +205,7 @@ void main() {
               )).thenThrow(Exception('Upload failed'));
 
           expect(
-            () => cloudBookStorage.writeBytes(bookId, [1, 2, 3]),
+            () => cloudBookStorage.writeBytes(bookId, <int>[1, 2, 3]),
             throwsA(isA<BookStorageException>()),
           );
         });
@@ -210,7 +213,7 @@ void main() {
 
       group('delete', () {
         test('deletes book folder successfully', () async {
-          final mockMetadata = DriveFileMetadata(
+          final DriveFileMetadata mockMetadata = DriveFileMetadata(
             fileId: 'folder-123',
             name: 'metadata.json',
             mimeType: 'application/json',
@@ -218,9 +221,11 @@ void main() {
           );
 
           when(() => mockCloudRepository.listFolderContents(
-                CloudProviders.google,
-                bookFolderPath,
-              )).thenAnswer((_) => Future.value([mockMetadata]));
+                    CloudProviders.google,
+                    bookFolderPath,
+                  ))
+              .thenAnswer(
+                  (_) => Future.value(<DriveFileMetadata>[mockMetadata]));
           when(() => mockCloudRepository.deleteFolder(
                 CloudProviders.google,
                 bookFolderPath,
@@ -250,7 +255,7 @@ void main() {
         });
 
         test('emits change notification after successful delete', () async {
-          final mockMetadata = DriveFileMetadata(
+          final DriveFileMetadata mockMetadata = DriveFileMetadata(
             fileId: 'folder-123',
             name: 'metadata.json',
             mimeType: 'application/json',
@@ -258,19 +263,21 @@ void main() {
           );
 
           when(() => mockCloudRepository.listFolderContents(
-                CloudProviders.google,
-                bookFolderPath,
-              )).thenAnswer((_) => Future.value([mockMetadata]));
+                    CloudProviders.google,
+                    bookFolderPath,
+                  ))
+              .thenAnswer(
+                  (_) => Future.value(<DriveFileMetadata>[mockMetadata]));
           when(() => mockCloudRepository.deleteFolder(
                 CloudProviders.google,
                 bookFolderPath,
               )).thenAnswer((_) => Future.value(null));
 
-          final changes = cloudBookStorage.changeStream();
-          final bookIds = <BookId>[];
+          final Stream<BookId> changes = cloudBookStorage.changeStream();
+          final List<BookId> bookIds = <BookId>[];
 
-          final subscription =
-              changes.listen((bookIdValue) => bookIds.add(bookIdValue));
+          final StreamSubscription<BookId> subscription =
+              changes.listen((BookId bookIdValue) => bookIds.add(bookIdValue));
 
           await cloudBookStorage.delete(bookId);
 
@@ -282,7 +289,7 @@ void main() {
         });
 
         test('throws BookStorageException on deletion error', () async {
-          final mockMetadata = DriveFileMetadata(
+          final DriveFileMetadata mockMetadata = DriveFileMetadata(
             fileId: 'folder-123',
             name: 'metadata.json',
             mimeType: 'application/json',
@@ -290,9 +297,11 @@ void main() {
           );
 
           when(() => mockCloudRepository.listFolderContents(
-                CloudProviders.google,
-                bookFolderPath,
-              )).thenAnswer((_) => Future.value([mockMetadata]));
+                    CloudProviders.google,
+                    bookFolderPath,
+                  ))
+              .thenAnswer(
+                  (_) => Future.value(<DriveFileMetadata>[mockMetadata]));
           when(() => mockCloudRepository.deleteFolder(
                 CloudProviders.google,
                 bookFolderPath,
@@ -309,11 +318,11 @@ void main() {
     group('Metadata operations', () {
       group('readMetadata', () {
         test('reads metadata successfully', () async {
-          final now = DateTime.now();
-          final jsonString =
+          final DateTime now = DateTime.now();
+          final String jsonString =
               '{"originalFilename":"test.epub","title":"Test Book","dateAdded":"${now.toIso8601String()}","readingState":{"cfiPosition":"/6/4[chap01]!/4/2/16","progress":50.0,"lastReadTime":"${now.toIso8601String()}","totalSeconds":3600},"bookmarks":[]}';
 
-          final mockMetadata = DriveFileMetadata(
+          final DriveFileMetadata mockMetadata = DriveFileMetadata(
             fileId: 'file-123',
             name: 'metadata.json',
             mimeType: 'application/json',
@@ -321,17 +330,21 @@ void main() {
           );
 
           when(() => mockCloudRepository.listFolderContents(
-                CloudProviders.google,
-                bookFolderPath,
-              )).thenAnswer((_) => Future.value([mockMetadata]));
+                    CloudProviders.google,
+                    bookFolderPath,
+                  ))
+              .thenAnswer(
+                  (_) => Future.value(<DriveFileMetadata>[mockMetadata]));
           when(() => mockCloudRepository.downloadFile(
                 CloudProviders.google,
                 any(),
               )).thenAnswer(
-                (_) => Stream.fromIterable([Uint8List.fromList(jsonString.codeUnits)]),
-              );
+            (_) => Stream.fromIterable(
+                <Uint8List>[Uint8List.fromList(jsonString.codeUnits)]),
+          );
 
-          final result = await cloudBookStorage.readMetadata(bookId);
+          final BookMetadata? result =
+              await cloudBookStorage.readMetadata(bookId);
 
           expect(result, isNotNull);
           expect(result?.title, 'Test Book');
@@ -341,9 +354,10 @@ void main() {
           when(() => mockCloudRepository.listFolderContents(
                 CloudProviders.google,
                 bookFolderPath,
-              )).thenAnswer((_) => Future.value([]));
+              )).thenAnswer((_) => Future.value(<DriveFileMetadata>[]));
 
-          final result = await cloudBookStorage.readMetadata(bookId);
+          final BookMetadata? result =
+              await cloudBookStorage.readMetadata(bookId);
 
           expect(result, isNull);
         });
@@ -354,13 +368,14 @@ void main() {
                 bookFolderPath,
               )).thenThrow(Exception('Folder not found'));
 
-          final result = await cloudBookStorage.readMetadata(bookId);
+          final BookMetadata? result =
+              await cloudBookStorage.readMetadata(bookId);
 
           expect(result, isNull);
         });
 
         test('throws BookStorageException on download error', () async {
-          final mockMetadata = DriveFileMetadata(
+          final DriveFileMetadata mockMetadata = DriveFileMetadata(
             fileId: 'file-123',
             name: 'metadata.json',
             mimeType: 'application/json',
@@ -368,9 +383,11 @@ void main() {
           );
 
           when(() => mockCloudRepository.listFolderContents(
-                CloudProviders.google,
-                bookFolderPath,
-              )).thenAnswer((_) => Future.value([mockMetadata]));
+                    CloudProviders.google,
+                    bookFolderPath,
+                  ))
+              .thenAnswer(
+                  (_) => Future.value(<DriveFileMetadata>[mockMetadata]));
           when(() => mockCloudRepository.downloadFile(
                 CloudProviders.google,
                 any(),
@@ -384,9 +401,10 @@ void main() {
       });
 
       group('writeMetadata', () {
-        test('writes metadata successfully and creates history snapshot', () async {
-          final now = DateTime.now();
-          final metadata = BookMetadata(
+        test('writes metadata successfully and creates history snapshot',
+            () async {
+          final DateTime now = DateTime.now();
+          final BookMetadata metadata = BookMetadata(
             originalFilename: 'test.epub',
             title: 'Test Book',
             dateAdded: now,
@@ -396,14 +414,14 @@ void main() {
               lastReadTime: now,
               totalSeconds: 3600,
             ),
-            bookmarks: [],
+            bookmarks: <BookmarkEntry>[],
           );
 
           when(() => mockCloudRepository.uploadFileToPath(
                 CloudProviders.google,
                 any(),
                 any(),
-              )).thenAnswer((_) => Future.value(null));
+              )).thenAnswer((_) async => '');
 
           await cloudBookStorage.writeMetadata(bookId, metadata);
 
@@ -416,8 +434,8 @@ void main() {
         });
 
         test('emits change notification after successful write', () async {
-          final now = DateTime.now();
-          final metadata = BookMetadata(
+          final DateTime now = DateTime.now();
+          final BookMetadata metadata = BookMetadata(
             originalFilename: 'test.epub',
             title: 'Test Book',
             dateAdded: now,
@@ -427,20 +445,20 @@ void main() {
               lastReadTime: now,
               totalSeconds: 3600,
             ),
-            bookmarks: [],
+            bookmarks: <BookmarkEntry>[],
           );
 
           when(() => mockCloudRepository.uploadFileToPath(
                 CloudProviders.google,
                 any(),
                 any(),
-              )).thenAnswer((_) => Future.value(null));
+              )).thenAnswer((_) async => '');
 
-          final changes = cloudBookStorage.changeStream();
-          final bookIds = <BookId>[];
+          final Stream<BookId> changes = cloudBookStorage.changeStream();
+          final List<BookId> bookIds = <BookId>[];
 
-          final subscription =
-              changes.listen((bookIdValue) => bookIds.add(bookIdValue));
+          final StreamSubscription<BookId> subscription =
+              changes.listen((BookId bookIdValue) => bookIds.add(bookIdValue));
 
           await cloudBookStorage.writeMetadata(bookId, metadata);
 
@@ -452,7 +470,7 @@ void main() {
         });
 
         test('throws BookStorageException on upload error', () async {
-          final metadata = BookMetadata(
+          final BookMetadata metadata = BookMetadata(
             originalFilename: 'test.epub',
             title: 'Test Book',
             dateAdded: DateTime.now(),
@@ -462,7 +480,7 @@ void main() {
               lastReadTime: DateTime.now(),
               totalSeconds: 3600,
             ),
-            bookmarks: [],
+            bookmarks: <BookmarkEntry>[],
           );
 
           when(() => mockCloudRepository.uploadFileToPath(
@@ -482,21 +500,21 @@ void main() {
     group('Listing operations', () {
       group('listBookIds', () {
         test('lists all book IDs from books folder', () async {
-          final mockBook1 = DriveFileMetadata(
+          final DriveFileMetadata mockBook1 = DriveFileMetadata(
             fileId: 'folder-1',
             name: 'book-1',
             mimeType: 'application/vnd.google-apps.folder',
             modifiedTime: DateTime.now(),
           );
 
-          final mockBook2 = DriveFileMetadata(
+          final DriveFileMetadata mockBook2 = DriveFileMetadata(
             fileId: 'folder-2',
             name: 'book-2',
             mimeType: 'application/vnd.google-apps.folder',
             modifiedTime: DateTime.now(),
           );
 
-          final mockBook3 = DriveFileMetadata(
+          final DriveFileMetadata mockBook3 = DriveFileMetadata(
             fileId: 'folder-3',
             name: 'book-3',
             mimeType: 'application/vnd.google-apps.folder',
@@ -504,14 +522,15 @@ void main() {
           );
 
           when(() => mockCloudRepository.listFolderContents(
-                CloudProviders.google,
-                booksPath,
-              )).thenAnswer(
-                  (_) => Future.value([mockBook1, mockBook2, mockBook3]));
+                    CloudProviders.google,
+                    booksPath,
+                  ))
+              .thenAnswer((_) => Future.value(
+                  <DriveFileMetadata>[mockBook1, mockBook2, mockBook3]));
 
-          final result = await cloudBookStorage.listBookIds();
+          final List<BookId> result = await cloudBookStorage.listBookIds();
 
-          expect(result, containsAll(['book-1', 'book-2', 'book-3']));
+          expect(result, containsAll(<dynamic>['book-1', 'book-2', 'book-3']));
           expect(result.length, 3);
         });
 
@@ -519,22 +538,22 @@ void main() {
           when(() => mockCloudRepository.listFolderContents(
                 CloudProviders.google,
                 booksPath,
-              )).thenAnswer((_) => Future.value([]));
+              )).thenAnswer((_) => Future.value(<DriveFileMetadata>[]));
 
-          final result = await cloudBookStorage.listBookIds();
+          final List<BookId> result = await cloudBookStorage.listBookIds();
 
           expect(result, isEmpty);
         });
 
         test('filters out files from folder listing', () async {
-          final mockBook1 = DriveFileMetadata(
+          final DriveFileMetadata mockBook1 = DriveFileMetadata(
             fileId: 'folder-1',
             name: 'book-1',
             mimeType: 'application/vnd.google-apps.folder',
             modifiedTime: DateTime.now(),
           );
 
-          final mockFile = DriveFileMetadata(
+          final DriveFileMetadata mockFile = DriveFileMetadata(
             fileId: 'file-1',
             name: 'README.txt',
             mimeType: 'text/plain',
@@ -542,13 +561,15 @@ void main() {
           );
 
           when(() => mockCloudRepository.listFolderContents(
-                CloudProviders.google,
-                booksPath,
-              )).thenAnswer((_) => Future.value([mockBook1, mockFile]));
+                    CloudProviders.google,
+                    booksPath,
+                  ))
+              .thenAnswer((_) =>
+                  Future.value(<DriveFileMetadata>[mockBook1, mockFile]));
 
-          final result = await cloudBookStorage.listBookIds();
+          final List<BookId> result = await cloudBookStorage.listBookIds();
 
-          expect(result, ['book-1']);
+          expect(result, <String>['book-1']);
           expect(result, isNot(contains('README.txt')));
         });
 
@@ -572,15 +593,15 @@ void main() {
               CloudProviders.google,
               any(),
               bookFolderPath,
-            )).thenAnswer((_) => Future.value(null));
+            )).thenAnswer((_) async => '');
 
-        final changes = cloudBookStorage.changeStream();
-        final bookIds = <BookId>[];
+        final Stream<BookId> changes = cloudBookStorage.changeStream();
+        final List<BookId> bookIds = <BookId>[];
 
-        final subscription =
-            changes.listen((bookIdValue) => bookIds.add(bookIdValue));
+        final StreamSubscription<BookId> subscription =
+            changes.listen((BookId bookIdValue) => bookIds.add(bookIdValue));
 
-        await cloudBookStorage.writeBytes(bookId, [1, 2, 3]);
+        await cloudBookStorage.writeBytes(bookId, <int>[1, 2, 3]);
 
         await Future.delayed(const Duration(milliseconds: 100));
 
@@ -590,7 +611,7 @@ void main() {
       });
 
       test('emits bookId on metadata write', () async {
-        final metadata = BookMetadata(
+        final BookMetadata metadata = BookMetadata(
           originalFilename: 'test.epub',
           title: 'Test',
           dateAdded: DateTime.now(),
@@ -600,24 +621,24 @@ void main() {
             lastReadTime: DateTime.now(),
             totalSeconds: 3600,
           ),
-          bookmarks: [],
+          bookmarks: <BookmarkEntry>[],
         );
 
         when(() => mockCloudRepository.uploadFileToPath(
               CloudProviders.google,
               any(),
               any(),
-            )).thenAnswer((_) => Future.value(null));
+            )).thenAnswer((_) async => '');
 
-        final changes = cloudBookStorage.changeStream();
-        final bookIds = <BookId>[];
+        final Stream<BookId> changes = cloudBookStorage.changeStream();
+        final List<BookId> bookIds = <BookId>[];
 
-        final subscription =
-            changes.listen((bookIdValue) => bookIds.add(bookIdValue));
+        final StreamSubscription<BookId> subscription =
+            changes.listen((BookId bookIdValue) => bookIds.add(bookIdValue));
 
         await cloudBookStorage.writeMetadata(bookId, metadata);
 
-        await Future.delayed(const Duration(milliseconds: 100));
+        await Future<void>.delayed(const Duration(milliseconds: 100));
 
         expect(bookIds, contains(bookId));
 
@@ -625,7 +646,7 @@ void main() {
       });
 
       test('emits bookId on delete', () async {
-        final mockMetadata = DriveFileMetadata(
+        final DriveFileMetadata mockMetadata = DriveFileMetadata(
           fileId: 'folder-123',
           name: 'metadata.json',
           mimeType: 'application/json',
@@ -635,21 +656,21 @@ void main() {
         when(() => mockCloudRepository.listFolderContents(
               CloudProviders.google,
               bookFolderPath,
-            )).thenAnswer((_) => Future.value([mockMetadata]));
+            )).thenAnswer((_) async => <DriveFileMetadata>[mockMetadata]);
         when(() => mockCloudRepository.deleteFolder(
               CloudProviders.google,
               bookFolderPath,
-            )).thenAnswer((_) => Future.value(null));
+            )).thenAnswer((_) async => '');
 
-        final changes = cloudBookStorage.changeStream();
-        final bookIds = <BookId>[];
+        final Stream<BookId> changes = cloudBookStorage.changeStream();
+        final List<BookId> bookIds = <BookId>[];
 
-        final subscription =
-            changes.listen((bookIdValue) => bookIds.add(bookIdValue));
+        final StreamSubscription<BookId> subscription =
+            changes.listen((BookId bookIdValue) => bookIds.add(bookIdValue));
 
         await cloudBookStorage.delete(bookId);
 
-        await Future.delayed(const Duration(milliseconds: 100));
+        await Future<void>.delayed(const Duration(milliseconds: 100));
 
         expect(bookIds, contains(bookId));
 
@@ -661,20 +682,20 @@ void main() {
               CloudProviders.google,
               any(),
               bookFolderPath,
-            )).thenAnswer((_) => Future.value(null));
+            )).thenAnswer((_) async => '');
 
-        final changes = cloudBookStorage.changeStream();
-        final bookIds1 = <BookId>[];
-        final bookIds2 = <BookId>[];
+        final Stream<BookId> changes = cloudBookStorage.changeStream();
+        final List<BookId> bookIds1 = <BookId>[];
+        final List<BookId> bookIds2 = <BookId>[];
 
-        final subscription1 =
-            changes.listen((bookIdValue) => bookIds1.add(bookIdValue));
-        final subscription2 =
-            changes.listen((bookIdValue) => bookIds2.add(bookIdValue));
+        final StreamSubscription<BookId> subscription1 =
+            changes.listen((BookId bookIdValue) => bookIds1.add(bookIdValue));
+        final StreamSubscription<BookId> subscription2 =
+            changes.listen((BookId bookIdValue) => bookIds2.add(bookIdValue));
 
-        await cloudBookStorage.writeBytes(bookId, [1, 2, 3]);
+        await cloudBookStorage.writeBytes(bookId, <int>[1, 2, 3]);
 
-        await Future.delayed(const Duration(milliseconds: 100));
+        await Future<void>.delayed(const Duration(milliseconds: 100));
 
         expect(bookIds1, contains(bookId));
         expect(bookIds2, contains(bookId));
@@ -689,28 +710,28 @@ void main() {
         when(() => mockCloudRepository.listFolderContents(
               CloudProviders.google,
               '$booksPath/',
-            )).thenAnswer((_) => Future.value([]));
+            )).thenAnswer((_) => Future.value(<DriveFileMetadata>[]));
 
-        final result = await cloudBookStorage.exists('');
+        final bool result = await cloudBookStorage.exists('');
 
         expect(result, false);
       });
 
       test('handles special characters in bookId', () async {
-        const specialBookId = 'book-id-123';
+        const String specialBookId = 'book-id-123';
 
         when(() => mockCloudRepository.listFolderContents(
               CloudProviders.google,
               '$booksPath/$specialBookId',
-            )).thenAnswer((_) => Future.value([]));
+            )).thenAnswer((_) => Future.value(<DriveFileMetadata>[]));
 
-        final result = await cloudBookStorage.exists(specialBookId);
+        final bool result = await cloudBookStorage.exists(specialBookId);
 
         expect(result, false);
       });
 
       test('handles concurrent metadata writes', () async {
-        final metadata1 = BookMetadata(
+        final BookMetadata metadata1 = BookMetadata(
           originalFilename: 'test1.epub',
           title: 'Test 1',
           dateAdded: DateTime.now(),
@@ -720,10 +741,10 @@ void main() {
             lastReadTime: DateTime.now(),
             totalSeconds: 3600,
           ),
-          bookmarks: [],
+          bookmarks: <BookmarkEntry>[],
         );
 
-        final metadata2 = BookMetadata(
+        final BookMetadata metadata2 = BookMetadata(
           originalFilename: 'test2.epub',
           title: 'Test 2',
           dateAdded: DateTime.now(),
@@ -733,16 +754,16 @@ void main() {
             lastReadTime: DateTime.now(),
             totalSeconds: 5400,
           ),
-          bookmarks: [],
+          bookmarks: <BookmarkEntry>[],
         );
 
         when(() => mockCloudRepository.uploadFileToPath(
               CloudProviders.google,
               any(),
               any(),
-            )).thenAnswer((_) => Future.value(null));
+            )).thenAnswer((_) async => '');
 
-        await Future.wait([
+        await Future.wait(<Future<void>>[
           cloudBookStorage.writeMetadata(bookId, metadata1),
           cloudBookStorage.writeMetadata(bookId, metadata2),
         ]);
