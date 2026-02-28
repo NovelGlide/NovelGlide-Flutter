@@ -81,8 +81,8 @@ void _setupSystemsDependencies() {
   setupAuthDependencies();
   setupBackupDependencies();
   setupBookDependencies();
-  setupBookmarkDependencies();
   setupBookStorageDependencies();
+  setupBookmarkDependencies();
   setupCollectionDependencies();
   setupCloudDependencies();
   setupDownloaderDependencies();

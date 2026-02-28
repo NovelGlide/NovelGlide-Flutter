@@ -75,10 +75,10 @@ class BookmarkRepositoryImpl implements BookmarkRepository {
       // Read current metadata
       final BookMetadata? metadata =
           await _localBookStorage
-              .getMetadata(bookId);
+              .readMetadata(bookId);
 
       if (metadata == null) {
-        LogSystem.warning(
+        LogSystem.warn(
           'Cannot add bookmark: Book $bookId not found',
         );
         return;
@@ -93,7 +93,7 @@ class BookmarkRepositoryImpl implements BookmarkRepository {
           metadata.copyWith(bookmarks: updated);
 
       // Write back to storage
-      await _localBookStorage.updateMetadata(
+      await _localBookStorage.writeMetadata(
         bookId,
         newMetadata,
       );
@@ -143,7 +143,7 @@ class BookmarkRepositoryImpl implements BookmarkRepository {
           in bookToEntries.keys) {
         final BookMetadata? metadata =
             await _localBookStorage
-                .getMetadata(bookId);
+                .readMetadata(bookId);
 
         if (metadata == null) {
           continue;
@@ -167,7 +167,7 @@ class BookmarkRepositoryImpl implements BookmarkRepository {
           bookmarks: updated,
         );
 
-        await _localBookStorage.updateMetadata(
+        await _localBookStorage.writeMetadata(
           bookId,
           newMetadata,
         );

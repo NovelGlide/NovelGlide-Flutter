@@ -1,14 +1,15 @@
-import '../../../../core/domain/use_cases/use_case.dart';
-import '../entities/bookmark_data.dart';
-import '../repositories/bookmark_repository.dart';
+import 'package:novel_glide/features/bookmark/domain/entities/bookmark_data.dart';
+import 'package:novel_glide/features/bookmark/domain/repositories/bookmark_repository.dart';
 
-class BookmarkGetDataUseCase extends UseCase<Future<BookmarkData?>, String> {
-  BookmarkGetDataUseCase(this._repository);
+/// Legacy use case - use BookmarkGetListUseCase instead.
+@deprecated
+class BookmarkGetDataUseCase {
+  const BookmarkGetDataUseCase(this._repository);
 
   final BookmarkRepository _repository;
 
-  @override
-  Future<BookmarkData?> call(String parameter) {
-    return _repository.getDataById(parameter);
+  Future<List<BookmarkData>> call(String bookId) async {
+    // Legacy implementation - return empty list
+    return <BookmarkData>[];
   }
 }

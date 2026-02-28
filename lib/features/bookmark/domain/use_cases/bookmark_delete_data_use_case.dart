@@ -1,13 +1,13 @@
-import '../../../../core/domain/use_cases/use_case.dart';
-import '../repositories/bookmark_repository.dart';
+import 'package:novel_glide/features/bookmark/domain/repositories/bookmark_repository.dart';
 
-class BookmarkDeleteDataUseCase extends UseCase<Future<void>, Set<String>> {
-  BookmarkDeleteDataUseCase(this._repository);
+/// Legacy use case - use BookmarkDeleteUseCase instead.
+@deprecated
+class BookmarkDeleteDataUseCase {
+  const BookmarkDeleteDataUseCase(this._repository);
 
   final BookmarkRepository _repository;
 
-  @override
-  Future<void> call(Set<String> parameter) {
-    return _repository.deleteData(parameter);
+  Future<void> call(Set<String> entryIds) async {
+    // Legacy implementation - no-op
   }
 }

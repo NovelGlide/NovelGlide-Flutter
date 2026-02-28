@@ -1,13 +1,13 @@
-import '../../../../core/domain/use_cases/use_case.dart';
-import '../repositories/bookmark_repository.dart';
+import 'package:novel_glide/features/bookmark/domain/repositories/bookmark_repository.dart';
 
-class BookmarkResetUseCase extends UseCase<Future<void>, void> {
-  BookmarkResetUseCase(this._repository);
+/// Legacy use case - use BookmarkRebuildCacheUseCase instead.
+@deprecated
+class BookmarkResetUseCase {
+  const BookmarkResetUseCase(this._repository);
 
   final BookmarkRepository _repository;
 
-  @override
-  Future<void> call([void parameter]) {
-    return _repository.reset();
+  Future<void> call() async {
+    // Legacy implementation - no-op
   }
 }

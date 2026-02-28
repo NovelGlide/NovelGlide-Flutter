@@ -13,11 +13,6 @@ import 'package:novel_glide/features/book_storage/domain/entities/reading_state.
 import 'package:novel_glide/features/bookmark/data/repositories/bookmark_cache_repository_impl.dart';
 import 'package:novel_glide/features/bookmark/domain/entities/bookmark_item.dart';
 
-@GenerateMocks([
-  LocalBookStorage,
-  JsonRepository,
-  AppPathProvider,
-])
 void main() {
   late BookmarkCacheRepositoryImpl repository;
   late MockLocalBookStorage mockLocalBookStorage;

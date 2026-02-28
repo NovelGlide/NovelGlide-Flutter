@@ -79,7 +79,7 @@ class BookmarkCacheRepositoryImpl implements BookmarkCacheRepository {
 
       // Read updated metadata
       final BookMetadata? metadata =
-          await _localBookStorage.getMetadata(bookId);
+          await _localBookStorage.readMetadata(bookId);
 
       if (metadata == null) {
         _cache.remove(bookId);
@@ -157,7 +157,7 @@ class BookmarkCacheRepositoryImpl implements BookmarkCacheRepository {
       LogSystem.info('Loaded cache with ${_cache.length}'
           ' books');
     } catch (e, st) {
-      LogSystem.warning(
+      LogSystem.warn(
         'Failed to load cache file: $e. Starting fresh.',
         stackTrace: st,
       );
@@ -247,7 +247,7 @@ class BookmarkCacheRepositoryImpl implements BookmarkCacheRepository {
 
       // Get book title from metadata
       final BookMetadata? metadata =
-          await _localBookStorage.getMetadata(bookId);
+          await _localBookStorage.readMetadata(bookId);
 
       if (metadata != null) {
         for (final BookmarkEntry entry in entries) {
@@ -302,13 +302,13 @@ class BookmarkCacheRepositoryImpl implements BookmarkCacheRepository {
 
       // Get all books from LocalBookStorage
       final List<BookId> bookIds =
-          await _localBookStorage.getAll();
+          await _localBookStorage.listBookIds();
 
       for (final BookId bookId in bookIds) {
         try {
           final BookMetadata? metadata =
               await _localBookStorage
-                  .getMetadata(bookId);
+                  .readMetadata(bookId);
 
           if (metadata != null) {
             final List<BookmarkItem> items =
@@ -327,7 +327,7 @@ class BookmarkCacheRepositoryImpl implements BookmarkCacheRepository {
             _cache[bookId] = items;
           }
         } catch (e, st) {
-          LogSystem.warning(
+          LogSystem.warn(
             'Error reading metadata for book'
             ' $bookId: $e',
             stackTrace: st,

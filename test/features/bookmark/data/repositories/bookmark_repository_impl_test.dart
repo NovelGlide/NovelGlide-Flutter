@@ -12,10 +12,6 @@ import 'package:novel_glide/features/bookmark/data/repositories/bookmark_reposit
 import 'package:novel_glide/features/bookmark/domain/entities/bookmark_item.dart';
 import 'package:novel_glide/features/bookmark/domain/repositories/bookmark_cache_repository.dart';
 
-@GenerateMocks([
-  BookmarkCacheRepository,
-  LocalBookStorage,
-])
 void main() {
   late BookmarkRepositoryImpl repository;
   late MockBookmarkCacheRepository mockCacheRepository;
