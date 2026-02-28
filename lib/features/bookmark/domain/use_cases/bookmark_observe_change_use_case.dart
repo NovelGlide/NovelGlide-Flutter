@@ -1,13 +1,23 @@
-import '../../../../core/domain/use_cases/use_case.dart';
-import '../repositories/bookmark_repository.dart';
+import 'package:novel_glide/features/bookmark/domain/repositories/bookmark_repository.dart';
 
-class BookmarkObserveChangeUseCase extends UseCase<Stream<void>, void> {
-  BookmarkObserveChangeUseCase(this._repository);
+/// Use case for observing bookmark changes.
+///
+/// Provides a stream of events whenever any bookmark is
+/// created, modified, or deleted. Useful for reactive UI updates.
+class BookmarkObserveChangeUseCase {
+  /// Creates a [BookmarkObserveChangeUseCase] instance.
+  const BookmarkObserveChangeUseCase({
+    required BookmarkRepository bookmarkRepository,
+  }) : _bookmarkRepository = bookmarkRepository;
 
-  final BookmarkRepository _repository;
+  final BookmarkRepository _bookmarkRepository;
 
-  @override
-  Stream<void> call([void parameter]) {
-    return _repository.onChangedStream;
+  /// Executes the use case.
+  ///
+  /// Returns a stream that emits whenever any bookmark changes.
+  /// The stream never terminates (broadcast stream) and can have
+  /// multiple subscribers.
+  Stream<void> call() {
+    return _bookmarkRepository.observeChanges();
   }
 }
