@@ -12,11 +12,12 @@ class CollectionDeleteAllBooksUseCase extends UseCase<Future<void>, void> {
     // Get the data list
     final List<CollectionData> list = await _repository.getList();
 
-    // Remove all the books from all collections
+    // Remove all the books from all collections using immutable copyWith
+    final Set<CollectionData> updatedSet = <CollectionData>{};
     for (CollectionData data in list) {
-      data.pathList.clear();
+      updatedSet.add(data.copyWith(bookIds: const <String>[]));
     }
 
-    await _repository.updateData(list.toSet());
+    await _repository.updateData(updatedSet);
   }
 }

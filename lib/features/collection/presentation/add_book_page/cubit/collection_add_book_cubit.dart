@@ -46,15 +46,16 @@ class CollectionAddBookCubit extends Cubit<CollectionAddBookState> {
     final List<CollectionData> collectionList =
         await _getCollectionListUseCase();
 
-    // Get all the identifiers from user selected books.
-    final Set<String> relativePathSet =
+    // Get all the book IDs from user selected books.
+    // In the new system, book.identifier IS the BookId (UUID).
+    final Set<String> selectedBookIds =
         _dataSet.map((Book e) => e.identifier).toSet();
 
     // Get the selected collection set by
-    // intersection of book paths and collection paths.
+    // intersection of selected bookIds and collection's bookIds.
     final Set<CollectionData> selectedCollections = collectionList
         .where((CollectionData e) =>
-            e.pathList.toSet().intersection(relativePathSet).isNotEmpty)
+            e.bookIds.toSet().intersection(selectedBookIds).isNotEmpty)
         .toSet();
 
     // Sort the collection list by name.
@@ -65,23 +66,60 @@ class CollectionAddBookCubit extends Cubit<CollectionAddBookState> {
       code: LoadingStateCode.loaded,
       collectionList: collectionList,
       selectedCollections: selectedCollections,
-      bookRelativePathSet: relativePathSet,
+      bookRelativePathSet: selectedBookIds,
     ));
   }
 
   Future<void> select(CollectionData data) async {
-    data.pathList.addAll(state.bookRelativePathSet);
+    // Add selected book IDs to the collection using immutable copyWith
+    final List<String> updatedBookIds = List<String>.from(data.bookIds);
+    for (String bookId in state.bookRelativePathSet) {
+      if (!updatedBookIds.contains(bookId)) {
+        updatedBookIds.add(bookId);
+      }
+    }
+    final CollectionData updatedData =
+        data.copyWith(bookIds: updatedBookIds);
+
+    // Update the collection in the list
+    final List<CollectionData> updatedList =
+        List<CollectionData>.from(state.collectionList);
+    final int index = updatedList.indexWhere((CollectionData e) => e.id == data.id);
+    if (index != -1) {
+      updatedList[index] = updatedData;
+    }
+
     emit(state.copyWith(
-      selectedCollections: <CollectionData>{...state.selectedCollections, data},
+      collectionList: updatedList,
+      selectedCollections: <CollectionData>{
+        ...state.selectedCollections,
+        updatedData
+      },
     ));
   }
 
   void deselect(CollectionData data) {
-    data.pathList
-        .removeWhere((String e) => state.bookRelativePathSet.contains(e));
+    // Remove selected book IDs from the collection using immutable copyWith
+    final List<String> updatedBookIds = data.bookIds
+        .where((String bookId) =>
+            !state.bookRelativePathSet.contains(bookId))
+        .toList();
+    final CollectionData updatedData =
+        data.copyWith(bookIds: updatedBookIds);
+
+    // Update the collection in the list
+    final List<CollectionData> updatedList =
+        List<CollectionData>.from(state.collectionList);
+    final int index = updatedList.indexWhere((CollectionData e) => e.id == data.id);
+    if (index != -1) {
+      updatedList[index] = updatedData;
+    }
+
     emit(state.copyWith(
-        selectedCollections: <CollectionData>{...state.selectedCollections}
-          ..remove(data)));
+      collectionList: updatedList,
+      selectedCollections: <CollectionData>{...state.selectedCollections}
+        ..remove(data),
+    ));
   }
 
   Future<void> save() {

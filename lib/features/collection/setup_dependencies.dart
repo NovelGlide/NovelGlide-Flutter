@@ -1,7 +1,7 @@
 import '../../core/file_system/domain/repositories/json_repository.dart';
 import '../../core/path_provider/domain/repositories/json_path_provider.dart';
 import '../../main.dart';
-import '../books/domain/use_cases/book_get_list_by_identifiers_use_case.dart';
+import '../book_storage/data/repositories/local_book_storage.dart';
 import '../preference/domain/repositories/preference_repository.dart';
 import '../preference/domain/use_cases/preference_get_use_cases.dart';
 import '../preference/domain/use_cases/preference_observe_change_use_case.dart';
@@ -69,8 +69,10 @@ void setupCollectionDependencies() {
           sl<CollectionListPreferenceRepository>()));
 
   // Cubit factories
+  /// CollectionViewerCubit now uses LocalBookStorage to load books by BookId
+  /// instead of BookGetListByIdentifiersUseCase (which expected filenames).
   sl.registerFactory<CollectionViewerCubit>(() => CollectionViewerCubit(
-        sl<BookGetListByIdentifiersUseCase>(),
+        sl<LocalBookStorage>(),
         sl<CollectionGetDataUseCase>(),
         sl<CollectionUpdateDataUseCase>(),
       ));
