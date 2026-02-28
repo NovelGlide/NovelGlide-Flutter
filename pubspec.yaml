@@ -28,6 +28,7 @@ dependencies:
     sdk: flutter
   flutter_tts: ^4.2.2
   flutter_widget_from_html: ^0.17.1
+  freezed_annotation: ^3.1.0
   get_it: ^9.2.1
   google_mobile_ads: ^7.0.0
   google_sign_in: ^7.0.0
@@ -37,6 +38,7 @@ dependencies:
   http: ^1.2.2
   image: ^3.3.0
   intl: any
+  json_annotation: ^4.11.0
   loading_animation_widget: ^1.2.0+4
   logger: ^2.4.0
   lru_cache: ^0.0.2
@@ -56,11 +58,14 @@ dependencies:
   xml: ^6.5.0
 dev_dependencies:
   alchemist: ^0.13.0
+  build_runner: ^2.11.1
   flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
+  freezed: ^3.2.5
   integration_test:
     sdk: flutter
+  json_serializable: ^6.13.0
   pubspec_dependency_sorter: ^1.0.4
 flutter:
   generate: true
