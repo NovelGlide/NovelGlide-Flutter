@@ -50,7 +50,7 @@ class TocCubit extends Cubit<TocState> {
     emit(const TocState(code: LoadingStateCode.loading));
 
     // Get bookmark data
-    final BookmarkData? bookmarkData =
+    final BookmarkData bookmarkData =
         await _bookmarkGetDataUseCase(_bookIdentifier);
 
     // Load the chapter list
