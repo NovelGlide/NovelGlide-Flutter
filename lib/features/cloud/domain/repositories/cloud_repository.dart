@@ -1,9 +1,13 @@
 import 'dart:typed_data';
 
-import '../entities/cloud_file.dart';
-import '../entities/cloud_providers.dart';
-import '../entities/drive_file_metadata.dart';
+import 'package:novel_glide/features/cloud/domain/entities/cloud_file.dart';
+import 'package:novel_glide/features/cloud/domain/entities/cloud_providers.dart';
+import 'package:novel_glide/features/cloud/domain/entities/drive_file_metadata.dart';
 
+/// Abstract interface for cloud storage operations.
+///
+/// Provides a unified API for uploading, downloading, listing, and deleting
+/// files and folders on cloud storage (Google Drive).
 abstract class CloudRepository {
   /// Retrieves a file from cloud storage by its file name.
   ///
@@ -12,14 +16,17 @@ abstract class CloudRepository {
   ///   - [fileName]: The name of the file to retrieve.
   ///
   /// Returns: The [CloudFile] metadata if found, null otherwise.
-  Future<CloudFile?> getFile(CloudProviders providers, String fileName);
+  Future<CloudFile?> getFile(
+    CloudProviders providers,
+    String fileName,
+  );
 
   /// Uploads a file to cloud storage.
   ///
   /// Parameters:
   ///   - [providers]: The cloud provider to use for this operation.
   ///   - [path]: The local file path to upload.
-  ///   - [onUpload]: Optional callback to track upload progress (0.0 to 1.0).
+  ///   - [onUpload]: Optional callback to track upload progress (0.0-1.0).
   Future<void> uploadFile(
     CloudProviders providers,
     String path, {
@@ -31,14 +38,17 @@ abstract class CloudRepository {
   /// Parameters:
   ///   - [providers]: The cloud provider to use for this operation.
   ///   - [fileId]: The unique identifier of the file to delete.
-  Future<void> deleteFile(CloudProviders providers, String fileId);
+  Future<void> deleteFile(
+    CloudProviders providers,
+    String fileId,
+  );
 
   /// Downloads a file from cloud storage as a stream of bytes.
   ///
   /// Parameters:
   ///   - [providers]: The cloud provider to use for this operation.
   ///   - [cloudFile]: The [CloudFile] metadata of the file to download.
-  ///   - [onDownload]: Optional callback to track download progress (0.0 to 1.0).
+  ///   - [onDownload]: Optional callback to track download progress (0.0-1.0).
   ///
   /// Returns: A stream of byte chunks from the downloaded file.
   Stream<Uint8List> downloadFile(
@@ -56,8 +66,9 @@ abstract class CloudRepository {
   ///   - [providers]: The cloud provider to use for this operation.
   ///   - [file]: The local file (dart:io File) to upload.
   ///   - [folderPath]: The destination folder path using "/" separator.
-  ///     Example: "books/uuid123" creates structure: appDataFolder/books/uuid123/
-  ///   - [onUpload]: Optional callback to track upload progress (0.0 to 1.0).
+  ///     Example: "books/uuid123" creates:
+  ///     appDataFolder/books/uuid123/
+  ///   - [onUpload]: Optional callback to track upload progress (0.0-1.0).
   ///
   /// Returns: The unique file ID of the uploaded file on Google Drive.
   ///
@@ -75,7 +86,8 @@ abstract class CloudRepository {
   /// Parameters:
   ///   - [providers]: The cloud provider to use for this operation.
   ///   - [folderPath]: The folder path to list, using "/" separator.
-  ///     Example: "books/uuid123" lists contents of appDataFolder/books/uuid123/
+  ///     Example: "books/uuid123" lists contents of
+  ///     appDataFolder/books/uuid123/
   ///     Empty string lists immediate children of appDataFolder.
   ///
   /// Returns: A list of [DriveFileMetadata] for all items in the folder.
@@ -92,7 +104,8 @@ abstract class CloudRepository {
   /// Parameters:
   ///   - [providers]: The cloud provider to use for this operation.
   ///   - [folderPath]: The folder path to delete, using "/" separator.
-  ///     Example: "books/uuid123" deletes appDataFolder/books/uuid123/ and everything in it.
+  ///     Example: "books/uuid123" deletes appDataFolder/books/uuid123/
+  ///     and everything in it.
   ///
   /// Throws:
   ///   - Exception if the folder doesn't exist or deletion fails.

@@ -5,13 +5,13 @@ import 'dart:typed_data';
 
 import 'package:path/path.dart' as path;
 
-import '../../../../core/log_system/log_system.dart';
-import '../../../cloud/domain/entities/cloud_file.dart';
-import '../../../cloud/domain/entities/cloud_providers.dart';
-import '../../../cloud/domain/entities/drive_file_metadata.dart';
-import '../../../cloud/domain/repositories/cloud_repository.dart';
-import '../../domain/entities/book_metadata.dart';
-import '../../domain/repositories/book_storage.dart';
+import 'package:novel_glide/core/log_system/log_system.dart';
+import 'package:novel_glide/features/cloud/domain/entities/cloud_file.dart';
+import 'package:novel_glide/features/cloud/domain/entities/cloud_providers.dart';
+import 'package:novel_glide/features/cloud/domain/entities/drive_file_metadata.dart';
+import 'package:novel_glide/features/cloud/domain/repositories/cloud_repository.dart';
+import 'package:novel_glide/features/book_storage/domain/entities/book_metadata.dart';
+import 'package:novel_glide/features/book_storage/domain/repositories/book_storage.dart';
 
 /// Cloud storage implementation of [BookStorage].
 ///
@@ -24,6 +24,9 @@ import '../../domain/repositories/book_storage.dart';
 /// All path construction is private to this class; consumers interact
 /// solely through [BookId] values.
 class CloudBookStorage implements BookStorage {
+  /// Creates a [CloudBookStorage] instance.
+  ///
+  /// Requires a [CloudRepository] for all cloud operations.
   CloudBookStorage({
     required CloudRepository cloudRepository,
   }) : _cloudRepository = cloudRepository;
@@ -31,11 +34,13 @@ class CloudBookStorage implements BookStorage {
   final CloudRepository _cloudRepository;
 
   /// Stream controller for change notifications.
-  /// Broadcast stream allows multiple listeners.
+  ///
+  /// Broadcast stream allows multiple listeners to subscribe.
   final StreamController<BookId> _changeController =
       StreamController<BookId>.broadcast();
 
   /// Root path prefix for all books in cloud storage.
+  ///
   /// All paths are relative to Google Drive's appDataFolder.
   static const String _booksRootPath = 'books';
 
@@ -46,41 +51,48 @@ class CloudBookStorage implements BookStorage {
   static const CloudProviders _provider = CloudProviders.google;
 
   /// Construct the cloud path for a book's folder.
+  ///
   /// Returns: "books/{bookId}"
   String _getBookFolderPath(BookId bookId) {
     return '$_booksRootPath/$bookId';
   }
 
   /// Construct the cloud path for a book's history folder.
+  ///
   /// Returns: "books/{bookId}/history"
   String _getHistoryFolderPath(BookId bookId) {
     return '${_getBookFolderPath(bookId)}/$_historyFolderName';
   }
 
   /// Construct the cloud path for a timestamped metadata snapshot.
+  ///
   /// Returns: "books/{bookId}/history/{ISO8601timestamp}.json"
-  String _getHistorySnapshotPath(BookId bookId, String timestamp) {
+  String _getHistorySnapshotPath(
+    BookId bookId,
+    String timestamp,
+  ) {
     return '${_getHistoryFolderPath(bookId)}/$timestamp.json';
   }
 
-  /// Convert DriveFileMetadata to CloudFile for download operations.
+  /// Convert [DriveFileMetadata] to [CloudFile] for download operations.
   CloudFile _driveFileMetadataToCloudFile(
     DriveFileMetadata metadata,
   ) {
     return CloudFile(
       identifier: metadata.fileId,
       name: metadata.name,
-      length: 0, // Size not available from DriveFileMetadata
+      length: 0,
       modifiedTime: metadata.modifiedTime,
     );
   }
 
-  /// Emit a change notification for the given book.
+  /// Emit a change notification for the given [bookId].
   void _notifyChange(BookId bookId) {
     _changeController.add(bookId);
   }
 
   /// Create a temporary file from bytes for uploading.
+  ///
   /// Returns the File object that can be used with uploadFileToPath.
   /// Note: Caller is responsible for cleanup.
   Future<File> _createTempFile(List<int> bytes) async {
@@ -96,10 +108,12 @@ class CloudBookStorage implements BookStorage {
     try {
       final String folderPath = _getBookFolderPath(bookId);
 
-      // List the folder contents to see if the book.epub file exists
       try {
         final List<DriveFileMetadata> contents =
-            await _cloudRepository.listFolderContents(_provider, folderPath);
+            await _cloudRepository.listFolderContents(
+          _provider,
+          folderPath,
+        );
         final bool bookExists = contents.any(
           (DriveFileMetadata item) =>
               item.name == BookStorage.bookContentFilename && item.isFile,
@@ -107,7 +121,6 @@ class CloudBookStorage implements BookStorage {
         LogSystem.info('Checked existence of book $bookId: $bookExists');
         return bookExists;
       } on Exception {
-        // Folder doesn't exist, so book doesn't exist
         LogSystem.info('Book folder for $bookId does not exist');
         return false;
       }
@@ -128,27 +141,26 @@ class CloudBookStorage implements BookStorage {
   @override
   Future<List<int>> readBytes(BookId bookId) async {
     try {
-      // Check if book exists first
       final bool bookExists = await exists(bookId);
       if (!bookExists) {
         throw BookNotFoundException(bookId: bookId);
       }
 
       final String folderPath = _getBookFolderPath(bookId);
-
-      // List folder contents to get the book.epub file metadata
       final List<DriveFileMetadata> contents =
-          await _cloudRepository.listFolderContents(_provider, folderPath);
+          await _cloudRepository.listFolderContents(
+        _provider,
+        folderPath,
+      );
       final DriveFileMetadata bookFileMetadata = contents.firstWhere(
         (DriveFileMetadata item) =>
             item.name == BookStorage.bookContentFilename && item.isFile,
         orElse: () => throw BookNotFoundException(bookId: bookId),
       );
 
-      // Convert metadata to CloudFile and download
-      final CloudFile cloudFile = _driveFileMetadataToCloudFile(bookFileMetadata);
+      final CloudFile cloudFile =
+          _driveFileMetadataToCloudFile(bookFileMetadata);
 
-      // Download the file
       final List<int> bytes = <int>[];
       await for (final Uint8List chunk in _cloudRepository.downloadFile(
         _provider,
@@ -176,15 +188,15 @@ class CloudBookStorage implements BookStorage {
   }
 
   @override
-  Future<void> writeBytes(BookId bookId, List<int> bytes) async {
+  Future<void> writeBytes(
+    BookId bookId,
+    List<int> bytes,
+  ) async {
     try {
       final String folderPath = _getBookFolderPath(bookId);
-
-      // Create temporary file for upload
       final File tempFile = await _createTempFile(bytes);
 
       try {
-        // Upload the file to the cloud folder
         await _cloudRepository.uploadFileToPath(
           _provider,
           tempFile,
@@ -192,11 +204,8 @@ class CloudBookStorage implements BookStorage {
         );
 
         LogSystem.info('Wrote book content for $bookId: ${bytes.length} bytes');
-
-        // Emit change notification
         _notifyChange(bookId);
       } finally {
-        // Clean up temporary file
         await tempFile.delete();
         await tempFile.parent.delete();
       }
@@ -219,17 +228,12 @@ class CloudBookStorage implements BookStorage {
     try {
       final String folderPath = _getBookFolderPath(bookId);
 
-      // Try to list the folder to see if it exists
       try {
         await _cloudRepository.listFolderContents(_provider, folderPath);
-        // Folder exists, delete it
         await _cloudRepository.deleteFolder(_provider, folderPath);
         LogSystem.info('Deleted book folder for $bookId');
-
-        // Emit change notification
         _notifyChange(bookId);
       } on Exception {
-        // Folder doesn't exist, delete is idempotent
         LogSystem.info('Book $bookId does not exist, delete is idempotent');
       }
     } catch (error, stackTrace) {
@@ -251,21 +255,21 @@ class CloudBookStorage implements BookStorage {
     try {
       final String folderPath = _getBookFolderPath(bookId);
 
-      // List folder contents to check if metadata.json exists
       try {
         final List<DriveFileMetadata> contents =
-            await _cloudRepository.listFolderContents(_provider, folderPath);
+            await _cloudRepository.listFolderContents(
+          _provider,
+          folderPath,
+        );
         final DriveFileMetadata metadataFileMetadata = contents.firstWhere(
           (DriveFileMetadata item) =>
               item.name == BookStorage.metadataFilename && item.isFile,
           orElse: () => throw Exception('Metadata file not found'),
         );
 
-        // Convert metadata to CloudFile and download
         final CloudFile cloudFile =
             _driveFileMetadataToCloudFile(metadataFileMetadata);
 
-        // Download the metadata file
         final List<int> bytes = <int>[];
         await for (final Uint8List chunk in _cloudRepository.downloadFile(
           _provider,
@@ -274,17 +278,14 @@ class CloudBookStorage implements BookStorage {
           bytes.addAll(chunk);
         }
 
-        // Convert bytes to JSON
         final String jsonString = utf8.decode(bytes);
         final Map<String, dynamic> jsonData =
             jsonDecode(jsonString) as Map<String, dynamic>;
 
-        // Deserialize to BookMetadata
         final BookMetadata metadata = BookMetadata.fromJson(jsonData);
         LogSystem.info('Read metadata for book $bookId');
         return metadata;
       } on Exception catch (e) {
-        // Folder or metadata file doesn't exist
         if (e.toString().contains('Metadata file not found')) {
           LogSystem.info('Metadata file not found for book $bookId');
           return null;
@@ -306,20 +307,19 @@ class CloudBookStorage implements BookStorage {
   }
 
   @override
-  Future<void> writeMetadata(BookId bookId, BookMetadata metadata) async {
+  Future<void> writeMetadata(
+    BookId bookId,
+    BookMetadata metadata,
+  ) async {
     try {
       final String folderPath = _getBookFolderPath(bookId);
-
-      // Serialize metadata to JSON
       final Map<String, dynamic> jsonData = metadata.toJson();
       final String jsonString = jsonEncode(jsonData);
       final List<int> metadataBytes = utf8.encode(jsonString);
 
-      // Create temporary file for metadata
       final File tempMetadataFile = await _createTempFile(metadataBytes);
 
       try {
-        // Upload metadata.json
         await _cloudRepository.uploadFileToPath(
           _provider,
           tempMetadataFile,
@@ -328,12 +328,10 @@ class CloudBookStorage implements BookStorage {
 
         LogSystem.info('Wrote metadata for book $bookId');
 
-        // Create timestamped snapshot in history folder (cloud only)
         final String timestamp = DateTime.now().toUtc().toIso8601String();
         final String historySnapshotPath =
             _getHistorySnapshotPath(bookId, timestamp);
 
-        // Upload the same metadata to history folder with timestamp
         await _cloudRepository.uploadFileToPath(
           _provider,
           tempMetadataFile,
@@ -341,13 +339,12 @@ class CloudBookStorage implements BookStorage {
         );
 
         LogSystem.info(
-          'Created metadata snapshot for book $bookId at $historySnapshotPath',
+          'Created metadata snapshot for book $bookId '
+          'at $historySnapshotPath',
         );
 
-        // Emit change notification
         _notifyChange(bookId);
       } finally {
-        // Clean up temporary file
         await tempMetadataFile.delete();
         await tempMetadataFile.parent.delete();
       }
@@ -368,20 +365,18 @@ class CloudBookStorage implements BookStorage {
   @override
   Future<List<BookId>> listBookIds() async {
     try {
-      // List immediate subfolders of "books/" folder
       final List<DriveFileMetadata> contents =
           await _cloudRepository.listFolderContents(
         _provider,
         _booksRootPath,
       );
 
-      // Filter for folders only; each folder name is a BookId
       final List<String> bookIds = <String>[];
-      contents
-          .where((DriveFileMetadata item) => item.isFolder)
-          .forEach((DriveFileMetadata item) {
-        bookIds.add(item.name);
-      });
+      for (final DriveFileMetadata item in contents) {
+        if (item.isFolder) {
+          bookIds.add(item.name);
+        }
+      }
 
       LogSystem.info('Listed ${bookIds.length} books from cloud storage');
       return bookIds;
@@ -405,6 +400,7 @@ class CloudBookStorage implements BookStorage {
   }
 
   /// Close the change stream controller.
+  ///
   /// Should be called when the app is closing.
   Future<void> dispose() async {
     await _changeController.close();

@@ -1,8 +1,13 @@
 import 'dart:typed_data';
 
-import '../../domain/entities/cloud_file.dart';
-import '../../domain/entities/drive_file_metadata.dart';
+import 'package:novel_glide/features/cloud/domain/entities/cloud_file.dart';
+import 'package:novel_glide/features/cloud/domain/entities/drive_file_metadata.dart';
 
+/// Abstract interface for cloud drive API operations.
+///
+/// Provides low-level operations for interacting with cloud storage
+/// (Google Drive). Concrete implementations (like [GoogleDriveApi]) provide
+/// the actual API integration.
 abstract class CloudDriveApi {
   /// Retrieves a file from cloud storage by its file name.
   Future<CloudFile?> getFile(String fileName);
@@ -35,7 +40,9 @@ abstract class CloudDriveApi {
   /// Lists all files and folders within a specific folder path.
   ///
   /// Returns metadata for each item in the folder.
-  Future<List<DriveFileMetadata>> listFolderContents(String folderPath);
+  Future<List<DriveFileMetadata>> listFolderContents(
+    String folderPath,
+  );
 
   /// Deletes an entire folder and all its contents recursively.
   Future<void> deleteFolder(String folderPath);

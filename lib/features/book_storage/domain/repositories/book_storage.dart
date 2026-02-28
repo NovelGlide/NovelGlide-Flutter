@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import '../entities/book_metadata.dart';
+import 'package:novel_glide/features/book_storage/domain/entities/book_metadata.dart';
 
 /// Type alias for a book's unique identifier (UUID v4 string).
 /// Generated once when a book is added and never changes for its lifetime.
@@ -8,14 +8,20 @@ typedef BookId = String;
 
 /// Exception thrown when a book storage operation fails.
 class BookStorageException implements Exception {
+  /// Creates a [BookStorageException].
   BookStorageException({
     required this.message,
     this.originalError,
     this.stackTrace,
   });
 
+  /// Human-readable error message describing the failure.
   final String message;
+
+  /// The underlying error that caused this exception, if any.
   final Object? originalError;
+
+  /// Stack trace from the original error, if available.
   final StackTrace? stackTrace;
 
   @override
@@ -24,6 +30,7 @@ class BookStorageException implements Exception {
 
 /// Exception thrown when a requested book is not found.
 class BookNotFoundException extends BookStorageException {
+  /// Creates a [BookNotFoundException] for the given [bookId].
   BookNotFoundException({required BookId bookId})
       : super(message: 'Book not found: $bookId');
 }
@@ -36,9 +43,6 @@ class BookNotFoundException extends BookStorageException {
 ///
 /// Concrete implementations: [LocalBookStorage], [CloudBookStorage]
 abstract class BookStorage {
-  /// Filenames used consistently across all implementations.
-  /// Private static members on the interface ensure both implementations agree.
-
   /// Filename for the book content file (EPUB).
   static const String bookContentFilename = 'book.epub';
 
@@ -62,9 +66,12 @@ abstract class BookStorage {
   /// Emits a change notification after successful write.
   ///
   /// Throws [BookStorageException] if the write fails.
-  Future<void> writeBytes(BookId bookId, List<int> bytes);
+  Future<void> writeBytes(
+    BookId bookId,
+    List<int> bytes,
+  );
 
-  /// Delete a book entirely from storage (content, metadata, and all associated data).
+  /// Delete a book entirely from storage.
   ///
   /// Removes the entire book folder and all its contents.
   /// Emits a change notification after successful delete.
@@ -84,7 +91,10 @@ abstract class BookStorage {
   /// Emits a change notification after successful write.
   ///
   /// Throws [BookStorageException] if the write fails.
-  Future<void> writeMetadata(BookId bookId, BookMetadata metadata);
+  Future<void> writeMetadata(
+    BookId bookId,
+    BookMetadata metadata,
+  );
 
   /// List all [BookId] values present in this storage.
   ///
@@ -92,8 +102,7 @@ abstract class BookStorage {
   /// Throws [BookStorageException] if the listing fails.
   Future<List<BookId>> listBookIds();
 
-  /// Stream that emits a [BookId] whenever that book's content or metadata
-  /// is written or deleted.
+  /// Stream that emits a [BookId] whenever that book is written or deleted.
   ///
   /// Consumers subscribe to this stream to react to changes without polling.
   /// The stream is infinite and does not close naturally.

@@ -1,7 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import 'bookmark_entry.dart';
-import 'reading_state.dart';
+import 'package:novel_glide/features/book_storage/domain/entities/bookmark_entry.dart';
+import 'package:novel_glide/features/book_storage/domain/entities/reading_state.dart';
 
 part 'book_metadata.freezed.dart';
 part 'book_metadata.g.dart';

@@ -1,12 +1,12 @@
-import '../../core/file_system/domain/repositories/file_system_repository.dart';
-import '../../core/file_system/domain/repositories/json_repository.dart';
-import '../../core/log_system/log_system.dart';
-import '../../core/path_provider/domain/repositories/app_path_provider.dart';
-import '../../main.dart';
-import '../cloud/domain/repositories/cloud_repository.dart';
-import 'data/repositories/cloud_book_storage.dart';
-import 'data/repositories/local_book_storage.dart';
-import 'domain/repositories/book_storage.dart';
+import 'package:novel_glide/core/file_system/domain/repositories/file_system_repository.dart';
+import 'package:novel_glide/core/file_system/domain/repositories/json_repository.dart';
+import 'package:novel_glide/core/log_system/log_system.dart';
+import 'package:novel_glide/core/path_provider/domain/repositories/app_path_provider.dart';
+import 'package:novel_glide/features/book_storage/data/repositories/cloud_book_storage.dart';
+import 'package:novel_glide/features/book_storage/data/repositories/local_book_storage.dart';
+import 'package:novel_glide/features/book_storage/domain/repositories/book_storage.dart';
+import 'package:novel_glide/features/cloud/domain/repositories/cloud_repository.dart';
+import 'package:novel_glide/main.dart';
 
 /// Sets up dependency injection for the book_storage feature.
 ///
@@ -15,9 +15,9 @@ import 'domain/repositories/book_storage.dart';
 /// CloudRepository) are registered but before any feature that depends on
 /// book_storage.
 ///
-/// Registers both [LocalBookStorage] and [CloudBookStorage] as lazy singletons
-/// so they can coexist in the DI container. Callers choose which implementation
-/// to use based on their storage backend preference:
+/// Registers both [LocalBookStorage] and [CloudBookStorage] as lazy
+/// singletons so they can coexist in the DI container. Callers choose
+/// which implementation to use based on their storage backend preference:
 /// - Use [LocalBookStorage] for reading/writing to device filesystem
 /// - Use [CloudBookStorage] for reading/writing to Google Drive
 ///
@@ -28,7 +28,7 @@ import 'domain/repositories/book_storage.dart';
 /// ```dart
 /// void _setupSystemsDependencies() {
 ///   // ... other features ...
-///   setupBookStorageDependencies(); // Must come after setupCloudDependencies()
+///   setupBookStorageDependencies();
 ///   // ... other features ...
 /// }
 /// ```
@@ -41,7 +41,6 @@ import 'domain/repositories/book_storage.dart';
 void setupBookStorageDependencies() {
   LogSystem.info('Setting up book_storage dependencies...');
 
-  // Register LocalBookStorage as lazy singleton
   sl.registerLazySingleton<LocalBookStorage>(
     () => LocalBookStorage(
       appPathProvider: sl<AppPathProvider>(),
@@ -51,7 +50,6 @@ void setupBookStorageDependencies() {
   );
   LogSystem.info('Registered LocalBookStorage');
 
-  // Register CloudBookStorage as lazy singleton
   sl.registerLazySingleton<CloudBookStorage>(
     () => CloudBookStorage(
       cloudRepository: sl<CloudRepository>(),

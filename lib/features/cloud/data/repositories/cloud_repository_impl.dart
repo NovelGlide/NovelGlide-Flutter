@@ -1,15 +1,22 @@
 import 'dart:typed_data';
 
-import '../../../../main.dart';
-import '../../domain/entities/cloud_file.dart';
-import '../../domain/entities/cloud_providers.dart';
-import '../../domain/entities/drive_file_metadata.dart';
-import '../../domain/repositories/cloud_repository.dart';
-import '../data_sources/cloud_drive_api.dart';
+import 'package:novel_glide/main.dart';
+import 'package:novel_glide/features/cloud/domain/entities/cloud_file.dart';
+import 'package:novel_glide/features/cloud/domain/entities/cloud_providers.dart';
+import 'package:novel_glide/features/cloud/domain/entities/drive_file_metadata.dart';
+import 'package:novel_glide/features/cloud/domain/repositories/cloud_repository.dart';
+import 'package:novel_glide/features/cloud/data/data_sources/cloud_drive_api.dart';
 
+/// Concrete implementation of [CloudRepository].
+///
+/// Delegates all operations to [CloudDriveApi], which handles the actual
+/// cloud storage operations.
 class CloudRepositoryImpl implements CloudRepository {
   @override
-  Future<void> deleteFile(CloudProviders providers, String fileId) {
+  Future<void> deleteFile(
+    CloudProviders providers,
+    String fileId,
+  ) {
     final CloudDriveApi cloudDriveApi = sl<CloudDriveApi>(param1: providers);
     return cloudDriveApi.deleteFile(fileId);
   }
@@ -21,11 +28,17 @@ class CloudRepositoryImpl implements CloudRepository {
     void Function(double progress)? onDownload,
   }) {
     final CloudDriveApi cloudDriveApi = sl<CloudDriveApi>(param1: providers);
-    return cloudDriveApi.downloadFile(cloudFile, onDownload: onDownload);
+    return cloudDriveApi.downloadFile(
+      cloudFile,
+      onDownload: onDownload,
+    );
   }
 
   @override
-  Future<CloudFile?> getFile(CloudProviders providers, String fileName) {
+  Future<CloudFile?> getFile(
+    CloudProviders providers,
+    String fileName,
+  ) {
     final CloudDriveApi cloudDriveApi = sl<CloudDriveApi>(param1: providers);
     return cloudDriveApi.getFile(fileName);
   }
@@ -37,7 +50,10 @@ class CloudRepositoryImpl implements CloudRepository {
     void Function(double progress)? onUpload,
   }) {
     final CloudDriveApi cloudDriveApi = sl<CloudDriveApi>(param1: providers);
-    return cloudDriveApi.uploadFile(path, onUpload: onUpload);
+    return cloudDriveApi.uploadFile(
+      path,
+      onUpload: onUpload,
+    );
   }
 
   @override
@@ -48,7 +64,11 @@ class CloudRepositoryImpl implements CloudRepository {
     void Function(double progress)? onUpload,
   }) {
     final CloudDriveApi cloudDriveApi = sl<CloudDriveApi>(param1: providers);
-    return cloudDriveApi.uploadFileToPath(file, folderPath, onUpload: onUpload);
+    return cloudDriveApi.uploadFileToPath(
+      file,
+      folderPath,
+      onUpload: onUpload,
+    );
   }
 
   @override
