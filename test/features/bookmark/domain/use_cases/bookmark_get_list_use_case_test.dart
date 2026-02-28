@@ -71,8 +71,7 @@ void main() {
       expect(result[0].id, equals('bm-1'));
     });
 
-    test('returns empty list when no bookmarks',
-        () async {
+    test('returns empty list when no bookmarks', () async {
       mockRepository.setItems(<BookmarkItem>[]);
 
       final List<BookmarkItem> result = await useCase();

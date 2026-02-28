@@ -64,8 +64,7 @@ void main() {
 
       mockRepository.setItem(item);
 
-      final BookmarkItem? result =
-          await useCase('bm-1');
+      final BookmarkItem? result = await useCase('bm-1');
 
       expect(result, isNotNull);
       expect(result?.id, equals('bm-1'));
@@ -74,8 +73,7 @@ void main() {
     test('returns null when not found', () async {
       mockRepository.setItem(null);
 
-      final BookmarkItem? result =
-          await useCase('bm-not-found');
+      final BookmarkItem? result = await useCase('bm-not-found');
 
       expect(result, isNull);
     });
@@ -83,8 +81,7 @@ void main() {
     test('handles errors gracefully', () async {
       mockRepository.throwError(Exception('Error'));
 
-      final BookmarkItem? result =
-          await useCase('bm-1');
+      final BookmarkItem? result = await useCase('bm-1');
 
       expect(result, isNull);
     });

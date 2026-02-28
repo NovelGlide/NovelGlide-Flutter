@@ -87,9 +87,8 @@ class BookmarkListCubit extends SharedListCubit<BookmarkItem> {
   }
 
   void deleteSelectedBookmarks() {
-    _deleteUseCase(state.selectedSet
-        .map((BookmarkItem data) => data.id)
-        .toList());
+    _deleteUseCase(
+        state.selectedSet.map((BookmarkItem data) => data.id).toList());
   }
 
   @override

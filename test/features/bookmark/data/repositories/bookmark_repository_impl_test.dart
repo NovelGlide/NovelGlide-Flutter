@@ -54,16 +54,14 @@ void main() {
           ),
         );
 
-        when(mockCacheRepository.getAllBookmarks())
-            .thenAnswer(
+        when(mockCacheRepository.getAllBookmarks()).thenAnswer(
           (_) async => <BookmarkItem>[
             item1,
             item2,
           ],
         );
 
-        final List<BookmarkItem> result =
-            await repository.getAll();
+        final List<BookmarkItem> result = await repository.getAll();
 
         expect(result, hasLength(2));
         expect(result[0].id, equals('bm-1'));
@@ -74,8 +72,7 @@ void main() {
         when(mockCacheRepository.getAllBookmarks())
             .thenThrow(Exception('Error'));
 
-        final List<BookmarkItem> result =
-            await repository.getAll();
+        final List<BookmarkItem> result = await repository.getAll();
 
         expect(result, isEmpty);
       });
@@ -92,25 +89,21 @@ void main() {
           createdAt: now,
         );
 
-        when(mockCacheRepository.getAllBookmarks())
-            .thenAnswer(
+        when(mockCacheRepository.getAllBookmarks()).thenAnswer(
           (_) async => <BookmarkItem>[item],
         );
 
-        final BookmarkItem? result =
-            await repository.getById('bm-1');
+        final BookmarkItem? result = await repository.getById('bm-1');
 
         expect(result, isNotNull);
         expect(result?.id, equals('bm-1'));
       });
 
-      test('returns null when bookmark not found',
-          () async {
+      test('returns null when bookmark not found', () async {
         when(mockCacheRepository.getAllBookmarks())
             .thenAnswer((_) async => <BookmarkItem>[]);
 
-        final BookmarkItem? result =
-            await repository.getById('bm-not-found');
+        final BookmarkItem? result = await repository.getById('bm-not-found');
 
         expect(result, isNull);
       });
@@ -119,8 +112,7 @@ void main() {
         when(mockCacheRepository.getAllBookmarks())
             .thenThrow(Exception('Error'));
 
-        final BookmarkItem? result =
-            await repository.getById('bm-1');
+        final BookmarkItem? result = await repository.getById('bm-1');
 
         expect(result, isNull);
       });
@@ -187,8 +179,7 @@ void main() {
       });
 
       test('preserves existing bookmarks', () async {
-        final BookmarkEntry existing =
-            BookmarkEntry(
+        final BookmarkEntry existing = BookmarkEntry(
           id: 'bm-existing',
           cfiPosition: 'epubcfi(/6/3)',
           timestamp: now.subtract(
@@ -265,8 +256,7 @@ void main() {
           ],
         );
 
-        when(mockCacheRepository.getAllBookmarks())
-            .thenAnswer(
+        when(mockCacheRepository.getAllBookmarks()).thenAnswer(
           (_) async => <BookmarkItem>[item1],
         );
         when(mockLocalBookStorage.getMetadata(bookId))
@@ -354,8 +344,7 @@ void main() {
           ],
         );
 
-        when(mockCacheRepository.getAllBookmarks())
-            .thenAnswer(
+        when(mockCacheRepository.getAllBookmarks()).thenAnswer(
           (_) async => <BookmarkItem>[
             item1,
             item2,
@@ -393,8 +382,7 @@ void main() {
         when(mockCacheRepository.onChanged)
             .thenAnswer((_) => controller.stream);
 
-        final Stream<void> changes =
-            repository.observeChanges();
+        final Stream<void> changes = repository.observeChanges();
 
         expect(changes, isNotNull);
         controller.close();
@@ -403,18 +391,15 @@ void main() {
 
     group('rebuildCache', () {
       test('delegates to cache repository', () async {
-        when(mockCacheRepository.rebuildCache())
-            .thenAnswer((_) async {});
+        when(mockCacheRepository.rebuildCache()).thenAnswer((_) async {});
 
         await repository.rebuildCache();
 
-        verify(mockCacheRepository.rebuildCache())
-            .called(1);
+        verify(mockCacheRepository.rebuildCache()).called(1);
       });
 
       test('handles errors gracefully', () async {
-        when(mockCacheRepository.rebuildCache())
-            .thenThrow(Exception('Error'));
+        when(mockCacheRepository.rebuildCache()).thenThrow(Exception('Error'));
 
         expect(
           repository.rebuildCache(),

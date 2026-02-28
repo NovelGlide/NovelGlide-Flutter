@@ -9,8 +9,7 @@ void main() {
     const String bookId = 'book-123';
     const String bookTitle = 'The Great Gatsby';
     const String id = 'bm-456';
-    const String cfiPosition =
-        'epubcfi(/6/4[chap01]!/4/2/16,1:10)';
+    const String cfiPosition = 'epubcfi(/6/4[chap01]!/4/2/16,1:10)';
     const String? label = 'Important passage';
 
     group('Freezed immutability', () {
@@ -108,8 +107,7 @@ void main() {
           label: label,
         );
 
-        final BookmarkItem item =
-            BookmarkItem.fromBookmarkEntry(
+        final BookmarkItem item = BookmarkItem.fromBookmarkEntry(
           entry,
           bookTitle,
           bookId,
@@ -131,8 +129,7 @@ void main() {
           label: null,
         );
 
-        final BookmarkItem item =
-            BookmarkItem.fromBookmarkEntry(
+        final BookmarkItem item = BookmarkItem.fromBookmarkEntry(
           entry,
           bookTitle,
           bookId,
@@ -142,8 +139,7 @@ void main() {
       });
 
       test('preserves special characters in label', () {
-        const String specialLabel =
-            'Quote: "To be or not to be" [Act III]';
+        const String specialLabel = 'Quote: "To be or not to be" [Act III]';
         final BookmarkEntry entry = BookmarkEntry(
           id: id,
           cfiPosition: cfiPosition,
@@ -151,8 +147,7 @@ void main() {
           label: specialLabel,
         );
 
-        final BookmarkItem item =
-            BookmarkItem.fromBookmarkEntry(
+        final BookmarkItem item = BookmarkItem.fromBookmarkEntry(
           entry,
           bookTitle,
           bookId,
@@ -164,8 +159,7 @@ void main() {
 
     group('Position format handling', () {
       test('supports CFI position format', () {
-        const String cfiBased =
-            'epubcfi(/6/4[chap01]!/4/2/16,1:10)';
+        const String cfiBased = 'epubcfi(/6/4[chap01]!/4/2/16,1:10)';
 
         final BookmarkItem item = BookmarkItem(
           id: id,
@@ -265,8 +259,7 @@ void main() {
         );
 
         final Map<String, dynamic> json = original.toJson();
-        final BookmarkItem restored =
-            BookmarkItem.fromJson(json);
+        final BookmarkItem restored = BookmarkItem.fromJson(json);
 
         expect(restored, equals(original));
       });
@@ -316,8 +309,7 @@ void main() {
       });
 
       test('handles very long label text', () {
-        final String longLabel =
-            'a' * 500; // 500 character label
+        final String longLabel = 'a' * 500; // 500 character label
 
         final BookmarkItem item = BookmarkItem(
           id: id,
@@ -348,8 +340,7 @@ void main() {
       });
 
       test('handles UUID format IDs', () {
-        const String uuidId =
-            '550e8400-e29b-41d4-a716-446655440000';
+        const String uuidId = '550e8400-e29b-41d4-a716-446655440000';
 
         final BookmarkItem item = BookmarkItem(
           id: uuidId,
@@ -364,8 +355,7 @@ void main() {
       });
 
       test('maintains precise timestamp', () {
-        final DateTime precise =
-            DateTime(2026, 2, 28, 22, 30, 45, 123, 456);
+        final DateTime precise = DateTime(2026, 2, 28, 22, 30, 45, 123, 456);
 
         final BookmarkItem item = BookmarkItem(
           id: id,

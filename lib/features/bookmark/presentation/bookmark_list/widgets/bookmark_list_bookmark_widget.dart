@@ -32,7 +32,8 @@ class BookmarkListBookmarkWidget extends StatelessWidget {
 
   Widget _buildBookmark(BuildContext context) {
     final AppLocalizations appLocalizations = AppLocalizations.of(context)!;
-    final int daysPassed = DateTime.now().difference(bookmarkData.createdAt).inDays;
+    final int daysPassed =
+        DateTime.now().difference(bookmarkData.createdAt).inDays;
     final List<Widget> subtitleChildren = <Widget>[
       // Days passed text
       Text(

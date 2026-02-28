@@ -184,10 +184,10 @@ class ReaderCubit extends Cubit<ReaderState> {
       _dependencies._localBookStorage
           .readMetadata(bookIdentifier)
           .then((BookMetadata? metadata) {
-            if (metadata != null) {
-              resumePositionCfi = metadata.readingState.cfiPosition;
-            }
-          }),
+        if (metadata != null) {
+          resumePositionCfi = metadata.readingState.cfiPosition;
+        }
+      }),
     ]);
 
     if (!isClosed) {
@@ -338,14 +338,14 @@ class ReaderCubit extends Cubit<ReaderState> {
   /// Called when the reader closes to persist the current position.
   Future<void> _saveReadingPosition() async {
     if (bookData == null) return;
-    
+
     try {
-      final BookMetadata? currentMetadata =
-          await _dependencies._localBookStorage
-              .readMetadata(bookData!.identifier);
-      
+      final BookMetadata? currentMetadata = await _dependencies
+          ._localBookStorage
+          .readMetadata(bookData!.identifier);
+
       if (currentMetadata == null) return;
-      
+
       // Update the reading state with current position
       final ReadingState updatedState = ReadingState(
         cfiPosition: state.startCfi ?? '',
@@ -353,11 +353,11 @@ class ReaderCubit extends Cubit<ReaderState> {
         lastReadTime: DateTime.now(),
         totalSeconds: currentMetadata.readingState.totalSeconds,
       );
-      
+
       final BookMetadata updatedMetadata = currentMetadata.copyWith(
         readingState: updatedState,
       );
-      
+
       // Write back to storage
       await _dependencies._localBookStorage.writeMetadata(
         bookData!.identifier,
@@ -455,7 +455,7 @@ class ReaderCubit extends Cubit<ReaderState> {
   Future<void> close() async {
     // Save current reading position before closing
     await _saveReadingPosition();
-    
+
     for (StreamSubscription<dynamic> subscription in _subscriptionSet) {
       await subscription.cancel();
     }

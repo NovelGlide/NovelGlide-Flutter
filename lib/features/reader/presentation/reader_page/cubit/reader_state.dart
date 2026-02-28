@@ -34,8 +34,6 @@ class ReaderState extends Equatable {
   /// Bottom buttons state.
   final ReaderNavigationStateCode navigationStateCode;
 
-
-
   /// Settings
   final ReaderPreferenceData readerPreference;
 
