@@ -3,14 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../generated/i18n/app_localizations.dart';
 import '../../../../reader/presentation/reader_page/reader.dart';
-import '../../../domain/entities/bookmark_data.dart';
+import '../../../domain/entities/bookmark_item.dart';
 import '../cubit/bookmark_list_cubit.dart';
 import 'bookmark_list_draggable_bookmark.dart';
 
 class BookmarkListItem extends StatelessWidget {
   const BookmarkListItem({super.key, required this.bookmarkData});
 
-  final BookmarkData bookmarkData;
+  final BookmarkItem bookmarkData;
 
   @override
   Widget build(BuildContext context) {
@@ -58,9 +58,8 @@ class BookmarkListItem extends StatelessWidget {
           .push(
             MaterialPageRoute<void>(
               builder: (_) => ReaderWidget(
-                bookIdentifier: bookmarkData.bookIdentifier,
-                pageIdentifier: bookmarkData.chapterIdentifier,
-                cfi: bookmarkData.startCfi,
+                bookIdentifier: bookmarkData.bookId,
+                cfi: bookmarkData.position,
               ),
             ),
           )

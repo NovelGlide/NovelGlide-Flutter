@@ -55,7 +55,7 @@ class BookmarkCacheRepositoryImpl implements BookmarkCacheRepository {
 
   /// Subscribes to LocalBookStorage.onChanged and rebuilds cache.
   void _initializeCache() {
-    _localBookStorage.onChanged.listen((BookId bookId) {
+    _localBookStorage.changeStream().listen((BookId bookId) {
       _handleBookChanged(bookId);
     });
   }
@@ -129,7 +129,7 @@ class BookmarkCacheRepositoryImpl implements BookmarkCacheRepository {
     try {
       final String cachePath = await _getCachePath();
       final Map<String, dynamic>? data =
-          await _jsonRepository.read(cachePath);
+          await _jsonRepository.readJson(path: cachePath);
 
       if (data == null) {
         LogSystem.info('Cache file not found, starting fresh');
@@ -157,8 +157,9 @@ class BookmarkCacheRepositoryImpl implements BookmarkCacheRepository {
       LogSystem.info('Loaded cache with ${_cache.length}'
           ' books');
     } catch (e, st) {
-      LogSystem.warn(
+      LogSystem.error(
         'Failed to load cache file: $e. Starting fresh.',
+        error: e,
         stackTrace: st,
       );
       _cache.clear();
@@ -180,13 +181,14 @@ class BookmarkCacheRepositoryImpl implements BookmarkCacheRepository {
             .toList();
       }
 
-      await _jsonRepository.write(cachePath, data);
-      LogSystem.debug(
+      await _jsonRepository.writeJson(path: cachePath, data: data);
+      LogSystem.info(
         'Saved bookmark cache to disk',
       );
     } catch (e, st) {
       LogSystem.error(
         'Failed to save cache file: $e',
+        error: e,
         stackTrace: st,
       );
     }
@@ -327,7 +329,7 @@ class BookmarkCacheRepositoryImpl implements BookmarkCacheRepository {
             _cache[bookId] = items;
           }
         } catch (e, st) {
-          LogSystem.warn(
+          LogSystem.error(
             'Error reading metadata for book'
             ' $bookId: $e',
             stackTrace: st,

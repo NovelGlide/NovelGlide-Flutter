@@ -1,3 +1,4 @@
+import '../book_storage/data/repositories/local_book_storage.dart';
 import '../../core/css_parser/css_parser.dart';
 import '../../core/file_system/domain/repositories/file_system_repository.dart';
 import '../../core/html_parser/html_parser.dart';
@@ -5,8 +6,6 @@ import '../../core/image_processor/image_processor.dart';
 import '../../core/mime_resolver/domain/repositories/mime_repository.dart';
 import '../../core/path_provider/domain/repositories/app_path_provider.dart';
 import '../../main.dart';
-import '../bookmark/domain/use_cases/bookmark_get_data_use_case.dart';
-import '../bookmark/domain/use_cases/bookmark_observe_change_use_case.dart';
 import '../bookmark/domain/use_cases/bookmark_reset_use_case.dart';
 import '../collection/domain/use_cases/collection_delete_all_books_use_case.dart';
 import '../download_manager/domain/use_cases/downloader_download_file_use_case.dart';
@@ -193,8 +192,7 @@ void setupBookDependencies() {
   sl.registerFactory<TocCubit>(
     () => TocCubit(
       sl<BookGetChapterListUseCase>(),
-      sl<BookmarkGetDataUseCase>(),
-      sl<BookmarkObserveChangeUseCase>(),
+      sl<LocalBookStorage>(),
     ),
   );
 }

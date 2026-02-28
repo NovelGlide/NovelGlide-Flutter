@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../generated/i18n/app_localizations.dart';
 import '../../../../shared_components/shared_list/shared_list.dart';
-import '../../../domain/entities/bookmark_data.dart';
+import '../../../domain/entities/bookmark_item.dart';
 
 class BookmarkListBookmarkWidget extends StatelessWidget {
   const BookmarkListBookmarkWidget({
@@ -14,7 +14,7 @@ class BookmarkListBookmarkWidget extends StatelessWidget {
     this.onChanged,
   });
 
-  final BookmarkData bookmarkData;
+  final BookmarkItem bookmarkData;
   final SharedListType listType;
   final bool isSelecting;
   final bool isSelected;
@@ -32,7 +32,7 @@ class BookmarkListBookmarkWidget extends StatelessWidget {
 
   Widget _buildBookmark(BuildContext context) {
     final AppLocalizations appLocalizations = AppLocalizations.of(context)!;
-    final int daysPassed = bookmarkData.daysPassed;
+    final int daysPassed = DateTime.now().difference(bookmarkData.createdAt).inDays;
     final List<Widget> subtitleChildren = <Widget>[
       // Days passed text
       Text(
@@ -44,11 +44,11 @@ class BookmarkListBookmarkWidget extends StatelessWidget {
     switch (listType) {
       case SharedListType.grid:
         // Chapter title
-        if (bookmarkData.chapterTitle.isNotEmpty) {
+        if ((bookmarkData.label ?? '').isNotEmpty) {
           subtitleChildren.insert(
             0,
             Text(
-              bookmarkData.chapterTitle,
+              bookmarkData.label ?? '',
               style: Theme.of(context).textTheme.bodySmall,
               overflow: TextOverflow.ellipsis,
             ),
@@ -65,7 +65,7 @@ class BookmarkListBookmarkWidget extends StatelessWidget {
           title: Column(
             children: <Widget>[
               Text(
-                bookmarkData.bookName,
+                bookmarkData.bookTitle,
                 overflow: TextOverflow.ellipsis,
               ),
               ...subtitleChildren,
@@ -77,8 +77,8 @@ class BookmarkListBookmarkWidget extends StatelessWidget {
 
       case SharedListType.list:
         // Chapter title
-        if (bookmarkData.chapterTitle.isNotEmpty) {
-          subtitleChildren.insert(0, Text(bookmarkData.chapterTitle));
+        if ((bookmarkData.label ?? '').isNotEmpty) {
+          subtitleChildren.insert(0, Text(bookmarkData.label ?? ''));
         }
 
         return SharedListTile(
@@ -88,7 +88,7 @@ class BookmarkListBookmarkWidget extends StatelessWidget {
             padding: EdgeInsets.only(right: 14.0),
             child: Icon(Icons.bookmark_rounded),
           ),
-          title: Text(bookmarkData.bookName),
+          title: Text(bookmarkData.bookTitle),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: subtitleChildren,

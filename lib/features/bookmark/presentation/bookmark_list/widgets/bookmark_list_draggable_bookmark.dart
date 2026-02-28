@@ -6,7 +6,7 @@ import '../../../../homepage/cubit/homepage_cubit.dart';
 import '../../../../shared_components/draggable_feedback_widget.dart';
 import '../../../../shared_components/draggable_placeholder_widget.dart';
 import '../../../../shared_components/shared_list/shared_list.dart';
-import '../../../domain/entities/bookmark_data.dart';
+import '../../../domain/entities/bookmark_item.dart';
 import '../cubit/bookmark_list_cubit.dart';
 import 'bookmark_list_bookmark_widget.dart';
 
@@ -21,7 +21,7 @@ class BookmarkListDraggableBookmark extends StatelessWidget {
     this.onChanged,
   });
 
-  final BookmarkData bookmarkData;
+  final BookmarkItem bookmarkData;
   final SharedListType listType;
   final bool isDraggable;
   final bool isSelecting;
@@ -42,7 +42,7 @@ class BookmarkListDraggableBookmark extends StatelessWidget {
           ? const EdgeInsets.all(8.0)
           : EdgeInsets.zero;
 
-      return LongPressDraggable<BookmarkData>(
+      return LongPressDraggable<BookmarkItem>(
         onDragStarted: () {
           cubit.isDragging = true;
           homepageCubit.isEnabled = false;

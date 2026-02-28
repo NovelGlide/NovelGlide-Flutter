@@ -53,7 +53,8 @@ class TocFabSection extends StatelessWidget {
             )
           ];
 
-          if (state.bookmarkData != null) {
+          if (state.currentPositionCfi != null &&
+              state.currentPositionCfi!.isNotEmpty) {
             children.add(Padding(
               padding: const EdgeInsets.only(left: 16.0),
               child: ElevatedButton.icon(
@@ -62,8 +63,7 @@ class TocFabSection extends StatelessWidget {
                     builder: (_) => ReaderWidget(
                       bookIdentifier: bookData.identifier,
                       bookData: bookData,
-                      pageIdentifier: state.bookmarkData?.chapterIdentifier,
-                      cfi: state.bookmarkData?.startCfi,
+                      cfi: state.currentPositionCfi,
                     ),
                   ));
                 },

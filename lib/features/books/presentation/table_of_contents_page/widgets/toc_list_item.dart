@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../bookmark/domain/entities/bookmark_data.dart';
 import '../../../../reader/presentation/reader_page/reader.dart';
 import '../../../domain/entities/book.dart';
 import '../../../domain/entities/book_chapter.dart';
@@ -11,18 +10,18 @@ class TocListItem extends StatelessWidget {
     required this.bookData,
     required this.bookChapter,
     required this.chapterNestedLevel,
-    this.bookmark,
+    this.currentPositionCfi,
   });
 
   final Book bookData;
   final BookChapter bookChapter;
   final int chapterNestedLevel;
-  final BookmarkData? bookmark;
+  final String? currentPositionCfi;
 
   @override
   Widget build(BuildContext context) {
     final bool isBookmarked =
-        bookmark?.chapterIdentifier == bookChapter.identifier;
+        false;  // TODO: Compare CFI to chapter for more accurate marking
     final ThemeData themeData = Theme.of(context);
 
     return ListTile(

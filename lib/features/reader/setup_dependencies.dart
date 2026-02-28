@@ -5,9 +5,8 @@ import '../../core/file_system/domain/repositories/file_system_repository.dart';
 import '../../core/path_provider/domain/repositories/app_path_provider.dart';
 import '../../core/web_server/domain/repositories/web_server_repository.dart';
 import '../../main.dart';
-import '../bookmark/domain/use_cases/bookmark_delete_data_use_case.dart';
-import '../bookmark/domain/use_cases/bookmark_get_data_use_case.dart';
-import '../bookmark/domain/use_cases/bookmark_update_data_use_case.dart';
+import '../book_storage/data/repositories/local_book_storage.dart';
+import '../bookmark/domain/repositories/bookmark_repository.dart';
 import '../books/domain/repositories/book_repository.dart';
 import '../books/domain/use_cases/book_get_use_case.dart';
 import '../preference/domain/repositories/preference_repository.dart';
@@ -150,10 +149,10 @@ void setupReaderDependencies() {
             ReaderSetSmoothScrollUseCase(coreRepository),
             // Book use cases
             sl<BookGetUseCase>(),
-            // Bookmark use cases
-            sl<BookmarkGetDataUseCase>(),
-            sl<BookmarkUpdateDataUseCase>(),
-            sl<BookmarkDeleteDataUseCase>(),
+            // Book storage for reading state
+            sl<LocalBookStorage>(),
+            // Bookmark repository for manual bookmarks
+            sl<BookmarkRepository>(),
             // Reader preference use cases.
             sl<ReaderSavePreferenceUseCase>(),
             sl<ReaderObservePreferenceChangeUseCase>(),

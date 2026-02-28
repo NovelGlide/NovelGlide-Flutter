@@ -7,17 +7,17 @@ import '../../../../preference/domain/use_cases/preference_get_use_cases.dart';
 import '../../../../preference/domain/use_cases/preference_observe_change_use_case.dart';
 import '../../../../preference/domain/use_cases/preference_save_use_case.dart';
 import '../../../../shared_components/shared_list/shared_list.dart';
-import '../../../domain/entities/bookmark_data.dart';
-import '../../../domain/use_cases/bookmark_delete_data_use_case.dart';
+import '../../../domain/entities/bookmark_item.dart';
+import '../../../domain/use_cases/bookmark_delete_use_case.dart';
 import '../../../domain/use_cases/bookmark_get_list_use_case.dart';
 import '../../../domain/use_cases/bookmark_observe_change_use_case.dart';
 
-typedef BookmarkListState = SharedListState<BookmarkData>;
+typedef BookmarkListState = SharedListState<BookmarkItem>;
 
-class BookmarkListCubit extends SharedListCubit<BookmarkData> {
+class BookmarkListCubit extends SharedListCubit<BookmarkItem> {
   factory BookmarkListCubit(
     BookmarkGetListUseCase getListUseCase,
-    BookmarkDeleteDataUseCase deleteDataUseCase,
+    BookmarkDeleteUseCase deleteUseCase,
     BookmarkObserveChangeUseCase observeChangeUseCase,
     BookmarkListGetPreferenceUseCase getPreferenceUseCase,
     BookmarkListSavePreferenceUseCase savePreferenceUseCase,
@@ -25,7 +25,7 @@ class BookmarkListCubit extends SharedListCubit<BookmarkData> {
   ) {
     final BookmarkListCubit cubit = BookmarkListCubit._(
       getListUseCase,
-      deleteDataUseCase,
+      deleteUseCase,
       getPreferenceUseCase,
       savePreferenceUseCase,
     );
@@ -46,14 +46,14 @@ class BookmarkListCubit extends SharedListCubit<BookmarkData> {
 
   BookmarkListCubit._(
     this._getListUseCase,
-    this._deleteDataUseCase,
+    this._deleteUseCase,
     this._getPreferenceUseCase,
     this._savePreferenceUseCase,
-  ) : super(const SharedListState<BookmarkData>());
+  ) : super(const SharedListState<BookmarkItem>());
 
   /// Bookmark use cases
   final BookmarkGetListUseCase _getListUseCase;
-  final BookmarkDeleteDataUseCase _deleteDataUseCase;
+  final BookmarkDeleteUseCase _deleteUseCase;
 
   /// Bookmark list preference use cases
   final BookmarkListGetPreferenceUseCase _getPreferenceUseCase;
@@ -82,33 +82,33 @@ class BookmarkListCubit extends SharedListCubit<BookmarkData> {
     ));
   }
 
-  Future<void> deleteBookmark(BookmarkData data) {
-    return _deleteDataUseCase(<String>{data.bookIdentifier});
+  Future<void> deleteBookmark(BookmarkItem data) {
+    return _deleteUseCase(<String>[data.id]);
   }
 
   void deleteSelectedBookmarks() {
-    _deleteDataUseCase(state.selectedSet
-        .map((BookmarkData data) => data.bookIdentifier)
-        .toSet());
+    _deleteUseCase(state.selectedSet
+        .map((BookmarkItem data) => data.id)
+        .toList());
   }
 
   @override
   int sortCompare(
-    BookmarkData a,
-    BookmarkData b, {
+    BookmarkItem a,
+    BookmarkItem b, {
     required SortOrderCode sortOrder,
     required bool isAscending,
   }) {
     switch (sortOrder) {
       case SortOrderCode.name:
         return isAscending
-            ? compareNatural(a.bookIdentifier, b.bookIdentifier)
-            : compareNatural(b.bookIdentifier, a.bookIdentifier);
+            ? compareNatural(a.bookTitle, b.bookTitle)
+            : compareNatural(b.bookTitle, a.bookTitle);
 
       default:
         return isAscending
-            ? a.savedTime.compareTo(b.savedTime)
-            : b.savedTime.compareTo(a.savedTime);
+            ? a.createdAt.compareTo(b.createdAt)
+            : b.createdAt.compareTo(a.createdAt);
     }
   }
 

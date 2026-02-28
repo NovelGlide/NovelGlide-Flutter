@@ -8,12 +8,10 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../../../../core/app_font_loader/domain/use_cases/app_font_loader_load_font.dart';
 import '../../../../../core/css_parser/domain/entities/css_font_file.dart';
-import '../../../../book_storage/data/repositories/local_book_storage.dart';
-import '../../../../book_storage/domain/entities/book_metadata.dart';
-import '../../../../book_storage/domain/entities/reading_state.dart';
-import '../../../../book_storage/domain/entities/bookmark_entry.dart';
-import '../../../../bookmark/domain/repositories/bookmark_repository.dart';
-
+import '../../../../bookmark/domain/entities/bookmark_data.dart';
+import '../../../../bookmark/domain/use_cases/bookmark_delete_data_use_case.dart';
+import '../../../../bookmark/domain/use_cases/bookmark_get_data_use_case.dart';
+import '../../../../bookmark/domain/use_cases/bookmark_update_data_use_case.dart';
 import '../../../../books/domain/entities/book.dart';
 import '../../../../books/domain/entities/book_html_content.dart';
 import '../../../../books/domain/use_cases/book_get_use_case.dart';
@@ -59,10 +57,10 @@ class ReaderCubitDependencies {
     this._setSmoothScrollUseCase,
     // Book use cases
     this._bookGetUseCase,
-    // Book storage for reading state
-    this._localBookStorage,
-    // Bookmark repository for manual bookmarks
-    this._bookmarkRepository,
+    // Bookmark use cases
+    this._bookmarkGetDataUseCase,
+    this._bookmarkUpdateDataUseCase,
+    this._bookmarkDeleteDataUseCase,
     // Reader preference use cases
     this._savePreferenceUseCase,
     this._observePreferenceChangeUseCase,
@@ -91,9 +89,10 @@ class ReaderCubitDependencies {
   /// Book use cases
   final BookGetUseCase _bookGetUseCase;
 
-  /// Book storage for reading state and bookmark repository
-  final LocalBookStorage _localBookStorage;
-  final BookmarkRepository _bookmarkRepository;
+  /// Bookmark use cases
+  final BookmarkGetDataUseCase _bookmarkGetDataUseCase;
+  final BookmarkUpdateDataUseCase _bookmarkUpdateDataUseCase;
+  final BookmarkDeleteDataUseCase _bookmarkDeleteDataUseCase;
 
   /// Reader preference use cases
   final ReaderSavePreferenceUseCase _savePreferenceUseCase;
@@ -175,19 +174,15 @@ class ReaderCubit extends Cubit<ReaderState> {
           .listen(_refreshPreference),
     ]);
 
-    // Start loading the data of book and reading state.
-    String? resumePositionCfi;
+    // Start loading the data of book, and bookmarks.
+    late BookmarkData? bookmarkData;
     await Future.wait<void>(<Future<void>>[
       _dependencies
           ._bookGetUseCase(bookIdentifier)
           .then((Book value) => this.bookData = value),
-      _dependencies._localBookStorage
-          .readMetadata(bookIdentifier)
-          .then((BookMetadata? metadata) {
-            if (metadata != null) {
-              resumePositionCfi = metadata.readingState.cfiPosition;
-            }
-          }),
+      _dependencies
+          ._bookmarkGetDataUseCase(bookIdentifier)
+          .then((BookmarkData? data) => bookmarkData = data),
     ]);
 
     if (!isClosed) {
@@ -195,6 +190,7 @@ class ReaderCubit extends Cubit<ReaderState> {
       emit(state.copyWith(
         code: ReaderLoadingStateCode.rendering,
         bookName: this.bookData?.title,
+        bookmarkDataGetter: () => bookmarkData,
         readerPreference: readerSettingsData,
       ));
     }
@@ -202,7 +198,7 @@ class ReaderCubit extends Cubit<ReaderState> {
     await _dependencies._coreRepository.init(
       bookIdentifier: bookIdentifier,
       pageIdentifier: pageIdentifier,
-      cfi: cfi ?? resumePositionCfi,
+      cfi: cfi,
     );
 
     if (!isClosed) {
@@ -307,66 +303,25 @@ class ReaderCubit extends Cubit<ReaderState> {
   /// Bookmarks
   /// *************************************************************************
 
-  /// Create a manual bookmark at the current reading position.
-  Future<void> saveBookmark() async {
-    if (bookData == null) return;
+  void saveBookmark() {
+    final BookmarkData data = BookmarkData(
+      bookIdentifier: bookData!.identifier,
+      bookName: state.bookName,
+      chapterTitle: state.breadcrumb,
+      chapterIdentifier: state.chapterFileName,
+      startCfi: state.startCfi,
+      savedTime: DateTime.now(),
+    );
 
-    try {
-      // Use the new BookmarkRepository to add a bookmark
-      await _dependencies._bookmarkRepository.addBookmark(
-        bookData!.identifier,
-        BookmarkEntry(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          cfiPosition: state.startCfi ?? '',
-          timestamp: DateTime.now(),
-          label: state.breadcrumb.isNotEmpty ? state.breadcrumb : null,
-        ),
-      );
-    } catch (e) {
-      // Log the error but don't crash
-      print('Error saving bookmark: $e');
-    }
+    _dependencies._bookmarkUpdateDataUseCase(<BookmarkData>{data});
+
+    emit(state.copyWith(bookmarkDataGetter: () => data));
   }
 
-  /// Delete a bookmark (deprecated - use BookmarkRepository directly).
   void removeBookmark() {
-    // This method is kept for backward compatibility
-    // but the new flow should use BookmarkRepository.deleteBookmarks() directly
-  }
+    _dependencies._bookmarkDeleteDataUseCase(<String>{bookData!.identifier});
 
-  /// Save the current reading position to BookMetadata.
-  /// Called when the reader closes to persist the current position.
-  Future<void> _saveReadingPosition() async {
-    if (bookData == null) return;
-    
-    try {
-      final BookMetadata? currentMetadata =
-          await _dependencies._localBookStorage
-              .readMetadata(bookData!.identifier);
-      
-      if (currentMetadata == null) return;
-      
-      // Update the reading state with current position
-      final ReadingState updatedState = ReadingState(
-        cfiPosition: state.startCfi ?? '',
-        progress: 0.0,
-        lastReadTime: DateTime.now(),
-        totalSeconds: currentMetadata.readingState.totalSeconds,
-      );
-      
-      final BookMetadata updatedMetadata = currentMetadata.copyWith(
-        readingState: updatedState,
-      );
-      
-      // Write back to storage
-      await _dependencies._localBookStorage.writeMetadata(
-        bookData!.identifier,
-        updatedMetadata,
-      );
-    } catch (e) {
-      // Log the error but don't crash during close
-      print('Error saving reading position: $e');
-    }
+    emit(state.copyWith(bookmarkDataGetter: () => null));
   }
 
   /// *************************************************************************
@@ -453,9 +408,6 @@ class ReaderCubit extends Cubit<ReaderState> {
 
   @override
   Future<void> close() async {
-    // Save current reading position before closing
-    await _saveReadingPosition();
-    
     for (StreamSubscription<dynamic> subscription in _subscriptionSet) {
       await subscription.cancel();
     }

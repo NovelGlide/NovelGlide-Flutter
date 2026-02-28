@@ -4,9 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../enum/loading_state_code.dart';
-import '../../../../bookmark/domain/entities/bookmark_data.dart';
-import '../../../../bookmark/domain/use_cases/bookmark_get_data_use_case.dart';
-import '../../../../bookmark/domain/use_cases/bookmark_observe_change_use_case.dart';
+import '../../../../book_storage/data/repositories/local_book_storage.dart';
 import '../../../domain/entities/book_chapter.dart';
 import '../../../domain/use_cases/book_get_chapter_list_use_case.dart';
 import 'toc_nested_chapter_data.dart';
@@ -15,14 +13,12 @@ import 'toc_state.dart';
 class TocCubit extends Cubit<TocState> {
   TocCubit(
     this._bookGetChapterListUseCase,
-    this._bookmarkGetDataUseCase,
-    this._bookmarkObserveChangeUseCase,
+    this._localBookStorage,
   ) : super(const TocState());
 
-  /// Use cases
+  /// Use cases and repositories
   final BookGetChapterListUseCase _bookGetChapterListUseCase;
-  final BookmarkGetDataUseCase _bookmarkGetDataUseCase;
-  final BookmarkObserveChangeUseCase _bookmarkObserveChangeUseCase;
+  final LocalBookStorage _localBookStorage;
 
   /// Used by widgets
   final PageStorageBucket bucket = PageStorageBucket();
@@ -37,9 +33,13 @@ class TocCubit extends Cubit<TocState> {
   Future<void> startLoading(String identifier) async {
     _bookIdentifier = identifier;
 
-    // Listen to bookmarks changes.
+    // Listen to book metadata changes via LocalBookStorage
     _onChangedSubscription =
-        _bookmarkObserveChangeUseCase().listen((_) => refresh());
+        _localBookStorage.changeStream().listen((changedId) {
+      if (changedId == _bookIdentifier) {
+        refresh();
+      }
+    });
 
     // Refresh at first
     refresh();
@@ -49,9 +49,16 @@ class TocCubit extends Cubit<TocState> {
     // Start loading
     emit(const TocState(code: LoadingStateCode.loading));
 
-    // Get bookmark data
-    final BookmarkData bookmarkData =
-        await _bookmarkGetDataUseCase(_bookIdentifier);
+    // Get the current reading position from BookMetadata
+    String? currentPositionCfi;
+    try {
+      final metadata = await _localBookStorage.readMetadata(_bookIdentifier);
+      if (metadata != null) {
+        currentPositionCfi = metadata.readingState.cfiPosition;
+      }
+    } catch (e) {
+      print('Error reading metadata for TOC: $e');
+    }
 
     // Load the chapter list
     final List<BookChapter> chapterList =
@@ -60,7 +67,7 @@ class TocCubit extends Cubit<TocState> {
     // Finish loading
     emit(state.copyWith(
       code: LoadingStateCode.loaded,
-      bookmarkData: bookmarkData,
+      currentPositionCfi: currentPositionCfi,
       chapterList: _constructChapterTree(chapterList, 0),
     ));
   }

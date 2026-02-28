@@ -16,7 +16,6 @@ class ReaderNavBookmarkButton extends StatelessWidget {
     return BlocBuilder<ReaderCubit, ReaderState>(
       buildWhen: (ReaderState previous, ReaderState current) =>
           previous.code != current.code ||
-          previous.bookmarkData != current.bookmarkData ||
           previous.chapterFileName != current.chapterFileName ||
           previous.startCfi != current.startCfi ||
           previous.readerPreference.isAutoSaving !=
@@ -26,10 +25,11 @@ class ReaderNavBookmarkButton extends StatelessWidget {
         final bool isEnabled =
             state.code.isLoaded && !state.readerPreference.isAutoSaving;
 
-        // Was the current page bookmarked?
-        final bool isBookmarked = !state.readerPreference.isAutoSaving &&
-            state.bookmarkData?.startCfi == state.startCfi &&
-            state.bookmarkData?.chapterIdentifier == state.chapterFileName;
+        // Note: In the new architecture, we cannot easily check if the current
+        // position is bookmarked without accessing the full bookmark list.
+        // For now, we always show the outline icon and let the user tap to
+        // add a bookmark. The filled icon will be shown only during feedback.
+        const bool isBookmarked = false;
 
         return IconButton(
           icon: Icon(

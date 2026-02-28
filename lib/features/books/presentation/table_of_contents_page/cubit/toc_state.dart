@@ -1,31 +1,30 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../../enum/loading_state_code.dart';
-import '../../../../bookmark/domain/entities/bookmark_data.dart';
 import 'toc_nested_chapter_data.dart';
 
 class TocState extends Equatable {
   const TocState({
     this.code = LoadingStateCode.initial,
-    this.bookmarkData,
+    this.currentPositionCfi,
     this.chapterList = const <TocNestedChapterData>[],
   });
 
   final LoadingStateCode code;
-  final BookmarkData? bookmarkData;
+  final String? currentPositionCfi;
   final List<TocNestedChapterData> chapterList;
 
   @override
-  List<Object?> get props => <Object?>[code, bookmarkData, chapterList];
+  List<Object?> get props => <Object?>[code, currentPositionCfi, chapterList];
 
   TocState copyWith({
     LoadingStateCode? code,
-    BookmarkData? bookmarkData,
+    String? currentPositionCfi,
     List<TocNestedChapterData>? chapterList,
   }) {
     return TocState(
       code: code ?? this.code,
-      bookmarkData: bookmarkData ?? this.bookmarkData,
+      currentPositionCfi: currentPositionCfi ?? this.currentPositionCfi,
       chapterList: chapterList ?? this.chapterList,
     );
   }

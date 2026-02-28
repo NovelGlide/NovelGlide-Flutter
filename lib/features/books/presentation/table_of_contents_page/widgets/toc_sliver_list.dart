@@ -23,7 +23,7 @@ class TocSliverList extends StatelessWidget {
       buildWhen: (TocState previous, TocState current) =>
           previous.code != current.code ||
           previous.chapterList != current.chapterList ||
-          previous.bookmarkData != current.bookmarkData,
+          previous.currentPositionCfi != current.currentPositionCfi,
       builder: (BuildContext context, TocState state) {
         switch (state.code) {
           case LoadingStateCode.initial:
@@ -57,7 +57,7 @@ class TocSliverList extends StatelessWidget {
             bookData: bookData,
             bookChapter: state.chapterList[index].chapterData,
             chapterNestedLevel: state.chapterList[index].nestedLevel,
-            bookmark: state.bookmarkData,
+            currentPositionCfi: state.currentPositionCfi,
           );
         },
         childCount: state.chapterList.length,
