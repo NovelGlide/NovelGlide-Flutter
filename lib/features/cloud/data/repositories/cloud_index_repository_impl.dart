@@ -117,12 +117,12 @@ class CloudIndexRepositoryImpl extends CloudIndexRepository {
       final CloudFile? cloudFile = await _cloudRepository
           .getFile(CloudProviders.google, _indexFileName)
           .timeout(
-            _cloudTimeout,
-            onTimeout: () {
-              LogSystem.warn('Cloud index fetch timeout');
-              return null;
-            },
-          );
+        _cloudTimeout,
+        onTimeout: () {
+          LogSystem.warn('Cloud index fetch timeout');
+          return null;
+        },
+      );
 
       if (cloudFile == null) {
         LogSystem.info('Cloud index not found (first sync?)');
@@ -131,8 +131,7 @@ class CloudIndexRepositoryImpl extends CloudIndexRepository {
 
       // Download the file content
       final List<int> bytes = <int>[];
-      await for (final chunk
-          in _cloudRepository.downloadFile(
+      await for (final chunk in _cloudRepository.downloadFile(
         CloudProviders.google,
         cloudFile,
       )) {
@@ -142,8 +141,7 @@ class CloudIndexRepositoryImpl extends CloudIndexRepository {
       // Decode as JSON
       final String jsonString = utf8.decode(bytes);
       final dynamic decoded = jsonDecode(jsonString);
-      final Map<String, dynamic> json =
-          decoded as Map<String, dynamic>;
+      final Map<String, dynamic> json = decoded as Map<String, dynamic>;
       final CloudIndex cloudIndex = CloudIndex.fromJson(json);
 
       LogSystem.info('Fetched cloud index: ${cloudIndex.books.length} books');
@@ -177,8 +175,7 @@ class CloudIndexRepositoryImpl extends CloudIndexRepository {
 
         try {
           // Save to a temporary local file first
-          final String tempPath =
-              '${await _getLocalIndexPath()}.upload.tmp';
+          final String tempPath = '${await _getLocalIndexPath()}.upload.tmp';
           await _jsonRepository.writeJson(
             path: tempPath,
             data: queuedIndex.toJson() as Map<String, dynamic>,

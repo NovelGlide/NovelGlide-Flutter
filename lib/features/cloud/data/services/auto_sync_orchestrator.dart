@@ -145,8 +145,7 @@ class AutoSyncOrchestrator {
     try {
       while (_syncQueue.isNotEmpty) {
         // Take up to batchSize books
-        final List<String> batch =
-            _syncQueue.take(_batchSize).toList();
+        final List<String> batch = _syncQueue.take(_batchSize).toList();
 
         for (final String bookId in batch) {
           try {

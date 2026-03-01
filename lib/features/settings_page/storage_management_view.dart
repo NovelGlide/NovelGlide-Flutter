@@ -89,7 +89,8 @@ class _StorageManagementViewState extends State<StorageManagementView> {
                   DropdownMenuItem(value: 'size', child: Text('Size')),
                   DropdownMenuItem(value: 'status', child: Text('Status')),
                   DropdownMenuItem(value: 'name', child: Text('Name')),
-                  DropdownMenuItem(value: 'lastSyncedAt', child: Text('Last Synced')),
+                  DropdownMenuItem(
+                      value: 'lastSyncedAt', child: Text('Last Synced')),
                 ],
                 onChanged: (String? value) {
                   setState(() {

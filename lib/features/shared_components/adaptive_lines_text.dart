@@ -12,12 +12,15 @@ class AdaptiveLinesText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final TextStyle? textStyle = style ?? Theme.of(context).textTheme.bodyMedium;
+    final TextStyle? textStyle =
+        style ?? Theme.of(context).textTheme.bodyMedium;
     final double fontSize = textStyle?.fontSize ?? 14.0;
-    final double textScaleFactor = MediaQuery.textScalerOf(context).scale(fontSize);
+    final double textScaleFactor =
+        MediaQuery.textScalerOf(context).scale(fontSize);
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
-        final int maxLines = ((constraints.maxHeight / textScaleFactor) * 0.8).floor();
+        final int maxLines =
+            ((constraints.maxHeight / textScaleFactor) * 0.8).floor();
         return Text(
           text,
           maxLines: maxLines,

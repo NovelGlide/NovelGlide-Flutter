@@ -30,8 +30,7 @@ class BookmarkEntryListConverter
   @override
   List<BookmarkEntry> fromJson(List<dynamic> json) {
     return json
-        .map((dynamic e) =>
-            BookmarkEntry.fromJson(e as Map<String, dynamic>))
+        .map((dynamic e) => BookmarkEntry.fromJson(e as Map<String, dynamic>))
         .toList();
   }
 
@@ -144,9 +143,8 @@ abstract class BookCloudMetadata with _$BookCloudMetadata {
   /// Returns: A new BookCloudMetadata with the bookmark removed
   /// Returns unchanged if bookmark ID not found
   BookCloudMetadata removeBookmark(String bookmarkId) {
-    final List<BookmarkEntry> updated = bookmarks
-        .where((BookmarkEntry b) => b.id != bookmarkId)
-        .toList();
+    final List<BookmarkEntry> updated =
+        bookmarks.where((BookmarkEntry b) => b.id != bookmarkId).toList();
     return copyWith(bookmarks: updated);
   }
 }

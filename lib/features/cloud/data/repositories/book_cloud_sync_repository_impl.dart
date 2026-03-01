@@ -116,12 +116,13 @@ class BookCloudSyncRepositoryImpl extends BookCloudSyncRepository {
       // Create cloud metadata from local state
       final BookCloudMetadata cloudMetadata = BookCloudMetadata(
         bookId: bookId,
-        readingState: localBook.readingState ?? ReadingState(
-          cfiPosition: '/',
-          progress: 0.0,
-          lastReadTime: DateTime.now(),
-          totalSeconds: 0,
-        ),
+        readingState: localBook.readingState ??
+            ReadingState(
+              cfiPosition: '/',
+              progress: 0.0,
+              lastReadTime: DateTime.now(),
+              totalSeconds: 0,
+            ),
         bookmarks: localBook.bookmarks,
       );
 
@@ -197,12 +198,13 @@ class BookCloudSyncRepositoryImpl extends BookCloudSyncRepository {
       // Upload metadata
       final BookCloudMetadata cloudMetadata = BookCloudMetadata(
         bookId: bookId,
-        readingState: localBook.readingState ?? ReadingState(
-          cfiPosition: '/',
-          progress: 0.0,
-          lastReadTime: DateTime.now(),
-          totalSeconds: 0,
-        ),
+        readingState: localBook.readingState ??
+            ReadingState(
+              cfiPosition: '/',
+              progress: 0.0,
+              lastReadTime: DateTime.now(),
+              totalSeconds: 0,
+            ),
         bookmarks: localBook.bookmarks,
       );
 
