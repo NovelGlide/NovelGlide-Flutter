@@ -3,10 +3,29 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'bookmark_entry.freezed.dart';
 part 'bookmark_entry.g.dart';
 
+/// Enum for bookmark entry types.
+///
+/// - auto: Resume position (max 1 per book, overwrites on close)
+/// - manual: User-created bookmarks (multiple allowed, persistent)
+enum BookmarkType {
+  /// Auto-generated resume position bookmark.
+  /// Only one per book, automatically created/updated.
+  /// Represents where the user last stopped reading.
+  @JsonValue('auto')
+  auto,
+
+  /// User-created manual bookmark.
+  /// Multiple per book, persist across sessions.
+  /// Created by explicit user action.
+  @JsonValue('manual')
+  manual,
+}
+
 /// A user-created saved position in a book.
 ///
-/// Bookmarks are always created explicitly by the user. Auto-resume is
-/// handled entirely by [ReadingState], not by bookmarks.
+/// Bookmarks can be either auto-generated resume positions or user-created
+/// manual bookmarks. Auto-resume is exclusive (max 1 per book), while manual
+/// bookmarks are multiple and persistent.
 @freezed
 abstract class BookmarkEntry with _$BookmarkEntry {
   const factory BookmarkEntry({
@@ -22,6 +41,12 @@ abstract class BookmarkEntry with _$BookmarkEntry {
 
     /// Optional user-defined label or note for this bookmark.
     String? label,
+
+    /// Type of this bookmark entry.
+    ///
+    /// - auto: Auto-generated resume position (max 1 per book)
+    /// - manual: User-created bookmark (multiple per book)
+    @Default(BookmarkType.manual) BookmarkType type,
   }) = _BookmarkEntry;
 
   const BookmarkEntry._();
