@@ -30,6 +30,7 @@ abstract class BookMetadata with _$BookMetadata {
 
     /// List of user-created bookmarks in this book.
     required List<BookmarkEntry> bookmarks,
+    @Default(true) bool isSyncedToCloud,
   }) = _BookMetadata;
 
   const BookMetadata._();
